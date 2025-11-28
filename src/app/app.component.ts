@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RedesSocialesComponent } from './components/redes-sociales/redes-sociales.component';
+import { inject } from '@vercel/analytics';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,10 @@ import { RedesSocialesComponent } from './components/redes-sociales/redes-social
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'DonMusic';
+
+  ngOnInit() {
+    inject();
+  }
 }

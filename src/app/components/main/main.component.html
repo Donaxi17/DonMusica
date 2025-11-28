@@ -1,49 +1,258 @@
-<div class="particles-container">
-    <section class="imagen-playlist" [style]="{'background-image': 'url(' + imgMusicaActual + ')'}">
-        <article>
-            <div class="playlist-info">
-                <div class="playlist-info-img">
-                    <img src="{{imgMusicaActual}}" alt="">
+<div class="min-h-screen bg-zinc-950 text-white">
+
+    <!-- Header/Menu - Más Visible -->
+    <header class="border-b border-zinc-700 bg-black/80 backdrop-blur-md sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                DonMusic
+            </h1>
+            <nav class="flex gap-8 text-base font-medium">
+                <button (click)="navigateTo('home')" [class.text-emerald-400]="currentView === 'home'"
+                    [class.text-zinc-400]="currentView !== 'home'"
+                    class="hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-900">
+                    Inicio
+                </button>
+                <button (click)="navigateTo('artists')"
+                    [class.text-emerald-400]="currentView === 'artists' || currentView === 'player'"
+                    [class.text-zinc-400]="currentView !== 'artists' && currentView !== 'player'"
+                    class="hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-900">
+                    Artistas
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Vista de Inicio -->
+    <div *ngIf="currentView === 'home'" class="max-w-7xl mx-auto px-6 py-12">
+
+        <!-- Hero Section -->
+        <section class="text-center mb-16 py-20">
+            <h2
+                class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600 bg-clip-text text-transparent">
+                Bienvenido a DonMusic
+            </h2>
+            <p class="text-xl md:text-2xl text-zinc-400 mb-8 max-w-3xl mx-auto">
+                La mejor experiencia musical con los mejores artistas
+            </p>
+            <button (click)="navigateTo('artists')"
+                class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-black font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/30">
+                Explorar Artistas
+            </button>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="grid md:grid-cols-3 gap-8 mb-16">
+            <div
+                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                <div
+                    class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                    <i class='bx bx-music text-3xl text-emerald-400'></i>
                 </div>
-                <div class="playlist-info-text">
-                    <h2>{{tituloMusicaActual}}</h2>
-                    <p>{{artistaMusicaActual}}</p>
-                    <div class="playlist-info-text-buttons">
-                        <button class="btn btn-primary" (click)="clickInint(idMusicaActual)"><i
-                                class='bx {{playlistInfoTextButtons}}'></i>Play</button>
-                        <button class="btn btn-secondary" (click)="shareLink()"><i
-                                class='bx bxs-share-alt'></i>Share</button>
+                <h3 class="text-xl font-bold mb-3">Música de Calidad</h3>
+                <p class="text-zinc-400">
+                    Disfruta de las mejores canciones en alta calidad
+                </p>
+            </div>
+
+            <div
+                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                <div
+                    class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                    <i class='bx bx-download text-3xl text-emerald-400'></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Descarga Fácil</h3>
+                <p class="text-zinc-400">
+                    Descarga tus canciones favoritas con un solo clic
+                </p>
+            </div>
+
+            <div
+                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                <div
+                    class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                    <i class='bx bx-share-alt text-3xl text-emerald-400'></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Comparte</h3>
+                <p class="text-zinc-400">
+                    Comparte tus canciones favoritas con tus amigos
+                </p>
+            </div>
+        </section>
+
+        <!-- About Canserbero -->
+        <section class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl p-12 mb-16">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-3xl font-bold mb-4">Sobre Canserbero</h3>
+                    <p class="text-zinc-300 mb-4 leading-relaxed">
+                        Tyrone José González Orama, conocido artísticamente como Canserbero, fue un rapero,
+                        compositor y poeta venezolano. Considerado uno de los mejores exponentes del rap en español.
+                    </p>
+                    <p class="text-zinc-300 mb-6 leading-relaxed">
+                        Su música se caracteriza por letras profundas que abordan temas sociales, filosóficos
+                        y personales, dejando un legado imborrable en la música latinoamericana.
+                    </p>
+                    <button (click)="navigateTo('artists')"
+                        class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors">
+                        Ver Artistas
+                    </button>
+                </div>
+                <div class="relative">
+                    <div class="aspect-square bg-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                        <img src="/assets/img/Epico-canserbero.jpg" alt="Canserbero" class="w-full h-full object-cover">
                     </div>
                 </div>
             </div>
-        </article>
-    </section>
-    <section class="playlist">
-        <h2 class="playlist-title">Playlist</h2>
-        <div class="album-header">
-            @for(song of playlist; track song.id) {
-            <div class="song">
-                <div class="song-info">
-                    <span class="song-id">{{song.id}}</span>
-                    @if(isPlaying && currentSong === song.id) {
-                    <span class="song-icon" (click)="clickInint(song.id)"><i class='bx bx-pause'></i></span>
-                    } @else {
-                    <span class="song-icon" (click)="clickInint(song.id)"><i class='bx bx-caret-right'></i></span>
-                    }
-                    <div>
-                        <p>{{song.title}}</p>
-                        <p>{{song.artist}}</p>
-                    </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center p-6 bg-zinc-900/30 rounded-xl border border-zinc-800">
+                <p class="text-4xl font-bold text-emerald-400 mb-2">12</p>
+                <p class="text-zinc-400">Artistas</p>
+            </div>
+            <div class="text-center p-6 bg-zinc-900/30 rounded-xl border border-zinc-800">
+                <p class="text-4xl font-bold text-emerald-400 mb-2">100+</p>
+                <p class="text-zinc-400">Canciones</p>
+            </div>
+            <div class="text-center p-6 bg-zinc-900/30 rounded-xl border border-zinc-800">
+                <p class="text-4xl font-bold text-emerald-400 mb-2">100%</p>
+                <p class="text-zinc-400">Gratis</p>
+            </div>
+            <div class="text-center p-6 bg-zinc-900/30 rounded-xl border border-zinc-800">
+                <p class="text-4xl font-bold text-emerald-400 mb-2">HD</p>
+                <p class="text-zinc-400">Calidad</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Vista de Artistas (Lista) -->
+    <div *ngIf="currentView === 'artists'" class="max-w-6xl mx-auto px-6 py-12">
+        <div class="mb-10 text-center">
+            <h2
+                class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                Explora Nuestros Artistas
+            </h2>
+            <p class="text-zinc-400 text-lg">Selecciona un artista para ver su música</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @for(artist of artistsList; track artist.id) {
+            <div (click)="selectArtist(artist)"
+                class="group cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all hover:transform hover:scale-105">
+                <div class="aspect-[3/4] overflow-hidden bg-zinc-800">
+                    <img [src]="artist.image" [alt]="artist.name"
+                        class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-300">
                 </div>
-                <div class="song-duration">
-                    <span class="song-time">{{song.duration}}</span>
-                    <i class='bx bxl-whatsapp' (click)="shareOnWhatsApp()"></i>
-                    <i class='bx bxs-download' (click)="downloadMusic(song.id)"></i>
+                <div class="p-4">
+                    <h3 class="text-lg font-bold mb-2 group-hover:text-emerald-400 transition-colors">{{artist.name}}
+                    </h3>
+                    <p class="text-emerald-400 text-xs mb-3">{{artist.genre}}</p>
+                    <p class="text-zinc-400 text-xs">{{artist.description}}</p>
                 </div>
             </div>
             }
         </div>
-    </section>
-    <canvas #particlesCanvas></canvas>
+    </div>
+
+    <!-- Vista de Player (Cuando se selecciona un artista) -->
+    <main *ngIf="currentView === 'player'" class="max-w-7xl mx-auto px-4 py-8">
+
+        <!-- Botón de Regreso -->
+        <button (click)="navigateTo('artists')"
+            class="mb-6 flex items-center gap-2 text-zinc-400 hover:text-emerald-400 transition-colors">
+            <i class='bx bx-arrow-back text-xl'></i>
+            <span>Volver a Artistas</span>
+        </button>
+
+        <!-- Now Playing Section (Minimal) -->
+        <section class="mb-8 pb-8 border-b border-zinc-800">
+            <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <!-- Album Cover -->
+                <div class="w-32 h-32 md:w-40 md:h-40 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 shadow-lg">
+                    <img [src]="imgMusicaActual" alt="Album Art" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Song Info -->
+                <div class="flex-grow">
+                    <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Reproduciendo ahora</p>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-1">{{tituloMusicaActual}}</h2>
+                    <p class="text-zinc-400 mb-4">{{artistaMusicaActual}}</p>
+
+                    <!-- Controls -->
+                    <div class="flex gap-3">
+                        <button (click)="clickInint(idMusicaActual)"
+                            class="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-full transition-colors">
+                            <i class='bx text-xl' [ngClass]="playlistInfoTextButtons"></i>
+                            <span class="text-sm">{{isPlaying ? 'Pausar' : 'Reproducir'}}</span>
+                        </button>
+                        <button (click)="shareLink()"
+                            class="p-2.5 border border-zinc-700 hover:border-zinc-600 rounded-full transition-colors">
+                            <i class='bx bxs-share-alt text-lg'></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Playlist Section (Minimal) -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">Lista de reproducción</h3>
+                <span class="text-sm text-zinc-500">{{playlist.length}} canciones</span>
+            </div>
+
+            <div class="space-y-1">
+                @for(song of playlist; track song.id) {
+                <div (click)="clickInint(song.id)"
+                    class="group flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer"
+                    [class.bg-zinc-900]="currentSong === song.id" [class.border-l-2]="currentSong === song.id"
+                    [class.border-emerald-500]="currentSong === song.id" [class.pl-[10px]]="currentSong === song.id">
+
+                    <!-- Track Number / Play Button -->
+                    <div class="w-8 flex items-center justify-center flex-shrink-0">
+                        <span class="text-sm text-zinc-500 group-hover:hidden" [class.hidden]="currentSong === song.id">
+                            {{song.id}}
+                        </span>
+                        <button (click)="$event.stopPropagation(); clickInint(song.id)"
+                            class="text-emerald-400 hover:scale-110 transition-transform"
+                            [ngClass]="currentSong === song.id ? 'block' : 'hidden group-hover:block'">
+                            <i class='bx text-xl'
+                                [class]="(isPlaying && currentSong === song.id) ? 'bx-pause' : 'bx-play'"></i>
+                        </button>
+                    </div>
+
+                    <!-- Song Info -->
+                    <div class="flex-grow min-w-0">
+                        <p class="font-medium truncate text-sm" [class.text-emerald-400]="currentSong === song.id">
+                            {{song.title}}
+                        </p>
+                        <p class="text-xs text-zinc-500 truncate">{{song.artist}}</p>
+                    </div>
+
+                    <!-- Duration -->
+                    <span class="text-sm text-zinc-500 hidden sm:block">{{song.duration}}</span>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        [class.opacity-100]="currentSong === song.id">
+                        <button (click)="$event.stopPropagation(); shareOnWhatsApp()"
+                            class="p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Compartir en WhatsApp">
+                            <i class='bx bxl-whatsapp text-lg'></i>
+                        </button>
+                        <button (click)="$event.stopPropagation(); downloadMusic(song.id)"
+                            class="p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Descargar">
+                            <i class='bx bxs-download text-lg'></i>
+                        </button>
+                    </div>
+                </div>
+                }
+            </div>
+        </section>
+    </main>
+
+    <!-- Particles Canvas (Subtle) -->
+    <canvas #particlesCanvas class="fixed inset-0 pointer-events-none opacity-10"></canvas>
+
     <ng-content></ng-content>
 </div>
