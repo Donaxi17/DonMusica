@@ -1,0 +1,129 @@
+<div class="min-h-screen bg-zinc-950 text-white p-6 md:p-12">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h2
+            class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+            Radio Mundial
+        </h2>
+        <p class="text-zinc-400 text-lg">Escucha estaciones de todo el mundo gratis</p>
+    </div>
+
+    <!-- Monetization / Ads Info Section -->
+    <div
+        class="max-w-4xl mx-auto mb-12 p-6 bg-zinc-900/50 border border-emerald-500/30 rounded-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-2 bg-emerald-500 text-black text-xs font-bold rounded-bl-lg">
+            ZONA DE MONETIZACIÓN
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h3 class="text-xl font-bold text-emerald-400 mb-2">¿Cómo ganar dinero aquí?</h3>
+                <p class="text-zinc-300 text-sm mb-4">
+                    Este es el espacio reservado para tus anuncios (Google AdSense, AdMob, etc.).
+                    Cada vez que un usuario escucha radio, verá publicidad aquí.
+                </p>
+                <div class="flex gap-4 text-sm">
+                    <div class="bg-black/40 p-3 rounded-lg border border-zinc-700">
+                        <p class="text-zinc-500 text-xs">Ingresos Estimados</p>
+                        <p class="text-emerald-400 font-bold text-lg">$0.00 USD</p>
+                    </div>
+                    <button (click)="setGenre('reggaeton')" [class.bg-emerald-500]="genre === 'reggaeton'"
+                        [class.text-black]="genre === 'reggaeton'"
+                        class="px-4 py-2 rounded-full border border-zinc-700 hover:border-emerald-500 transition-all">
+                        Reggaeton
+                    </button>
+                    <button (click)="setGenre('pop')" [class.bg-emerald-500]="genre === 'pop'"
+                        [class.text-black]="genre === 'pop'"
+                        class="px-4 py-2 rounded-full border border-zinc-700 hover:border-emerald-500 transition-all">
+                        Pop
+                    </button>
+                    <button (click)="setGenre('rock')" [class.bg-emerald-500]="genre === 'rock'"
+                        [class.text-black]="genre === 'rock'"
+                        class="px-4 py-2 rounded-full border border-zinc-700 hover:border-emerald-500 transition-all">
+                        Rock
+                    </button>
+                    <button (click)="setGenre('salsa')" [class.bg-emerald-500]="genre === 'salsa'"
+                        [class.text-black]="genre === 'salsa'"
+                        class="px-4 py-2 rounded-full border border-zinc-700 hover:border-emerald-500 transition-all">
+                        Salsa
+                    </button>
+                    <button (click)="setGenre('news')" [class.bg-emerald-500]="genre === 'news'"
+                        [class.text-black]="genre === 'news'"
+                        class="px-4 py-2 rounded-full border border-zinc-700 hover:border-emerald-500 transition-all">
+                        Noticias
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div *ngIf="isLoading" class="text-center py-12">
+                    <div
+                        class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4">
+                    </div>
+                    <p class="text-zinc-400">Buscando emisoras...</p>
+                </div>
+
+                <!-- Stations Grid -->
+                <div *ngIf="!isLoading" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    @for(station of stations; track station.stationuuid) {
+                    <div (click)="playStation(station)"
+                        class="group cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-emerald-500/50 transition-all hover:bg-zinc-900 flex items-center gap-4">
+
+                        <!-- Icon/Image -->
+                        <div
+                            class="w-16 h-16 bg-zinc-800 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                            <img *ngIf="station.favicon" [src]="station.favicon" class="w-full h-full object-cover"
+                                onerror="this.style.display='none'">
+                            <i *ngIf="!station.favicon" class='bx bx-radio text-3xl text-zinc-600'></i>
+
+                            <!-- Overlay Play Icon -->
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                [class.opacity-100]="currentStation === station && isPlaying">
+                                <i class='bx text-2xl text-emerald-400'
+                                    [class]="(currentStation === station && isPlaying) ? 'bx-pause' : 'bx-play'"></i>
+                            </div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
+                                {{station.name}}
+                            </h3>
+                            <p class="text-xs text-zinc-500 truncate">{{station.country}}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400">
+                                    {{station.bitrate}}k
+                                </span>
+                                <span *ngIf="currentStation === station && isPlaying"
+                                    class="text-[10px] text-emerald-400 animate-pulse">
+                                    ● EN VIVO
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Player Bar (Fixed Bottom) -->
+                <div *ngIf="currentStation"
+                    class="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-zinc-800 p-4 z-50">
+                    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-zinc-800 rounded overflow-hidden">
+                                <img [src]="currentStation.favicon || '/assets/img/default-album.jpg'"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm md:text-base">{{currentStation.name}}</h4>
+                                <p class="text-xs text-emerald-400">Radio en vivo</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <button (click)="stopRadio()"
+                                class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:scale-105 transition-transform">
+                                <i class='bx bx-pause text-2xl'></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>

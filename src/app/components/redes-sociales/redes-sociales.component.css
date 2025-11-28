@@ -1,33 +1,45 @@
-section{
+section {
     position: fixed;
     right: 0;
-    top: 0;
+    top: 80px;
     height: 100vh;
     width: 50px;
     color: white;
 }
 
-section i{
+section i {
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     cursor: pointer;
 }
 
-section i:hover{
+section i:hover {
     color: white;
 }
 
-.bx-menu{
+.bx-menu {
     color: white;
     font-size: 1.8rem;
     margin: 1rem 0;
 }
 
-.redes-sociales{
+.redes-sociales {
     margin-top: 1rem;
     font-size: 1.4rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+}
+
+
+@media (max-width: 768px) {
+    section {
+        width: 30px;
+    }
+
+    .redes-sociales {
+        font-size: 1.2rem;
+    }
+
 }

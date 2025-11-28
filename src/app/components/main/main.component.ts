@@ -1,10 +1,11 @@
 import { Component, ElementRef, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RadioComponent } from '../radio/radio.component';
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RadioComponent],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'
 })
@@ -23,7 +24,7 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
   currentSong: number | null = null;
   audio = new Audio();
 
-  currentView: 'home' | 'artists' | 'player' = 'home';
+  currentView: 'home' | 'artists' | 'player' | 'radio' = 'home';
   selectedArtist: any = null;
 
   // --- LISTA DE ARTISTAS ---
@@ -702,7 +703,7 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
     window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
   }
 
-  navigateTo(view: 'home' | 'artists' | 'player') {
+  navigateTo(view: 'home' | 'artists' | 'player' | 'radio') {
     this.currentView = view;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
