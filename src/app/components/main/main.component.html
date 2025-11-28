@@ -1,13 +1,13 @@
-<div class="min-h-screen bg-zinc-950 text-white">
+<div class="min-h-screen bg-zinc-950 text-white pb-20 md:pb-0">
 
-    <!-- Header/Menu - Más Visible -->
+    <!-- Header/Menu - Desktop -->
     <header class="border-b border-zinc-700 bg-black/80 backdrop-blur-md sticky top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
             <h1
                 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
                 DonMusic
             </h1>
-            <nav class="flex gap-0 md:gap-8 text-sm md:text-base font-medium">
+            <nav class="hidden md:flex gap-8 text-base font-medium">
                 <button (click)="navigateTo('home')" [class.text-emerald-400]="currentView === 'home'"
                     [class.text-zinc-400]="currentView !== 'home'"
                     class="hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-900">
@@ -24,12 +24,17 @@
                     class="hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-900 flex items-center gap-2">
                     <i class='bx bx-radio'></i> Radio
                 </button>
+                <button (click)="navigateTo('playlists')" [class.text-emerald-400]="currentView === 'playlists'"
+                    [class.text-zinc-400]="currentView !== 'playlists'"
+                    class="hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-900 flex items-center gap-2">
+                    <i class='bx bx-list-ul'></i> Playlists
+                </button>
             </nav>
         </div>
     </header>
 
     <!-- Vista de Inicio -->
-    <div *ngIf="currentView === 'home'" class="max-w-7xl mx-auto px-6 py-12">
+    <div *ngIf="currentView === 'home'" class="max-w-7xl mx-auto px-6 py-0 md:py-8">
 
         <!-- Hero Section -->
         <section class="text-center mb-10 md:mb-16 py-14 md:py-20">
@@ -49,7 +54,7 @@
         <!-- Features Grid -->
         <section class="grid md:grid-cols-3 gap-8 mb-16">
             <div
-                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                class="p-8 flex flex-col justify-center items-center text-center bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
                 <div
                     class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
                     <i class='bx bx-music text-3xl text-emerald-400'></i>
@@ -61,7 +66,7 @@
             </div>
 
             <div
-                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                class="p-8 flex flex-col justify-center items-center text-center bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
                 <div
                     class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
                     <i class='bx bx-download text-3xl text-emerald-400'></i>
@@ -73,7 +78,7 @@
             </div>
 
             <div
-                class="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                class="p-8 flex flex-col justify-center items-center text-center bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/50 transition-all group">
                 <div
                     class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
                     <i class='bx bx-share-alt text-3xl text-emerald-400'></i>
@@ -242,6 +247,15 @@
                     <!-- Actions -->
                     <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         [class.opacity-100]="currentSong === song.id">
+                        <button (click)="$event.stopPropagation(); toggleFavorite(song)"
+                            class="p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Favorito">
+                            <i class='bx text-lg'
+                                [class]="isFavorite(song.id) ? 'bxs-heart text-red-500' : 'bx-heart'"></i>
+                        </button>
+                        <button (click)="$event.stopPropagation(); openAddToPlaylistModal(song)"
+                            class="p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Agregar a playlist">
+                            <i class='bx bx-list-plus text-lg'></i>
+                        </button>
                         <button (click)="$event.stopPropagation(); shareOnWhatsApp()"
                             class="p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Compartir en WhatsApp">
                             <i class='bx bxl-whatsapp text-lg'></i>
@@ -260,8 +274,101 @@
     <!-- Vista de Radio -->
     <app-radio *ngIf="currentView === 'radio'"></app-radio>
 
+    <!-- Vista de Playlists -->
+    <app-playlists *ngIf="currentView === 'playlists'"></app-playlists>
+
     <!-- Particles Canvas (Subtle) -->
     <canvas #particlesCanvas class="fixed inset-0 pointer-events-none opacity-10"></canvas>
 
     <ng-content></ng-content>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-zinc-800 flex justify-around p-3 z-50 pb-safe">
+        <button (click)="navigateTo('home')" class="flex flex-col items-center gap-1 text-zinc-400 w-16"
+            [class.text-emerald-400]="currentView === 'home'">
+            <i class='bx bx-home text-2xl'></i>
+            <span class="text-[10px]">Inicio</span>
+        </button>
+        <button (click)="navigateTo('artists')" class="flex flex-col items-center gap-1 text-zinc-400 w-16"
+            [class.text-emerald-400]="currentView === 'artists' || currentView === 'player'">
+            <i class='bx bx-music text-2xl'></i>
+            <span class="text-[10px]">Artistas</span>
+        </button>
+        <button (click)="navigateTo('playlists')" class="flex flex-col items-center gap-1 text-zinc-400 w-16"
+            [class.text-emerald-400]="currentView === 'playlists'">
+            <i class='bx bx-list-ul text-2xl'></i>
+            <span class="text-[10px]">Playlists</span>
+        </button>
+        <button (click)="navigateTo('radio')" class="flex flex-col items-center gap-1 text-zinc-400 w-16"
+            [class.text-emerald-400]="currentView === 'radio'">
+            <i class='bx bx-radio text-2xl'></i>
+            <span class="text-[10px]">Radio</span>
+        </button>
+    </nav>
+
+    <!-- Modal: Agregar a Playlist -->
+    <div *ngIf="showAddToPlaylistModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6">Agregar a Playlist</h3>
+            
+            <div *ngIf="userPlaylists.length === 0" class="text-center py-8">
+                <i class='bx bx-music text-5xl text-zinc-700 mb-4'></i>
+                <p class="text-zinc-500 mb-4">No tienes playlists creadas</p>
+                <button (click)="closeAddToPlaylistModal(); openCreatePlaylistModal()" 
+                        class="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors">
+                    Crear Playlist
+                </button>
+            </div>
+
+            <div *ngIf="userPlaylists.length > 0" class="space-y-2 mb-6">
+                @for(playlist of userPlaylists; track playlist.id) {
+                <button (click)="addSongToPlaylist(playlist.id)"
+                        class="w-full p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-left flex items-center justify-between">
+                    <div>
+                        <p class="font-bold">{{playlist.name}}</p>
+                        <p class="text-sm text-zinc-500">{{playlist.songs.length}} canciones</p>
+                    </div>
+                    <i class='bx bx-plus text-2xl text-emerald-400'></i>
+                </button>
+                }
+            </div>
+
+            <button (click)="closeAddToPlaylistModal()" 
+                    class="w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Crear Playlist -->
+    <div *ngIf="showCreatePlaylistModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-bold mb-6">Crear Nueva Playlist</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nombre de la playlist</label>
+                    <input [(ngModel)]="newPlaylistName" type="text" placeholder="Ej: Mis favoritas" 
+                           class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descripción (opcional)</label>
+                    <textarea [(ngModel)]="newPlaylistDescription" placeholder="Describe tu playlist..." rows="3"
+                              class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button (click)="closeCreatePlaylistModal()" 
+                        class="flex-1 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+                <button (click)="createNewPlaylist()" 
+                        class="flex-1 px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors">
+                    Crear
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>

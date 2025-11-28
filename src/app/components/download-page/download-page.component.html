@@ -1,0 +1,72 @@
+<div class="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-block p-4 bg-emerald-500/10 rounded-full mb-4">
+                <i class='bx bx-download text-5xl text-emerald-400'></i>
+            </div>
+            <h1
+                class="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                Preparando tu descarga
+            </h1>
+            <p class="text-zinc-400 text-lg">{{songTitle}}</p>
+            <p class="text-zinc-500 text-sm">{{artistName}}</p>
+        </div>
+
+        <!-- Top Ad Space (Descargas) -->
+        <div class="mb-8 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+            <div class="p-2 text-center">
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8359193264058620"
+                    data-ad-slot="5987437817" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            </div>
+        </div>
+
+        <!-- Countdown & Download Button -->
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 text-center mb-8">
+            <div *ngIf="countdown > 0" class="mb-6">
+                <div class="relative inline-block">
+                    <svg class="w-24 h-24 transform -rotate-90">
+                        <circle cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="none"
+                            class="text-zinc-800"></circle>
+                        <circle cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="none"
+                            class="text-emerald-500 transition-all duration-1000" [style.stroke-dasharray]="276.46"
+                            [style.stroke-dashoffset]="276.46 * (countdown / 5)"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-3xl font-bold text-emerald-400">{{countdown}}</span>
+                    </div>
+                </div>
+                <p class="text-zinc-400 mt-4">Tu descarga comenzará en {{countdown}} segundos...</p>
+            </div>
+
+            <button *ngIf="countdown === 0" (click)="startDownload()"
+                class="w-full px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-black font-bold rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-3">
+                <i class='bx bx-download text-2xl'></i>
+                <span>Descargar Ahora</span>
+            </button>
+
+            <p *ngIf="countdown === 0" class="text-zinc-500 text-sm mt-4">
+                Haz clic en el botón para iniciar la descarga
+            </p>
+        </div>
+
+        <!-- Bottom Ad Space (Descargas) -->
+        <div class="mb-8 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+            <div class="p-2 text-center">
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8359193264058620"
+                    data-ad-slot="5987437817" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center">
+            <button (click)="goBack()"
+                class="text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2 mx-auto">
+                <i class='bx bx-arrow-back'></i>
+                <span>Volver al reproductor</span>
+            </button>
+        </div>
+
+    </div>
+</div>

@@ -1,11 +1,15 @@
 import { Component, ElementRef, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { RadioComponent } from '../radio/radio.component';
+import { PlaylistsComponent } from '../playlists/playlists.component';
+import { PlaylistService, Playlist, Song } from '../../services/playlist.service';
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [CommonModule, RadioComponent],
+  imports: [CommonModule, RadioComponent, PlaylistsComponent, FormsModule],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'
 })
@@ -24,8 +28,23 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
   currentSong: number | null = null;
   audio = new Audio();
 
-  currentView: 'home' | 'artists' | 'player' | 'radio' = 'home';
+  currentView: 'home' | 'artists' | 'player' | 'radio' | 'playlists' = 'home';
   selectedArtist: any = null;
+
+  // Playlist properties
+  userPlaylists: Playlist[] = [];
+  favorites: Song[] = [];
+  showCreatePlaylistModal: boolean = false;
+  showAddToPlaylistModal: boolean = false;
+  selectedSongForPlaylist: Song | null = null;
+  newPlaylistName: string = '';
+  newPlaylistDescription: string = '';
+
+  constructor(
+    private router: Router,
+    private playlistService: PlaylistService
+  ) { }
+
 
   // --- LISTA DE ARTISTAS ---
   artistsList = [
@@ -579,6 +598,9 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
   playlist: any[] = [];
 
   ngOnInit(): void {
+    // Load user playlists and favorites
+    this.loadUserData();
+
     // Escuchar cuando termina la canción para pasar a la siguiente
     this.audio.addEventListener('ended', () => {
       this.playNextSong();
@@ -672,13 +694,14 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
     const song = this.playlist.find(s => s.id === id);
     if (!song) return;
 
-    const link = document.createElement('a');
-    link.href = song.url;
-    link.download = song.title + '.mp3';
-    link.target = "_blank"; // Importante para URLs externas
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Navigate to download page with song data
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: song.artist,
+        downloadUrl: song.url
+      }
+    });
   }
 
   shareLink(): void {
@@ -703,7 +726,7 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
     window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
   }
 
-  navigateTo(view: 'home' | 'artists' | 'player' | 'radio') {
+  navigateTo(view: 'home' | 'artists' | 'player' | 'radio' | 'playlists') {
     this.currentView = view;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -801,6 +824,102 @@ export class MainComponent implements OnInit, OnDestroy, AfterViewInit {
       this.animationId = requestAnimationFrame(animate);
     };
 
+
     animate();
   }
+
+  // ========== PLAYLIST METHODS ==========
+
+  loadUserData(): void {
+    this.userPlaylists = this.playlistService.getPlaylists();
+    this.favorites = this.playlistService.getFavorites();
+  }
+
+  toggleFavorite(song: Song): void {
+    if (this.playlistService.isFavorite(song.id)) {
+      this.playlistService.removeFromFavorites(song.id);
+    } else {
+      this.playlistService.addToFavorites(song);
+    }
+    this.loadUserData();
+  }
+
+  isFavorite(songId: number): boolean {
+    return this.playlistService.isFavorite(songId);
+  }
+
+  openCreatePlaylistModal(): void {
+    this.showCreatePlaylistModal = true;
+    this.newPlaylistName = '';
+    this.newPlaylistDescription = '';
+  }
+
+  closeCreatePlaylistModal(): void {
+    this.showCreatePlaylistModal = false;
+  }
+
+  createNewPlaylist(): void {
+    if (!this.newPlaylistName.trim()) {
+      alert('Por favor ingresa un nombre para la playlist');
+      return;
+    }
+
+    this.playlistService.createPlaylist(this.newPlaylistName, this.newPlaylistDescription);
+    this.loadUserData();
+    this.closeCreatePlaylistModal();
+  }
+
+  deletePlaylist(playlistId: string): void {
+    if (confirm('¿Estás seguro de eliminar esta playlist?')) {
+      this.playlistService.deletePlaylist(playlistId);
+      this.loadUserData();
+    }
+  }
+
+  openAddToPlaylistModal(song: Song): void {
+    this.selectedSongForPlaylist = song;
+    this.showAddToPlaylistModal = true;
+  }
+
+  closeAddToPlaylistModal(): void {
+    this.showAddToPlaylistModal = false;
+    this.selectedSongForPlaylist = null;
+  }
+
+  addSongToPlaylist(playlistId: string): void {
+    if (!this.selectedSongForPlaylist) return;
+
+    const success = this.playlistService.addSongToPlaylist(playlistId, this.selectedSongForPlaylist);
+
+    if (success) {
+      alert('¡Canción agregada a la playlist!');
+      this.loadUserData();
+      this.closeAddToPlaylistModal();
+    } else {
+      alert('Esta canción ya está en la playlist');
+    }
+  }
+
+  removeSongFromPlaylist(playlistId: string, songId: number): void {
+    if (confirm('¿Quitar esta canción de la playlist?')) {
+      this.playlistService.removeSongFromPlaylist(playlistId, songId);
+      this.loadUserData();
+    }
+  }
+
+  sharePlaylist(playlist: Playlist): void {
+    this.playlistService.sharePlaylist(playlist);
+  }
+
+  playPlaylist(playlist: Playlist): void {
+    if (playlist.songs.length === 0) {
+      alert('Esta playlist está vacía');
+      return;
+    }
+
+    // Set the playlist as current and play first song
+    this.playlist = playlist.songs;
+    this.clickInint(playlist.songs[0].id);
+  }
 }
+

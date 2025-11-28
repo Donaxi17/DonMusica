@@ -35,11 +35,17 @@ section i:hover {
 
 @media (max-width: 768px) {
     section {
-        width: 30px;
+        top: 0;
+        right: 20px;
+        width: auto;
+        height: auto;   
+        z-index: 100;
     }
 
     .redes-sociales {
         font-size: 1.2rem;
+        margin-top: 1.4rem;
+        flex-direction: row;
     }
 
 }
