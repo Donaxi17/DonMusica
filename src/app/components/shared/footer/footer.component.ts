@@ -50,9 +50,9 @@ import { RouterModule } from '@angular/router';
             <h4 class="text-white font-bold mb-4 md:mb-6">Comunidad</h4>
             <ul class="space-y-2 md:space-y-3 text-xs md:text-sm text-zinc-500">
               <li><a routerLink="/blog" class="hover:text-emerald-400 transition-colors">Blog</a></li>
+              <li><a routerLink="/about" class="hover:text-emerald-400 transition-colors">Sobre Nosotros</a></li>
+              <li><a routerLink="/contact" class="hover:text-emerald-400 transition-colors">Contacto</a></li>
               <li><a href="#" class="hover:text-emerald-400 transition-colors">Para Artistas</a></li>
-              <li><a href="#" class="hover:text-emerald-400 transition-colors">Desarrolladores</a></li>
-              <li><a href="#" class="hover:text-emerald-400 transition-colors">Publicidad</a></li>
             </ul>
           </div>
 

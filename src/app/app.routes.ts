@@ -34,6 +34,8 @@ export const routes: Routes = [
                 ]
             },
             { path: 'blog', loadComponent: () => import('./components/blog/blog.component').then(m => m.BlogComponent) },
+            { path: 'about', loadComponent: () => import('./components/about/about.component').then(m => m.AboutComponent) },
+            { path: 'contact', loadComponent: () => import('./components/contact/contact.component').then(m => m.ContactComponent) },
             { path: 'saved-lyrics', loadComponent: () => import('./components/saved-lyrics/saved-lyrics.component').then(m => m.SavedLyricsComponent) },
             { path: 'sin-copyright', loadComponent: () => import('./components/free-music/free-music.component').then(m => m.FreeMusicComponent) },
             {
