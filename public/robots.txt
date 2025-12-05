@@ -3,3 +3,17 @@ Allow: /
 
 # Sitemap
 Sitemap: https://donmusica.online/sitemap.xml
+
+# Disallow crawling of API endpoints (if any)
+Disallow: /api/
+
+# Allow crawling of main pages (redundant if Allow: / is set, but explicit is fine)
+Allow: /inicio
+Allow: /descubrir
+Allow: /artistas
+Allow: /videos
+Allow: /favoritos
+Allow: /listas
+
+# Crawl delay (optional)
+Crawl-delay: 1
