@@ -12,7 +12,7 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
     selector: 'app-search',
     standalone: true,
-    imports: [CommonModule, FormsModule, AdBannerComponent],
+    imports: [CommonModule, FormsModule],
     templateUrl: './search.component.html'
 })
 export class SearchComponent {

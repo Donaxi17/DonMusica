@@ -9,7 +9,7 @@ import { SeoService } from '../../../services/seo.service';
 @Component({
     selector: 'app-charts',
     standalone: true,
-    imports: [CommonModule, AdBannerComponent],
+    imports: [CommonModule],
     templateUrl: './charts.component.html'
 })
 export class ChartsComponent implements OnInit {

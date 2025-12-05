@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-new-releases',
     standalone: true,
-    imports: [CommonModule, AdBannerComponent, SkeletonComponent],
+    imports: [CommonModule, SkeletonComponent],
     templateUrl: './new-releases.component.html'
 })
 export class NewReleasesComponent implements OnInit, OnDestroy {

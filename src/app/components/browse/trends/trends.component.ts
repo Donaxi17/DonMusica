@@ -10,7 +10,7 @@ import { SeoService } from '../../../services/seo.service';
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, AdBannerComponent, InfiniteScrollDirective],
+    imports: [CommonModule, InfiniteScrollDirective],
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {

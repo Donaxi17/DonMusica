@@ -10,7 +10,7 @@ import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdBannerComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
