@@ -9,7 +9,10 @@ CORS(app)
 # Lista de Servidores Cobalt para Producción (Vercel)
 # Lista de Servidores Cobalt para Producción (Vercel)
 # Actualizada con instancias diversas (IPs y Dominios) para evitar bloqueos
+# Lista de Servidores Cobalt para Producción (Vercel)
+# Actualizada con instancias diversas (IPs y Dominios) para evitar bloqueos
 INSTANCES = [
+    "https://api.cobalt.tools", 
     "https://cobalt.place",
     "https://api.cobalt.best",
     "https://cobalt.kwiatekmiki.pl",
