@@ -87,9 +87,9 @@ export class ConverterComponent implements OnInit {
 
     tryClientSideConversion(index: number) {
         if (index >= this.CLIENT_INSTANCES.length) {
-            // Se acabaron los intentos cliente, vamos al backend
-            console.log('Fallaron intentos cliente, probando backend...');
-            this.executeBackendConversion();
+            // Si Cobalt cliente falla, probamos Piped cliente (Plan C)
+            console.log('Falló Cobalt cliente, intentando Piped cliente...');
+            this.tryPipedFallback(0);
             return;
         }
 
@@ -113,6 +113,65 @@ export class ConverterComponent implements OnInit {
             error: (err) => {
                 console.warn(`Fallo ${host}, probando siguiente...`, err);
                 this.tryClientSideConversion(index + 1);
+            }
+        });
+    }
+
+    // Instancias Piped para fallback cliente (Plan C)
+    readonly PIPED_INSTANCES = [
+        'https://pipedapi.kavin.rocks',
+        'https://pipedapi.tokhmi.xyz',
+        'https://piped-api.lunar.icu',
+        'https://pipedapi.rivo.lol',
+        'https://api.piped.privacydev.net'
+    ];
+
+    tryPipedFallback(index: number) {
+        if (index >= this.PIPED_INSTANCES.length) {
+            // Si todo falla en cliente, vamos al backend
+            console.log('Falló todo en cliente, usando backend...');
+            this.executeBackendConversion();
+            return;
+        }
+
+        const host = this.PIPED_INSTANCES[index];
+        // Extraer ID
+        let videoId = '';
+        if (this.youtubeUrl.includes('v=')) {
+            videoId = this.youtubeUrl.split('v=')[1].split('&')[0];
+        } else if (this.youtubeUrl.includes('youtu.be/')) {
+            videoId = this.youtubeUrl.split('youtu.be/')[1].split('?')[0];
+        }
+
+        if (!videoId) {
+            this.executeBackendConversion();
+            return;
+        }
+
+        this.http.get<any>(`${host}/streams/${videoId}`).subscribe({
+            next: (res) => {
+                const audioStreams = res.audioStreams || [];
+                // Buscar m4a/mp4
+                let bestAudio = audioStreams.find((s: any) => s.mimeType === 'audio/mp4' || s.format === 'M4A');
+                if (!bestAudio && audioStreams.length > 0) bestAudio = audioStreams[0];
+
+                if (bestAudio) {
+                    this.handleSuccess({
+                        success: true,
+                        status: 'stream',
+                        url: bestAudio.url,
+                        filename: res.title,
+                        title: res.title,
+                        thumbnail: res.thumbnailUrl,
+                        format: 'M4A' // Piped suele ser M4A
+                    });
+                } else {
+                    this.tryPipedFallback(index + 1);
+                }
+            },
+            error: () => {
+                console.warn(`Fallo Piped ${host}`);
+                this.tryPipedFallback(index + 1);
             }
         });
     }
