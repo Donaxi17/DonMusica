@@ -29,22 +29,23 @@
             class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-5 md:p-8 shadow-2xl mb-6 ring-1 ring-white/5">
 
             <!-- Input con mejor UX móvil (tamaño texto 16px para evitar zoom automático en iOS) -->
-            <div class="mb-5 md:mb-6">
+            <form (submit)="$event.preventDefault(); convert()" autocomplete="off" class="mb-5 md:mb-6">
                 <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block ml-1">
                     🔗 Enlace del Video
                 </label>
                 <div class="relative group">
-                    <input type="text" [(ngModel)]="youtubeUrl" (ngModelChange)="onUrlChange()"
-                        (keyup.enter)="convert()" [disabled]="isLoading" placeholder="https://youtu.be/..."
+                    <input type="text" [(ngModel)]="youtubeUrl" (ngModelChange)="onUrlChange()" [disabled]="isLoading"
+                        placeholder="https://youtu.be/..." name="youtubeUrl" autocomplete="off" data-lpignore="true"
                         class="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-base md:text-lg text-white placeholder-gray-600 focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 outline-none transition-all duration-300 shadow-inner">
 
                     <!-- Botón borrar (X) -->
-                    <button *ngIf="youtubeUrl && !isLoading" (click)="clearForm()"
+                    <button *ngIf="youtubeUrl && !isLoading" (click)="clearForm(); $event.preventDefault()"
+                        type="button"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
                         <i class='bx bx-x text-xl'></i>
                     </button>
                 </div>
-            </div>
+            </form>
 
             <!-- Botón Convertir (Grande y Táctil) -->
             <button *ngIf="!showResult" (click)="convert()" [disabled]="isLoading || !youtubeUrl"
@@ -92,10 +93,21 @@
                             <i class='bx bxs-check-circle'></i> Listo para descargar ({{ audioFormat }})
                         </p>
 
-                        <a [href]="downloadLink" (click)="downloadFile(); $event.preventDefault()"
+                        <a [href]="downloadLink" (click)="!isDownloading && downloadFile(); $event.preventDefault()"
+                            [class.opacity-50]="isDownloading" [class.cursor-not-allowed]="isDownloading"
                             class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer touch-manipulation decoration-0 no-underline">
-                            <i class='bx bxs-download text-lg animate-bounce-slow'></i>
-                            DESCARGAR {{ audioFormat }}
+
+                            <!-- Estado Normal -->
+                            <ng-container *ngIf="!isDownloading">
+                                <i class='bx bxs-download text-lg animate-bounce-slow'></i>
+                                DESCARGAR {{ audioFormat }}
+                            </ng-container>
+
+                            <!-- Estado Descargando (Spinner) -->
+                            <ng-container *ngIf="isDownloading">
+                                <i class='bx bx-loader-alt animate-spin text-xl'></i>
+                                Descargando...
+                            </ng-container>
                         </a>
                     </div>
                 </div>

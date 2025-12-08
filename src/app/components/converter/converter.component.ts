@@ -68,10 +68,12 @@ export class ConverterComponent implements OnInit {
         this.error = '';
 
         // --- 2. SMART API ROUTING ---
-        // Usamos ruta relativa /api para todo.
-        // En local: El proxy de Angular redirige /api -> https://donmusica.online/api
-        // En prod: Vercel maneja /api directamente
-        const apiUrl = '/api/convert';
+        // Volvemos a la estrategia híbrida:
+        // DEV: Usa tu servidor local (start_server.bat) -> Más estable y rápido.
+        // PROD: Usa Vercel (/api/convert).
+        const apiUrl = isDevMode()
+            ? 'http://localhost:5000/api/convert'
+            : '/api/convert';
 
         this.http.post<any>(apiUrl, { url: this.youtubeUrl }).subscribe({
             next: (res) => {
@@ -82,7 +84,14 @@ export class ConverterComponent implements OnInit {
                     this.videoTitle = res.title || 'Audio Listo';
                     this.videoThumb = res.thumbnail || '';
                     this.audioFormat = res.format || 'M4A';
-                    this.downloadUrl = res.downloadUrl;
+
+                    // Si estamos en local, usamos el proxy de descarga local
+                    if (isDevMode() && res.originalUrl) {
+                        const encodedUrl = encodeURIComponent(res.originalUrl);
+                        this.downloadUrl = `http://localhost:5000/api/download?url=${encodedUrl}`;
+                    } else {
+                        this.downloadUrl = res.downloadUrl;
+                    }
 
                     this.toastService.success(`¡Convertido a ${this.audioFormat}!`);
                 } else {
@@ -108,10 +117,44 @@ export class ConverterComponent implements OnInit {
         });
     }
 
+    isDownloading: boolean = false;
+
     downloadFile() {
-        if (this.downloadUrl) {
-            window.open(this.downloadUrl, '_blank');
-        }
+        if (!this.downloadUrl) return;
+
+        // Feedback inmediato: Preparando
+        this.toastService.info('⏳ Preparando archivo, un momento...');
+        this.isDownloading = true;
+
+        // Descargamos el archivo como Blob para asegurar que existe antes de confirmar
+        this.http.get(this.downloadUrl, { responseType: 'blob' }).subscribe({
+            next: (blob: Blob) => {
+                this.isDownloading = false;
+
+                // Crear URL temporal para el Blob
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                // Usar el título del video para el nombre del archivo
+                const cleanTitle = (this.videoTitle || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                link.download = `${cleanTitle}.${this.audioFormat === 'MP3' ? 'mp3' : 'm4a'}`;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Liberar memoria
+                setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+                // Mensaje verde confirmando que el navegador tomó el control
+                this.toastService.success(`⬇️ Tu descarga ha comenzado`);
+            },
+            error: (err) => {
+                this.isDownloading = false;
+                console.error(err);
+                this.toastService.error('❌ Error al descargar. Intenta de nuevo.');
+            }
+        });
     }
 
     clearForm() {
