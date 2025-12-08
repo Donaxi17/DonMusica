@@ -11,18 +11,19 @@ CORS(app)
 # Actualizada con instancias diversas (IPs y Dominios) para evitar bloqueos
 # Lista de Servidores Cobalt para Producción (Vercel)
 # Actualizada con instancias diversas (IPs y Dominios) para evitar bloqueos
+# Lista de Servidores Cobalt para Producción (Vercel)
+# Actualizada con instancias diversas para maximizar éxito.
 INSTANCES = [
-    "https://api.cobalt.tools", 
-    "https://cobalt.place",
-    "https://api.cobalt.best",
-    "https://cobalt.kwiatekmiki.pl",
-    "https://api.wkr.one",
-    "https://cobalt.154.53.53.53.sslip.io", 
-    "https://dl.khub.ky",
-    "https://cobalt.q13.me",
-    "https://cobalt.xy24.eu.org",
-    "https://api.cobalt.biz.id",
-    "https://cobalt.mashedpotat.uno" 
+    "https://api.cobalt.tools",          # Oficial (Prioridad)
+    "https://api.server.cobalt.tools",   # Oficial Alternativa
+    "https://cobalt.mashedpotat.uno",    # Comunidad
+    "https://dl.khub.ky",               # Comunidad
+    "https://cobalt.xy24.eu.org",       # Comunidad
+    "https://api.cobalt.best",          # Comunidad
+    "https://cobalt.kwiatekmiki.pl",    # Comunidad
+    "https://api.wkr.one",              # Comunidad
+    "https://cobalt.q13.me",            # Comunidad
+    "https://cobalt.154.53.53.53.sslip.io" # Raw IP
 ]
 
 @app.route('/api/convert', methods=['POST'])
