@@ -30,10 +30,19 @@ def convert():
         
         for host in INSTANCES:
             try:
-                # Pedimos MP3 a Cobalt
-                payload = {"url": url, "vt": "mp3"}
-                headers = {"Accept": "application/json", "Content-Type": "application/json"}
-                r = requests.post(f"{host}/api/json", json=payload, headers=headers, timeout=9)
+                # Pedimos MP3 a Cobalt (Formato moderno)
+                # v7/v10 API usa downloadMode: "audio" o similar
+                payload = {
+                    "url": url, 
+                    "downloadMode": "audio", 
+                    "audioFormat": "mp3"
+                }
+                headers = {
+                    "Accept": "application/json", 
+                    "Content-Type": "application/json",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                r = requests.post(f"{host}/api/json", json=payload, headers=headers, timeout=5)
                 
                 if r.status_code == 200:
                     d = r.json()
