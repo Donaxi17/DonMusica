@@ -3,7 +3,9 @@
     <!-- Botón de Regreso -->
     <button (click)="goBack()"
         class="mb-4 md:mb-6 flex items-center gap-2 text-zinc-400 hover:text-emerald-400 transition-colors text-sm md:text-base">
-        <i class='bx bx-arrow-back text-xl'></i>
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21z" />
+        </svg>
         <span>Volver</span>
     </button>
 
@@ -52,14 +54,25 @@
                 <button (click)="toggleShuffle()" [class.text-emerald-400]="isShuffle && !isFavoritesPlaying"
                     [class.text-red-400]="isShuffle && isFavoritesPlaying" [class.text-zinc-400]="!isShuffle"
                     class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110" title="Aleatorio">
-                    <i class='bx bx-shuffle text-lg md:text-xl'></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M17 17h-1.559l-9.7-10.673A1 1 0 0 0 5.001 6H2v2h2.559l4.09 4.5-4.09 4.501H2v2h3.001a1 1 0 0 0 .74-.327L10 13.987l4.259 4.686a1 1 0 0 0 .74.327H17v3l5-4-5-4v3z" />
+                    </svg>
                 </button>
                 <button (click)="toggleRepeat()" [class.text-emerald-400]="repeatMode !== 'off' && !isFavoritesPlaying"
                     [class.text-red-400]="repeatMode !== 'off' && isFavoritesPlaying"
                     [class.text-zinc-400]="repeatMode === 'off'"
                     class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110 relative" title="Repetir">
-                    <i class='bx text-lg md:text-xl' [class.bx-repeat]="repeatMode === 'off' || repeatMode === 'all'"
-                        [class.bxs-repeat-one]="repeatMode === 'one'"></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="repeatMode === 'off' || repeatMode === 'all'">
+                        <path
+                            d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z" />
+                    </svg>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="repeatMode === 'one'">
+                        <path
+                            d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-12 7h2v2h-2v-2zm4-2h2v6h-2v-6z" />
+                    </svg>
                     <span *ngIf="repeatMode === 'all'" class="absolute -top-1 -right-1 w-3 h-3 rounded-full"
                         [ngClass]="isFavoritesPlaying ? 'bg-red-500' : 'bg-emerald-500'"></span>
                 </button>
@@ -70,25 +83,48 @@
                 <button (click)="previousTrack()"
                     class="p-2 md:p-3 hover:bg-zinc-900 rounded-full transition-all hover:scale-110 text-zinc-300 hover:text-white"
                     title="Anterior">
-                    <i class='bx bx-skip-previous text-xl md:text-2xl'></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 7v10l-7-5zm-7 10V7h2v10z" />
+                    </svg>
                 </button>
                 <button (click)="togglePlayPause()"
                     class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all transform hover:scale-105 shadow-lg"
                     [ngClass]="isFavoritesPlaying ? 'bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/30' : 'bg-gradient-to-r from-emerald-500 to-green-600 shadow-emerald-500/30'">
-                    <i class='bx text-2xl md:text-3xl text-black' [class.bx-pause]="isPlaying"
-                        [class.bx-play]="!isPlaying"></i>
+                    <svg class="w-6 h-6 md:w-8 md:h-8 text-black" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="!isPlaying">
+                        <path d="M7 6v12l10-6z" />
+                    </svg>
+                    <svg class="w-6 h-6 md:w-8 md:h-8 text-black" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="isPlaying">
+                        <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+                    </svg>
                 </button>
                 <button (click)="nextTrack()"
                     class="p-2 md:p-3 hover:bg-zinc-900 rounded-full transition-all hover:scale-110 text-zinc-300 hover:text-white"
                     title="Siguiente">
-                    <i class='bx bx-skip-next text-xl md:text-2xl'></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 7v10l7-5zm9 10V7h-2v10z" />
+                    </svg>
                 </button>
             </div>
 
             <!-- Right: Volume Control - Hidden on mobile -->
             <div class="hidden md:flex items-center gap-3 min-w-[140px] order-3">
-                <i class='bx text-xl text-zinc-400' [class.bx-volume-full]="volume > 50"
-                    [class.bx-volume-low]="volume > 0 && volume <= 50" [class.bx-volume-mute]="volume === 0"></i>
+                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" *ngIf="volume > 50">
+                    <path
+                        d="M16 21c3.527-1.547 5.999-4.909 5.999-9S19.527 4.547 16 3v2c2.387 1.386 3.999 4.047 3.999 7S18.387 17.614 16 19v2z" />
+                    <path
+                        d="M16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5zM4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2z" />
+                </svg>
+                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24"
+                    *ngIf="volume > 0 && volume <= 50">
+                    <path
+                        d="M4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2zM16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5z" />
+                </svg>
+                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" *ngIf="volume === 0">
+                    <path
+                        d="m21.707 20.293-2.023-2.023A9.566 9.566 0 0 0 21.999 12c0-4.091-2.472-7.453-5.999-9v2c2.387 1.386 3.999 4.047 3.999 7a8.113 8.113 0 0 1-1.672 4.913l-1.285-1.285C17.644 14.536 18 13.19 18 12c0-1.771-.775-3.9-2-5v7.586l-2-2V2.132L7.404 7.586 5.586 5.768 13.596 1.86c.324-.176.707-.16 1.004.044.298.205.4.597.4.996v18.2a1 1 0 0 1-1.707.707L7.697 17H4c-1.103 0-2-.897-2-2v-6c0-1.103.897-2 2-2h.879L3.102 5.223 4.516 3.809l17.191 17.191-1.414 1.414z" />
+                </svg>
                 <input type="range" min="0" max="100" [value]="volume" (input)="setVolume($any($event.target).value)"
                     class="flex-1 h-1 bg-zinc-800 rounded-full appearance-none cursor-pointer
                         [&::-webkit-slider-thumb]:appearance-none 
@@ -134,8 +170,14 @@
                         class="hover:scale-110 transition-transform"
                         [ngClass]="isFavoritesPlaying ? 'text-red-400' : 'text-emerald-400'"
                         [ngClass]="currentSong?.id === song.id ? 'block' : 'hidden group-hover:block'">
-                        <i class='bx text-lg md:text-xl'
-                            [class]="(isPlaying && currentSong?.id === song.id) ? 'bx-pause' : 'bx-play'"></i>
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="!(isPlaying && currentSong?.id === song.id)">
+                            <path d="M7 6v12l10-6z" />
+                        </svg>
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="isPlaying && currentSong?.id === song.id">
+                            <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+                        </svg>
                     </button>
                 </div>
 
@@ -154,12 +196,22 @@
                     [class.opacity-100]="currentSong?.id === song.id">
                     <button (click)="$event.stopPropagation(); toggleFavorite(song)"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Favorito">
-                        <i class='bx text-base md:text-lg'
-                            [class]="isFavorite(song.id) ? 'bxs-heart text-red-500' : 'bx-heart'"></i>
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="!isFavorite(song.id)">
+                            <path
+                                d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416zM12 18.586l-6.793-6.793c-1.562-1.563-1.562-4.095 0-5.657.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172l1.207 1.207 1.207-1.207c.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172c1.562 1.562 1.562 4.095 0 5.657L12 18.586z" />
+                        </svg>
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="isFavorite(song.id)">
+                            <path
+                                d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
+                        </svg>
                     </button>
                     <button (click)="$event.stopPropagation(); downloadMusic(song)"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Descargar">
-                        <i class='bx bxs-download text-base md:text-lg'></i>
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
                     </button>
                 </div>
             </div>

@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { MusicApiService } from '../../../services/music-api.service';
 import { PlayerService } from '../../../services/player.service';
 import { LyricsService } from '../../../services/lyrics.service';
@@ -18,6 +20,7 @@ import { Song } from '../../../services/playlist.service';
     styleUrl: './search.component.css'
 })
 export class SearchComponent implements OnInit {
+    private route = inject(ActivatedRoute);
     private musicApi = inject(MusicApiService);
     private playerService = inject(PlayerService);
     private lyricsService = inject(LyricsService);
@@ -39,6 +42,14 @@ export class SearchComponent implements OnInit {
             'Buscador de Letras y Música | DonMusica',
             'Encuentra y guarda las letras de tus canciones favoritas en DonMusica. Buscador musical global for lyrics, canciones, artistas y álbumes. ¡Crea tu colección de letras hoy en donmusica.online!'
         );
+
+        // Detectar búsqueda desde URL (ej. enlaces compartidos)
+        this.route.queryParams.subscribe(params => {
+            if (params['q']) {
+                this.searchQuery.set(params['q']);
+                this.onSearch();
+            }
+        });
     }
 
     onSearch() {
@@ -46,10 +57,21 @@ export class SearchComponent implements OnInit {
         this.isSearching.set(true);
         this.searchResults.set([]);
 
-        // Búsqueda rápida - mostramos resultados inmediatamente sin validar letras
-        this.musicApi.search(this.searchQuery()).subscribe({
-            next: (songs) => {
-                this.searchResults.set(songs.slice(0, 15));
+        // Búsqueda unificada: Mainstream + Jamendo (Sin Copyright)
+        forkJoin({
+            mainstream: this.musicApi.search(this.searchQuery()),
+            free: this.musicApi.searchJamendo(this.searchQuery())
+        }).subscribe({
+            next: (results) => {
+                // Combinar priorizando mainstream, pero mostrando ambos
+                const combined = [...results.mainstream, ...results.free];
+
+                // Eliminar duplicados si los hubiera
+                const unique = combined.filter((s, i, self) =>
+                    i === self.findIndex(t => t.id === s.id || (t.title === s.title && t.artist === s.artist))
+                );
+
+                this.searchResults.set(unique);
                 this.isSearching.set(false);
             },
             error: () => {

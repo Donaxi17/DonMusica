@@ -5,16 +5,27 @@ import { Song } from './playlist.service';
     providedIn: 'root'
 })
 export class ShareService {
+    private readonly BASE_URL = 'https://donmusica.online';
 
     /**
      * Comparte una canción usando la Web Share API (si está disponible)
      * o copia el enlace al portapapeles como fallback
      */
-    async shareSong(song: Song): Promise<boolean> {
+    async shareSong(song: Song, source: 'default' | 'free-music' = 'default'): Promise<boolean> {
+        let deepLink = '';
+
+        if (source === 'free-music') {
+            // Enlace directo al componente de música sin copyright
+            deepLink = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
+        } else {
+            // Enlace al buscador global
+            deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+        }
+
         const shareData = {
             title: `${song.title} - ${song.artist}`,
-            text: `🎵 Escucha "${song.title}" de ${song.artist} en DonMusica\n\n✨ Música gratis, letras y más en donmusica.online`,
-            url: `https://donmusica.online`
+            text: `🎵 Estoy escuchando "${song.title}" de ${song.artist} en DonMusica.\n\n¡Escúchala gratis aquí! 👇`,
+            url: deepLink
         };
 
         // Verificar si Web Share API está disponible
@@ -31,7 +42,7 @@ export class ShareService {
             }
         } else {
             // Fallback: copiar al portapapeles
-            return this.copyToClipboard(`${shareData.text}\n\n${shareData.url}`);
+            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
@@ -39,11 +50,13 @@ export class ShareService {
      * Comparte letras de una canción
      */
     async shareLyrics(title: string, artist: string, lyrics: string): Promise<boolean> {
-        const preview = lyrics.length > 200 ? lyrics.substring(0, 200) + '...' : lyrics;
+        const preview = lyrics.length > 150 ? lyrics.substring(0, 150) + '...' : lyrics;
+        const deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(title + ' ' + artist)}`;
+
         const shareData = {
             title: `Letra: ${title} - ${artist}`,
-            text: `🎤 Letra de "${title}" de ${artist}\n\n${preview}\n\n📖 Ver letra completa en DonMusica\n✨ donmusica.online`,
-            url: `https://donmusica.online`
+            text: `🎤 Mira la letra de "${title}" de ${artist} en DonMusica.\n\n"${preview}"\n\nVer completa aquí 👇`,
+            url: deepLink
         };
 
         if (navigator.share && this.isMobile()) {
@@ -57,7 +70,7 @@ export class ShareService {
                 return false;
             }
         } else {
-            return this.copyToClipboard(`${shareData.text}\n\n${shareData.url}`);
+            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
@@ -67,8 +80,8 @@ export class ShareService {
     async sharePlaylist(playlistName: string, songCount: number): Promise<boolean> {
         const shareData = {
             title: `Playlist: ${playlistName}`,
-            text: `🎵 Escucha mi playlist "${playlistName}" con ${songCount} canciones en DonMusica\n\n✨ donmusica.online`,
-            url: `https://donmusica.online`
+            text: `🎵 He creado la playlist "${playlistName}" con ${songCount} canciones en DonMusica.\n\n¡Escúchala gratis!`,
+            url: `${this.BASE_URL}/playlists`
         };
 
         if (navigator.share && this.isMobile()) {
@@ -82,7 +95,7 @@ export class ShareService {
                 return false;
             }
         } else {
-            return this.copyToClipboard(`${shareData.text}\n\n${shareData.url}`);
+            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
@@ -122,9 +135,15 @@ export class ShareService {
     /**
      * Comparte en redes sociales específicas
      */
-    shareOnSocial(platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram', song: Song): void {
+    shareOnSocial(platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram', song: Song, source: 'default' | 'free-music' = 'default'): void {
         const text = `🎵 Escucha "${song.title}" de ${song.artist} en DonMusica\n\n✨ Música gratis, letras y más`;
-        const url = `https://donmusica.online`;
+
+        let url = '';
+        if (source === 'free-music') {
+            url = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
+        } else {
+            url = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+        }
 
         let shareUrl = '';
 

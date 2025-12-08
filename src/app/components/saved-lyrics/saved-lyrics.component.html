@@ -6,7 +6,11 @@
             <!-- Icon -->
             <div
                 class="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-pink-500/30">
-                <i class='bx bx-book-reader text-4xl md:text-5xl text-white'></i>
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M21 8c-.202 0-4.85.029-9 1.854V9c0-1.103-.897-2-2-2h-2c-1.103 0-2 .897-2 2v9c0 1.103.897 2 2 2h2c1.103 0 2-.897 2-2v-3.046c2.907-1.54 7.271-3.181 9-3.448V8z" />
+                    <path d="M8 9h2v9H8z" />
+                </svg>
             </div>
 
             <!-- Title -->
@@ -17,11 +21,16 @@
             <!-- Stats -->
             <div class="flex items-center justify-center gap-4 text-sm mb-4">
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50">
-                    <i class='bx bx-bookmark text-pink-400'></i>
+                    <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                    </svg>
                     <span class="text-zinc-300">{{ savedLyrics().length }} letras</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-500/20">
-                    <i class='bx bx-book-open text-pink-400'></i>
+                    <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M21 3h-7a2.98 2.98 0 0 0-2 .78A2.98 2.98 0 0 0 10 3H3a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h5.758c.526 0 1.042.214 1.414.586l1.121 1.121c.009.009.021.012.03.021.086.079.182.149.294.196h.002a.996.996 0 0 0 .762 0h.002c.112-.047.208-.117.294-.196.009-.009.021-.012.03-.021l1.121-1.121A2.015 2.015 0 0 1 15.242 20H21a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8.758 18H4V5h6c.552 0 1 .449 1 1v12.689A4.032 4.032 0 0 0 8.758 18zM20 18h-4.758c-.799 0-1.584.246-2.242.689V6c0-.551.448-1 1-1h6v13z" />
+                    </svg>
                     <span class="text-pink-300 font-semibold">Disponible Offline</span>
                 </div>
             </div>
@@ -46,12 +55,19 @@
                 <div class="flex justify-between items-start mb-4 relative z-10">
                     <div
                         class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform relative">
-                        <i class='bx bx-file-text text-2xl'></i>
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.937 8.68c-.011-.032-.02-.063-.033-.094a.997.997 0 0 0-.196-.293l-6-6a.997.997 0 0 0-.293-.196c-.03-.014-.062-.022-.094-.033a.991.991 0 0 0-.259-.051C13.04 2.011 13.021 2 13 2H6c-1.103 0-2 .897-2 2v16c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V9c0-.021-.011-.04-.013-.062a.99.99 0 0 0-.05-.258zM16.586 8H14V5.414L16.586 8zM6 20V4h6v5a1 1 0 0 0 1 1h5l.002 10H6z" />
+                        </svg>
                         <div class="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
                     </div>
                     <button (click)="deleteLyric(lyric.id, $event)"
                         class="text-zinc-500 hover:text-red-500 transition-colors p-2 hover:bg-zinc-700/50 rounded-full">
-                        <i class='bx bx-trash text-xl'></i>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z" />
+                            <path d="M9 10h2v8H9zm4 0h2v8h-2z" />
+                        </svg>
                     </button>
                 </div>
 
@@ -66,13 +82,18 @@
             <div
                 class="col-span-full text-center py-16 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed">
                 <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class='bx bx-bookmark text-4xl text-zinc-600'></i>
+                    <svg class="w-10 h-10 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                    </svg>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-2">No tienes letras guardadas</h3>
                 <p class="text-zinc-500 mb-6">Busca canciones y guarda sus letras para verlas aquí.</p>
                 <a routerLink="/browse/search"
                     class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-full hover:from-pink-400 hover:to-rose-400 transition-all shadow-lg shadow-pink-500/30">
-                    <i class='bx bx-search-alt'></i>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
+                    </svg>
                     Buscar Letras
                 </a>
             </div>
@@ -96,7 +117,11 @@
                 <div class="flex items-center gap-3 flex-1 min-w-0 relative z-10">
                     <div
                         class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <i class='bx bxs-book-alt text-2xl md:text-3xl text-white'></i>
+                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M3 5v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2zm16.002 14H5V5h14l.002 14z" />
+                            <path d="M7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" />
+                        </svg>
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 class="text-base md:text-xl font-bold text-white truncate">
@@ -109,7 +134,10 @@
                 </div>
                 <button (click)="closeLyric()"
                     class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0 relative z-20">
-                    <i class='bx bx-x text-2xl md:text-3xl'></i>
+                    <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+                    </svg>
                 </button>
             </div>
 

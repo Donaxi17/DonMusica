@@ -6,7 +6,8 @@
                 Rankings por País
             </h2>
         </div>
-        <p class="text-zinc-400 text-center flex items-center flex-col gap-2 md:gap-0 md:flex-row mt-2 text-sm md:text-base">
+        <p
+            class="text-zinc-400 text-center flex items-center flex-col gap-2 md:gap-0 md:flex-row mt-2 text-sm md:text-base">
             Lo más sonado en cada rincón del mundo. Top 20 actualizado.
             <span class="text-zinc-500 text-sm ml-1">(Previews de 30s)</span>
         </p>
@@ -36,7 +37,11 @@
                 </h3>
                 <button *ngIf="chartSongs().length > 0" (click)="playAll()"
                     class="px-3 py-1 md:px-5 md:py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all flex items-center gap-2 hover:scale-105 shadow-lg shadow-blue-500 text-xs md:text-sm">
-                    <i class='bx bx-play-circle text-xl md:text-2xl'></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                        <path d="m9 16 7-4-7-4z" />
+                    </svg>
                     <span class="hidden sm:inline">Reproducir Todo</span>
                     <span class="sm:hidden">Play</span>
                 </button>
@@ -70,7 +75,11 @@
                                 loading="lazy" class="w-full h-full object-cover">
                             <div
                                 class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class='bx bx-play-circle text-2xl md:text-3xl text-white'></i>
+                                <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                    <path d="m9 16 7-4-7-4z" />
+                                </svg>
                             </div>
                         </div>
 
@@ -92,7 +101,9 @@
                         <!-- Play Button -->
                         <button
                             class="w-7 h-7 md:w-10 md:h-10 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white transition-all hover:scale-110 opacity-0 group-hover:opacity-100 shadow-lg">
-                            <i class='bx bx-play text-base md:text-xl'></i>
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M7 6v12l10-6z" />
+                            </svg>
                         </button>
                     </div>
 
@@ -114,7 +125,10 @@
                 <div *ngIf="chartSongs().length > 0"
                     class="bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl p-5 md:p-6 border border-zinc-700 shadow-xl">
                     <div class="flex items-center gap-2 mb-4">
-                        <i class='bx bx-trophy text-2xl text-yellow-400'></i>
+                        <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M21 4h-3V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v3c0 4.31 1.799 6.91 4.819 7.012A6.001 6.001 0 0 0 11 17.91V20H9v2h6v-2h-2v-2.09a6.01 6.01 0 0 0 4.181-2.898C20.201 14.91 22 12.31 22 8V5a1 1 0 0 0-1-1zM4 8V6h2v6.83C4.216 12.078 4 9.299 4 8zm8 8c-2.206 0-4-1.794-4-4V4h8v8c0 2.206-1.794 4-4 4zm8-3.17V6h2v2c0 1.299-.216 4.078-2 4.83z" />
+                        </svg>
                         <h3 class="font-bold text-white text-base md:text-lg">
                             #1 en {{selectedCountryName}}
                         </h3>
@@ -128,8 +142,12 @@
                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         <div
                             class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
-                            <i
-                                class='bx bx-play-circle text-6xl md:text-7xl text-white opacity-90 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 duration-300 drop-shadow-2xl'></i>
+                            <svg class="text-white opacity-90 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 duration-300 drop-shadow-2xl"
+                                style="width: 4rem; height: 4rem;" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                <path d="m9 16 7-4-7-4z" />
+                            </svg>
                         </div>
                     </div>
 
@@ -150,7 +168,11 @@
                     <!-- Action Button -->
                     <button (click)="playSong(chartSongs()[0])"
                         class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 md:py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-900 text-sm md:text-base flex items-center justify-center gap-2 hover:scale-105">
-                        <i class='bx bx-play-circle text-2xl'></i>
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                            <path d="m9 16 7-4-7-4z" />
+                        </svg>
                         Escuchar Ahora
                     </button>
                 </div>
@@ -158,7 +180,11 @@
                 <!-- Info Card -->
                 <div class="mt-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
                     <h4 class="font-bold text-white mb-2 flex items-center gap-2 text-sm">
-                        <i class='bx bx-info-circle text-blue-400'></i>
+                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                            <path d="M11 11h2v6h-2zm0-4h2v2h-2z" />
+                        </svg>
                         Sobre los Rankings
                     </h4>
                     <p class="text-xs text-zinc-400 leading-relaxed mb-2">
@@ -166,7 +192,11 @@
                         ahora mismo.
                     </p>
                     <div class="flex items-start gap-2 pt-2 border-t border-zinc-800">
-                        <i class='bx bx-time-five text-blue-400 mt-0.5'></i>
+                        <svg class="w-4 h-4 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                            <path d="M13 7h-2v6h6v-2h-4z" />
+                        </svg>
                         <p class="text-xs text-zinc-500 italic">
                             Las canciones son previews de 30 segundos cortesía de iTunes. Para canciones completas,
                             visita la sección "Sin Copyright".

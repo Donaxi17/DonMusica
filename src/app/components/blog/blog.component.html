@@ -4,7 +4,10 @@
             <!-- Icon -->
             <div
                 class="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/30">
-                <i class='bx bx-news text-4xl md:text-5xl text-white'></i>
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                </svg>
             </div>
 
             <!-- Title -->
@@ -16,11 +19,16 @@
             <!-- Stats -->
             <div class="flex items-center justify-center gap-4 text-sm mb-4">
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50">
-                    <i class='bx bx-trending-up text-cyan-400'></i>
+                    <svg class="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 6.99h3L12 3 8 6.99h3v10.02H8L12 21l4-3.99h-3z" />
+                    </svg>
                     <span class="text-zinc-300">{{ posts().length }} noticias</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50">
-                    <i class='bx bx-book-bookmark text-purple-400'></i>
+                    <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm-2 13l-3-1.8L9 16V5h6v11z" />
+                    </svg>
                     <span class="text-zinc-300">{{ evergreenArticles.length }} guías</span>
                 </div>
             </div>
@@ -60,7 +68,11 @@
                         class="text-zinc-200 mb-2 md:mb-4 text-xs md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed hidden md:block">
                         {{posts()[0].summary}}</p>
                     <span class="text-zinc-300 text-[10px] md:text-sm flex items-center gap-1.5 md:gap-2">
-                        <i class='bx bx-time-five'></i>
+                        <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                            <path d="M13 7h-2v6h6v-2h-4z" />
+                        </svg>
                         {{posts()[0].date}}
                     </span>
                 </div>
@@ -100,13 +112,20 @@
                                 {{post.summary}}</p>
                             <div class="flex items-center justify-between mt-auto">
                                 <span class="text-[10px] md:text-sm text-zinc-500 flex items-center gap-1">
-                                    <i class='bx bx-time-five'></i>
+                                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                        <path d="M13 7h-2v6h6v-2h-4z" />
+                                    </svg>
                                     {{post.date}}
                                 </span>
                                 <span
                                     class="text-cyan-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1 hidden md:flex">
                                     Leer más
-                                    <i class='bx bx-right-arrow-alt'></i>
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                                    </svg>
                                 </span>
                             </div>
                         </div>
@@ -147,13 +166,20 @@
                             </p>
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-zinc-500 flex items-center gap-1">
-                                    <i class='bx bx-time-five'></i>
+                                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                        <path d="M13 7h-2v6h6v-2h-4z" />
+                                    </svg>
                                     {{article.readTime}} lectura
                                 </span>
                                 <span
                                     class="text-emerald-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                     Leer más
-                                    <i class='bx bx-right-arrow-alt'></i>
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                                    </svg>
                                 </span>
                             </div>
                         </div>
@@ -173,7 +199,10 @@
         <!-- Close Button -->
         <button (click)="closeModal()"
             class="absolute top-4 right-4 z-30 w-8 h-8 md:w-12 md:h-12 bg-black/60 hover:bg-black backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all hover:scale-110 shadow-xl">
-            <i class='bx bx-x text-2xl md:text-3xl'></i>
+            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+            </svg>
         </button>
 
         <!-- Article Header Image -->
@@ -211,7 +240,10 @@
                 <!-- Read More Link -->
                 <a *ngIf="selectedPost()?.url" [href]="selectedPost()?.url" target="_blank"
                     class="inline-flex items-center justify-center gap-2 mt-6 md:mt-10 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-sm md:text-base font-bold rounded-xl transition-all hover:shadow-lg hover:shadow-cyan-500/50 w-full md:w-auto">
-                    <i class='bx bx-link-external text-lg md:text-xl'></i>
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                    </svg>
                     Leer artículo completo en la fuente
                 </a>
 
@@ -234,7 +266,10 @@
         <!-- Close Button -->
         <button (click)="closeEvergreenModal()"
             class="absolute top-4 right-4 z-30 w-8 h-8 md:w-12 md:h-12 bg-black/60 hover:bg-black backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all hover:scale-110 shadow-xl">
-            <i class='bx bx-x text-2xl md:text-3xl'></i>
+            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+            </svg>
         </button>
 
         <!-- Article Header Image -->

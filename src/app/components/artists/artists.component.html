@@ -1,10 +1,10 @@
-<div class="min-h-screen bg-zinc-950 pb-4 md:pb-24 overflow-x-hidden">
+<div class="min-h-screen bg-zinc-950 pb-20 md:pb-24 overflow-x-hidden">
     <!-- Hero Section -->
     <div class="relative h-40 md:h-80 w-full overflow-hidden mb-6 md:mb-12">
         <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/40 to-black z-10"></div>
         <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070&auto=format&fit=crop"
-            alt="Artists Hero" class="w-full h-full object-cover opacity-60">
-        <div class="absolute inset-0 flex flex-col justify-center px-4 md:px-12 z-20 max-w-7xl mx-auto pt-10 md:pt-0">
+            alt="Descubre Artistas en DonMusica" class="w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 flex flex-col justify-center text-center px-4 md:px-12 z-20 max-w-7xl mx-auto">
             <h1 class="text-3xl md:text-6xl font-bold text-white mb-1 md:mb-2 tracking-tight">
                 Descubre <span class="text-emerald-400">Artistas</span>
             </h1>
@@ -16,32 +16,36 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-30 -mt-10 md:-mt-20">
+    <!-- Main Content with reduced padding on mobile -->
+    <div class="max-w-7xl mx-auto px-2 md:px-6 relative z-30 mt-10 md:-mt-20">
 
         <!-- SEARCH BAR (Premium Glare & BIG Mic) -->
-        <div class="relative max-w-2xl mx-auto mb-8 md:mb-12 group">
+        <div class="relative max-w-2xl mx-auto mb-6 md:mb-12 group">
             <div
                 class="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700">
             </div>
 
             <div
-                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl transition-all focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/20 group-hover:border-emerald-500/30">
-                <div class="pl-5 flex items-center justify-center text-zinc-400">
-                    <i class='bx bx-search text-2xl group-focus-within:text-emerald-400 transition-colors'></i>
+                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-full p-1.5 md:p-2 shadow-2xl transition-all focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/20 group-hover:border-emerald-500/30">
+                <div class="pl-2 md:pl-3 flex items-center justify-center text-zinc-400">
+                    <app-svg-icon name="search"
+                        class="text-zinc-400 group-focus-within:text-emerald-400 transition-colors" width="24"
+                        height="24"></app-svg-icon>
                 </div>
 
                 <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar artistas..."
-                    class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-3 md:px-4 py-3 md:py-4 focus:ring-0 text-lg md:text-xl outline-none font-medium">
+                    class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-3 md:px-4 py-2 md:py-3 focus:ring-0 text-base md:text-xl outline-none font-medium truncate">
 
                 <!-- Voice Button (BIGGER) -->
                 <button (click)="toggleVoiceSearch()"
-                    class="w-16 h-10 md:w-16 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-95 cursor-pointer shadow-lg mr-1"
+                    class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-95 cursor-pointer shadow-lg mr-1 overflow-hidden shrink-0"
                     [ngClass]="{
                         'bg-red-500 text-white shadow-red-500/40': isListening,
                         'bg-zinc-800 text-emerald-500 hover:bg-zinc-700': !isListening
                     }">
-                    <i class='bx text-2xl md:text-3xl'
-                        [ngClass]="isListening ? 'bxs-microphone animate-pulse' : 'bxs-microphone'"></i>
+                    <app-svg-icon name="microphone" [class.animate-pulse]="isListening" width="24" height="24"
+                        [class]="isListening ? 'text-white' : 'text-emerald-500'">
+                    </app-svg-icon>
                 </button>
             </div>
 
@@ -52,53 +56,61 @@
             </div>
         </div>
 
-        <!-- Genre Filter (Single Unique Icons) -->
-        <div class="mb-6 md:mb-10 overflow-x-auto pb-2 md:pb-4 no-scrollbar">
-            <div class="flex flex-nowrap md:flex-wrap justify-start md:justify-center gap-2 md:gap-3 min-w-max px-1">
-                <button (click)="onGenreChange('all')"
-                    class="group flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 border backdrop-blur-md active:scale-95"
-                    [ngClass]="{
-                        'bg-emerald-500 border-emerald-500 text-black': selectedGenre() === 'all',
-                        'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== 'all'
-                    }">
-                    <i class='bx bxs-grid-alt'></i> Todos
-                </button>
+        <!-- Genre Filter -->
+        <!-- Genre Filter -->
+        <div class="mb-6 md:mb-10">
+            <!-- Scrollable Genres -->
+            <div class="overflow-x-auto pb-2 md:pb-4 no-scrollbar">
+                <div
+                    class="flex flex-nowrap md:flex-wrap justify-start md:justify-center gap-2 md:gap-3 min-w-max px-1">
+                    <button (click)="onGenreChange('all')"
+                        class="group flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold text-sm transition-all duration-300 border backdrop-blur-md active:scale-95"
+                        [ngClass]="{
+                            'bg-emerald-500 border-emerald-500 text-black': selectedGenre() === 'all',
+                            'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== 'all'
+                        }">
+                        <app-svg-icon name="grid" width="18" height="18"
+                            [class]="selectedGenre() === 'all' ? 'text-black' : 'text-zinc-400 group-hover:text-white'"></app-svg-icon>
+                        Todos
+                    </button>
 
-                @for (genre of genres; track genre.value) {
-                @if(genre.value !== 'all') {
-                <button (click)="onGenreChange(genre.value)"
-                    class="group flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300 border backdrop-blur-md active:scale-95"
-                    [ngClass]="{
-                                'bg-emerald-500 border-emerald-500 text-black': selectedGenre() === genre.value,
-                                'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== genre.value
-                            }">
+                    @for (genre of genres; track genre.value) {
+                    @if(genre.value !== 'all') {
+                    <button (click)="onGenreChange(genre.value)"
+                        class="group flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full font-medium text-sm transition-all duration-300 border backdrop-blur-md active:scale-95"
+                        [ngClass]="{
+                                    'bg-emerald-500 border-emerald-500 text-black': selectedGenre() === genre.value,
+                                    'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== genre.value
+                                }">
 
-                    <!-- Prioridad de Iconos (Solo Uno) -->
-                    @if(genre.label.includes('Reggaeton') || genre.label.includes('Urbano')) {
-                    <i class='bx bxs-flame text-orange-500 group-hover:text-orange-400'
-                        [class.text-black]="selectedGenre() === genre.value"></i>
-                    } @else if(genre.label.includes('Rap') || genre.label.includes('Trap')) {
-                    <i class='bx bxs-microphone-alt text-purple-500 group-hover:text-purple-400'
-                        [class.text-black]="selectedGenre() === genre.value"></i>
-                    } @else if(genre.label.includes('Pop')) {
-                    <i class='bx bxs-star text-pink-500 group-hover:text-pink-400'
-                        [class.text-black]="selectedGenre() === genre.value"></i>
-                    } @else if(genre.label.includes('Rock')) {
-                    <i class='bx bxs-guitar-amp text-red-500 group-hover:text-red-400'
-                        [class.text-black]="selectedGenre() === genre.value"></i>
-                    } @else if(genre.label.includes('Salsa') || genre.label.includes('Vallenato')) {
-                    <i class='bx bxs-music text-yellow-500 group-hover:text-yellow-400'
-                        [class.text-black]="selectedGenre() === genre.value"></i>
-                    } @else {
-                    <i class='bx bx-music' [class.text-black]="selectedGenre() === genre.value"></i>
+                        @if(genre.label.includes('Reggaeton') || genre.label.includes('Urbano')) {
+                        <app-svg-icon name="fire" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-orange-500 group-hover:text-orange-400'"></app-svg-icon>
+                        } @else if(genre.label.includes('Rap') || genre.label.includes('Trap')) {
+                        <app-svg-icon name="microphone" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-purple-500 group-hover:text-purple-400'"></app-svg-icon>
+                        } @else if(genre.label.includes('Pop')) {
+                        <app-svg-icon name="star" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-pink-500 group-hover:text-pink-400'"></app-svg-icon>
+                        } @else if(genre.label.includes('Rock')) {
+                        <app-svg-icon name="guitar" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-red-500 group-hover:text-red-400'"></app-svg-icon>
+                        } @else if(genre.label.includes('Salsa') || genre.label.includes('Vallenato')) {
+                        <app-svg-icon name="music" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-yellow-500 group-hover:text-yellow-400'"></app-svg-icon>
+                        } @else {
+                        <app-svg-icon name="music" width="18" height="18"
+                            [class]="selectedGenre() === genre.value ? 'text-black' : 'text-emerald-500 group-hover:text-emerald-400'"></app-svg-icon>
+                        }
+
+                        {{ genre.label }}
+                    </button>
                     }
-
-                    {{ genre.label }}
-                </button>
-                }
-                }
+                    }
+                </div>
             </div>
 
+            <!-- Static Stats -->
             <div class="flex items-center justify-center mt-3 px-1">
                 <p
                     class="text-zinc-500 text-xs font-medium bg-zinc-900/50 px-3 py-1 rounded-full border border-zinc-800/50">
@@ -108,13 +120,13 @@
         </div>
 
         <!-- Artists Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 animate-fade-in-up">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 animate-fade-in-up">
             @for(artist of artists(); track artist.id) {
             <div (click)="selectArtist(artist)"
                 class="group relative bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/10 border border-zinc-800 hover:border-emerald-500/30 active:scale-[0.98]">
 
                 <div class="aspect-[4/5] overflow-hidden relative">
-                    <img [src]="artist.image" [alt]="artist.name" loading="lazy"
+                    <img [src]="artist.image" [alt]="artist.name + ' - ' + artist.genre" loading="lazy"
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0">
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300">
@@ -122,11 +134,12 @@
                 </div>
 
                 <div
-                    class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent pt-12">
-                    <h3 class="text-white font-bold text-base md:text-lg leading-tight truncate drop-shadow-md">
+                    class="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black via-black/90 to-transparent pt-12">
+                    <h3 class="text-white font-bold text-sm md:text-lg leading-tight truncate drop-shadow-md">
                         {{artist.name}}
                     </h3>
-                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                    <p
+                        class="text-emerald-400 text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {{artist.genre}}
                     </p>
                 </div>
@@ -139,7 +152,7 @@
         <div class="flex flex-col items-center justify-center py-16 md:py-24 text-center animate-fade-in">
             <div
                 class="w-16 h-16 md:w-24 md:h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-4 md:mb-6 border border-zinc-800">
-                <i class='bx bx-search text-3xl md:text-4xl text-zinc-600'></i>
+                <app-svg-icon name="search" class="text-zinc-600" width="40" height="40"></app-svg-icon>
             </div>
             <h3 class="text-xl md:text-2xl font-bold text-white mb-2">No encontramos artistas</h3>
             <p class="text-zinc-500 text-sm md:text-base max-w-md mx-auto mb-6 md:mb-8">

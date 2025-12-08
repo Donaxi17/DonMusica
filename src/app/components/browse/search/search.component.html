@@ -14,8 +14,11 @@
         <!-- Search Bar -->
         <div class="relative w-full md:w-96 group">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i
-                    class='bx bx-search text-zinc-400 text-lg md:text-xl group-focus-within:text-pink-500 transition-colors'></i>
+                <svg class="text-zinc-400 text-lg md:text-xl group-focus-within:text-pink-500 transition-colors w-5 h-5 md:w-6 md:h-6"
+                    fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
+                </svg>
             </div>
             <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
                 class="block w-full pl-9 md:pl-10 pr-3 py-2.5 md:py-3 border border-zinc-700 rounded-full leading-5 bg-zinc-900 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:bg-black focus:border-pink-500 focus:ring-1 focus:ring-pink-500 text-sm md:text-base transition-all shadow-lg"
@@ -33,48 +36,64 @@
     </div>
 
     <!-- Results Grid -->
-    <div *ngIf="!isSearching()" class="grid gap-2 md:gap-4 w-full">
+    <div *ngIf="!isSearching()" class="grid gap-2 w-full">
         <div *ngFor="let song of searchResults()"
-            class="flex items-center gap-2 md:gap-4 p-2 md:p-4 rounded-lg md:rounded-xl bg-zinc-900/40 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all group w-full max-w-full overflow-hidden">
+            class="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/40 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all group w-full overflow-hidden">
             <!-- Cover (No Click Play) -->
             <div
-                class="w-10 h-10 md:w-16 md:h-16 bg-zinc-800 rounded-lg overflow-hidden shadow-lg relative group-hover:shadow-pink-500/20 transition-all flex-shrink-0">
+                class="w-10 h-10 bg-zinc-800 rounded-md overflow-hidden shadow-sm relative group-hover:shadow-pink-500/20 transition-all flex-shrink-0">
                 <img [src]="song.img" alt="Cover" loading="lazy" class="w-full h-full object-cover">
             </div>
 
             <!-- Info -->
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 pr-1">
                 <h3
-                    class="font-bold text-sm md:text-lg text-white truncate group-hover:text-pink-400 transition-colors">
+                    class="font-bold text-sm text-white truncate group-hover:text-pink-400 transition-colors leading-tight">
                     {{song.title}}</h3>
-                <p class="text-zinc-400 text-xs md:text-sm truncate">{{song.artist}}</p>
+                <p class="text-zinc-500 text-[11px] truncate leading-tight">{{song.artist}}</p>
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <div class="flex items-center flex-shrink-0">
                 <button (click)="viewLyrics(song)"
-                    class="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-[10px] md:text-xs font-bold transition-colors flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
-                    <i class='bx bx-book-open text-base'></i> <span class="hidden md:inline">LEER</span>
+                    class="w-7 h-7 rounded-full bg-pink-600 hover:bg-pink-500 text-white transition-colors flex items-center justify-center shadow-md shadow-pink-500/20"
+                    title="Ver Letra">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M21 3h-7a2.98 2.98 0 0 0-2 .78A2.98 2.98 0 0 0 10 3H3a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h5.758c.526 0 1.042.214 1.414.586l1.121 1.121c.009.009.021.012.03.021.086.079.182.149.294.196h.002a.996.996 0 0 0 .762 0h.002c.112-.047.208-.117.294-.196.009-.009.021-.012.03-.021l1.121-1.121A2.015 2.015 0 0 1 15.242 20H21a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8.758 18H4V5h6c.552 0 1 .449 1 1v12.689A4.032 4.032 0 0 0 8.758 18zM20 18h-4.758c-.799 0-1.584.246-2.242.689V6c0-.551.448-1 1-1h6v13z" />
+                    </svg>
                 </button>
                 <button (click)="toggleSaveLyrics(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors"
-                    [class.text-orange-400]="isSongLyricsSaved(song)" [class.text-zinc-400]="!isSongLyricsSaved(song)"
+                    class="w-7 h-7 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors"
+                    [class.text-orange-400]="isSongLyricsSaved(song)" [class.text-zinc-500]="!isSongLyricsSaved(song)"
                     [title]="isSongLyricsSaved(song) ? 'Letra guardada' : 'Guardar letra'">
-                    <i class='bx text-lg md:text-xl' [class.bxs-bookmark]="isSongLyricsSaved(song)"
-                        [class.bx-bookmark]="!isSongLyricsSaved(song)"></i>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" *ngIf="!isSongLyricsSaved(song)">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" *ngIf="isSongLyricsSaved(song)">
+                        <path
+                            d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm-2 13l-3-1.8L9 16V5h6v11z" />
+                    </svg>
                 </button>
 
                 <!-- Offline Download Button -->
                 <button (click)="downloadForOffline(song, $event)" [disabled]="isDownloadingOffline()[song.id]"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors relative"
-                    [class.text-blue-400]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
-                    title="Descargar para uso offline">
-                    <i *ngIf="!isOffline(song.id) && !isDownloadingOffline()[song.id]"
-                        class='bx bx-cloud-download text-lg md:text-xl'></i>
-                    <i *ngIf="isOffline(song.id) && !isDownloadingOffline()[song.id]"
-                        class='bx bxs-cloud-download text-lg md:text-xl'></i>
+                    class="w-7 h-7 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors relative"
+                    [class.text-blue-400]="isOffline(song.id)" [class.text-zinc-500]="!isOffline(song.id)"
+                    title="Descargar">
+                    <svg *ngIf="!isOffline(song.id) && !isDownloadingOffline()[song.id]" class="w-4 h-4"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M18.948 11.112C18.511 7.67 15.563 5 12.004 5c-2.756 0-5.15 1.611-6.243 4.15-2.148.642-3.757 2.67-3.757 4.85 0 2.757 2.243 5 5 5h1v-2h-1c-1.654 0-3-1.346-3-3 0-1.404 1.199-2.757 2.673-3.016l.581-.102.192-.558C8.153 8.273 9.898 7 12.004 7c2.757 0 5 2.243 5 5v1h1.5c1.378 0 2.5 1.122 2.5 2.5S19.882 18 18.504 18h-1.5v2h1.5c2.481 0 4.5-2.019 4.5-4.5 0-2.178-1.555-4.038-3.556-4.388zM13.004 14v-4h-2v4h-3l4 5 4-5z" />
+                    </svg>
+                    <svg *ngIf="isOffline(song.id) && !isDownloadingOffline()[song.id]" class="w-4 h-4"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M18.948 11.112C18.511 7.67 15.563 5 12.004 5c-2.756 0-5.15 1.611-6.243 4.15-2.148.642-3.757 2.67-3.757 4.85 0 2.757 2.243 5 5 5h1v-2h-1c-1.654 0-3-1.346-3-3 0-1.404 1.199-2.757 2.673-3.016l.581-.102.192-.558C8.153 8.273 9.898 7 12.004 7c2.757 0 5 2.243 5 5v1h1.5c1.378 0 2.5 1.122 2.5 2.5S19.882 18 18.504 18h-1.5v2h1.5c2.481 0 4.5-2.019 4.5-4.5 0-2.178-1.555-4.038-3.556-4.388z" />
+                        <path d="m13 14 3-4h-2V7h-2v3H9z" />
+                    </svg>
                     <div *ngIf="isDownloadingOffline()[song.id]"
-                        class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        class="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                     <!-- Progress indicator -->
                     <div *ngIf="downloadProgress()[song.id] && downloadProgress()[song.id] < 100"
                         class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-400">
@@ -84,17 +103,18 @@
 
                 <!-- Share Button -->
                 <button (click)="shareSong(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors text-zinc-400 hover:text-green-400"
+                    class="w-7 h-7 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors text-zinc-500 hover:text-green-400"
                     title="Compartir">
-                    <i class='bx bx-share-alt text-lg md:text-xl'></i>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M5.5 15a3.51 3.51 0 0 0 2.36-.93l6.26 3.58a3.06 3.06 0 0 0-.12.85 3.53 3.53 0 1 0 1.14-2.57l-6.26-3.58a2.74 2.74 0 0 0 .12-.76l6.15-3.52A3.49 3.49 0 1 0 14 5.5a3.35 3.35 0 0 0 .12.85L8.43 9.6A3.5 3.5 0 1 0 5.5 15z" />
+                    </svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- <app-ad-banner adType="Anuncio en Búsqueda" class="my-4 md:my-0"></app-ad-banner> -->
-
-    <!-- Lyrics Modal / Overlay -->
+    <!-- Lyrics Modal (Same as before) -->
     <div *ngIf="showLyrics()"
         class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
         <div
@@ -104,7 +124,11 @@
             <div
                 class="bg-gradient-to-r from-pink-600 to-rose-600 p-4 md:p-6 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <i class='bx bx-microphone text-2xl md:text-3xl text-white'></i>
+                    <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 3v5h4l-7 7-7-7h4V3z" />
+                        <path
+                            d="M9 14c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4zm6.5 4c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2-2-.897-2-2z" />
+                    </svg>
                     <div class="min-w-0 flex-1">
                         <h3 class="text-base md:text-xl font-bold text-white truncate">Letra</h3>
                         <p class="text-xs md:text-sm text-pink-100 truncate">{{selectedSongTitle()}} -
@@ -115,17 +139,30 @@
                     <button (click)="saveLyrics()"
                         class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0"
                         [title]="isLyricsSaved() ? 'Guardado' : 'Guardar letra'">
-                        <i class='bx text-xl md:text-2xl'
-                            [class]="isLyricsSaved() ? 'bxs-bookmark' : 'bx-bookmark'"></i>
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="!isLyricsSaved()">
+                            <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                        </svg>
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="isLyricsSaved()">
+                            <path
+                                d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm-2 13l-3-1.8L9 16V5h6v11z" />
+                        </svg>
                     </button>
                     <button (click)="shareLyrics()"
                         class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0"
                         title="Compartir letra">
-                        <i class='bx bx-share-alt text-xl md:text-2xl'></i>
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M5.5 15a3.51 3.51 0 0 0 2.36-.93l6.26 3.58a3.06 3.06 0 0 0-.12.85 3.53 3.53 0 1 0 1.14-2.57l-6.26-3.58a2.74 2.74 0 0 0 .12-.76l6.15-3.52A3.49 3.49 0 1 0 14 5.5a3.35 3.35 0 0 0 .12.85L8.43 9.6A3.5 3.5 0 1 0 5.5 15z" />
+                        </svg>
                     </button>
                     <button (click)="closeLyrics()"
                         class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0">
-                        <i class='bx bx-x text-2xl md:text-3xl'></i>
+                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L12 13.41l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -134,9 +171,6 @@
             <div class="flex-1 overflow-y-auto p-4 md:p-6">
                 <pre
                     class="text-zinc-200 text-sm md:text-base leading-relaxed md:leading-loose whitespace-pre-wrap font-sans mb-8">{{selectedSongLyrics()}}</pre>
-
-                <!-- Ad Banner at the end of lyrics -->
-                <!-- <app-ad-banner adType="Banner Lyrics" class="block w-full"></app-ad-banner> -->
             </div>
         </div>
     </div>

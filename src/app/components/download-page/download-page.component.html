@@ -1,70 +1,94 @@
-<div class="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
-    <div class="max-w-2xl w-full">
+<div class="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Ambient Background Effects -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[128px] pointer-events-none">
+    </div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-green-600/10 rounded-full blur-[128px] pointer-events-none">
+    </div>
+
+    <div class="max-w-xl w-full relative z-10 animate-fade-in-up">
 
         <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="inline-block p-4 bg-emerald-500/10 rounded-full mb-4">
-                <i class='bx bx-download text-5xl text-emerald-400'></i>
+        <div class="text-center mb-8 md:mb-12">
+            <div
+                class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 mb-6 shadow-2xl shadow-emerald-500/10 ring-1 ring-white/5">
+                <app-svg-icon name="cloud-download" class="text-emerald-400 drop-shadow-md" width="40"
+                    height="40"></app-svg-icon>
             </div>
-            <h1
-                class="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
-                Preparando tu descarga
+
+            <h1 class="text-3xl md:text-5xl font-black mb-3 tracking-tight">
+                <span
+                    class="bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent">
+                    Preparando descarga
+                </span>
             </h1>
-            <p class="text-zinc-400 text-lg">{{songTitle}}</p>
-            <p class="text-zinc-500 text-sm">{{artistName}}</p>
-        </div>
 
-        <!-- Top Ad Space (Descargas) -->
-        <div class="mb-8 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
-            <div class="p-2 text-center">
-                <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8359193264058620"
-                    data-ad-slot="5987437817" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+            <div class="flex flex-col items-center gap-1 mt-4">
+                <p class="text-white text-xl md:text-2xl font-bold tracking-wide">{{songTitle}}</p>
+                <div class="flex items-center gap-2 text-zinc-400">
+                    <app-svg-icon name="music" width="16" height="16" class="opacity-70"></app-svg-icon>
+                    <p class="text-base font-medium">{{artistName}}</p>
+                </div>
             </div>
         </div>
 
-        <!-- Countdown & Download Button -->
-        <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 text-center mb-8">
-            <div *ngIf="countdown > 0" class="mb-6">
-                <div class="relative inline-block">
-                    <svg class="w-24 h-24 transform -rotate-90">
-                        <circle cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="none"
-                            class="text-zinc-800"></circle>
-                        <circle cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="none"
-                            class="text-emerald-500 transition-all duration-1000" [style.stroke-dasharray]="276.46"
-                            [style.stroke-dashoffset]="276.46 * (countdown / 5)"></circle>
+        <!-- Main Action Card -->
+        <div
+            class="bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 text-center mb-8 shadow-2xl shadow-black/50 relative overflow-hidden">
+            <!-- Glow effect inside card -->
+            <div
+                class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent">
+            </div>
+
+            <div *ngIf="countdown > 0" class="mb-2">
+                <div class="relative inline-block mb-6">
+                    <!-- Outer glow ring -->
+                    <div class="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
+
+                    <svg class="w-28 h-28 transform -rotate-90 relative z-10 filter drop-shadow-lg">
+                        <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="6" fill="none"
+                            class="text-zinc-800/80"></circle>
+                        <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="6" fill="none"
+                            class="text-emerald-400 transition-all duration-1000 ease-linear"
+                            [style.stroke-dasharray]="314" [style.stroke-dashoffset]="314 * (countdown / 5)"
+                            stroke-linecap="round"></circle>
                     </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-3xl font-bold text-emerald-400">{{countdown}}</span>
+                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                        <span class="text-4xl font-black text-white">{{countdown}}</span>
                     </div>
                 </div>
-                <p class="text-zinc-400 mt-4">Tu descarga comenzará en {{countdown}} segundos...</p>
+                <!-- Status Text -->
+                <div class="space-y-1">
+                    <p class="text-zinc-300 font-medium">Generando enlace seguro...</p>
+                    <p class="text-xs text-zinc-500">Por favor espera un momento</p>
+                </div>
             </div>
 
-            <button *ngIf="countdown === 0" (click)="startDownload()"
-                class="w-full px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-black font-bold rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-3">
-                <i class='bx bx-download text-2xl'></i>
-                <span>Descargar Ahora</span>
-            </button>
+            <div *ngIf="countdown === 0" class="animate-fade-in-up">
+                <button (click)="startDownload()"
+                    class="group w-full relative overflow-hidden px-4 md:px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 whitespace-nowrap">
+                    <!-- Button sheen effect -->
+                    <div
+                        class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10">
+                    </div>
 
-            <p *ngIf="countdown === 0" class="text-zinc-500 text-sm mt-4">
-                Haz clic en el botón para iniciar la descarga
-            </p>
-        </div>
-
-        <!-- Bottom Ad Space (Descargas) -->
-        <div class="mb-8 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
-            <div class="p-2 text-center">
-                <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8359193264058620"
-                    data-ad-slot="5987437817" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+                    <app-svg-icon name="download" width="20" height="20" class="relative z-20"></app-svg-icon>
+                    <span class="relative z-20">DESCARGAR AHORA</span>
+                </button>
+                <p class="text-zinc-500 text-xs mt-4 font-medium flex items-center justify-center gap-1.5 opacity-80">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Enlace listo para descargar
+                </p>
             </div>
         </div>
 
         <!-- Back Button -->
         <div class="text-center">
             <button (click)="goBack()"
-                class="text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2 mx-auto">
-                <i class='bx bx-arrow-back'></i>
-                <span>Volver al reproductor</span>
+                class="group px-6 py-2.5 rounded-full bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 text-zinc-400 hover:text-white transition-all flex items-center gap-2 mx-auto backdrop-blur-sm">
+                <app-svg-icon name="arrow-back" width="18" height="18"
+                    class="group-hover:-translate-x-1 transition-transform"></app-svg-icon>
+                <span class="text-sm font-medium">Volver</span>
             </button>
         </div>
 

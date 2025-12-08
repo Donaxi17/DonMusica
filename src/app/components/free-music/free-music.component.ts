@@ -1,6 +1,9 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { MusicApiService } from '../../services/music-api.service';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
@@ -13,11 +16,13 @@ import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SvgIconComponent],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
 export class FreeMusicComponent implements OnInit {
+  private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
   private seoService = inject(SeoService);
   private musicApi = inject(MusicApiService);
   private playerService = inject(PlayerService);
@@ -47,6 +52,7 @@ export class FreeMusicComponent implements OnInit {
   selectedDownloadSong = signal<Song | null>(null);
   downloadCountdown = signal(5);
   canDownload = signal(false);
+  isProcessingDownload = signal(false);
 
   // Estado de reproducción reactivo
   playingSongId = signal<string | number | undefined>(undefined);
@@ -66,6 +72,14 @@ export class FreeMusicComponent implements OnInit {
 
     this.playerService.isPlaying$.subscribe(isPlaying => {
       this.isPlayerPlaying.set(isPlaying);
+    });
+
+    // Detectar búsqueda desde URL (para enlaces compartidos)
+    this.route.queryParams.subscribe(params => {
+      if (params['q']) {
+        this.searchQuery.set(params['q']);
+        this.searchMusic();
+      }
     });
   }
 
@@ -133,6 +147,7 @@ export class FreeMusicComponent implements OnInit {
     this.showDownloadModal.set(true);
     this.canDownload.set(false);
     this.downloadCountdown.set(5);
+    this.isProcessingDownload.set(false);
 
     // Usar setTimeout para esperar a que Angular renderice el div *ngIf
     setTimeout(() => {
@@ -151,6 +166,7 @@ export class FreeMusicComponent implements OnInit {
     this.showDownloadModal.set(false);
     this.selectedDownloadSong.set(null);
     this.canDownload.set(false);
+    this.isProcessingDownload.set(false);
   }
 
   private startCountdown() {
@@ -200,12 +216,40 @@ export class FreeMusicComponent implements OnInit {
     const song = this.selectedDownloadSong();
     if (!song || !this.canDownload()) return;
 
-    // Método directo y infalible: Abrir en nueva pestaña
-    // Esto permite al navegador manejar la descarga o reproducción sin bloqueos CORS
-    window.open(song.url, '_blank');
+    this.isProcessingDownload.set(true);
+    this.toastService.info('⏳ Iniciando descarga...');
 
-    // Cerrar modal
-    setTimeout(() => this.closeDownloadModal(), 500);
+    // Intentamos descargar como blob para evitar abrir nueva pestaña
+    this.http.get(song.url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        // Limpiamos el nombre del archivo
+        const safeTitle = (song.title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        link.download = `${safeTitle}.mp3`;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Limpieza
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+        this.isProcessingDownload.set(false);
+        this.closeDownloadModal();
+        this.toastService.success('Descarga completada');
+      },
+      error: (error) => {
+        console.warn('Error en descarga directa (posible CORS), usando fallback', error);
+
+        // Fallback: Si falla (CORS), abrimos en nueva pestaña
+        window.open(song.url, '_blank');
+
+        this.isProcessingDownload.set(false);
+        this.closeDownloadModal();
+      }
+    });
   }
 
   // Métodos para descarga offline
@@ -236,7 +280,7 @@ export class FreeMusicComponent implements OnInit {
   async shareSong(song: Song, event: Event) {
     event.stopPropagation();
 
-    const success = await this.shareService.shareSong(song);
+    const success = await this.shareService.shareSong(song, 'free-music');
     if (success) {
       this.toastService.success('Enlace copiado al portapapeles');
     } else {

@@ -6,11 +6,12 @@ import { Artist as LocalArtist, ARTISTS_DATA } from '../../models/artists.data';
 import { SeoService } from '../../services/seo.service';
 import { DatabaseService, Artist as RemoteArtist } from '../../services/database.service';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
+import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SvgIconComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })

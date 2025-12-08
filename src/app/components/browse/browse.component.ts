@@ -8,4 +8,20 @@ import { RouterModule } from '@angular/router';
     imports: [CommonModule, RouterModule],
     templateUrl: './browse.component.html'
 })
-export class BrowseComponent { }
+export class BrowseComponent {
+
+    scrollToLink(event: MouseEvent, nav: HTMLElement) {
+        const target = event.currentTarget as HTMLElement;
+        const containerLeft = nav.getBoundingClientRect().left;
+        const targetLeft = target.getBoundingClientRect().left;
+        const currentScroll = nav.scrollLeft;
+
+        // Calculate the position to scroll to so the element is at the start (with some padding)
+        // newScrollLeft = currentScroll + (targetLeft - containerLeft) - padding
+        const padding = 20; // px
+        nav.scrollTo({
+            left: currentScroll + (targetLeft - containerLeft) - padding,
+            behavior: 'smooth'
+        });
+    }
+}

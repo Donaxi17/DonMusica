@@ -44,7 +44,8 @@ export const routes: Routes = [
                 canActivate: [adminGuard]
             },
             { path: 'converter', loadComponent: () => import('./components/converter/converter.component').then(m => m.ConverterComponent) },
-            { path: 'offline-music', loadComponent: () => import('./components/offline-music/offline-music.component').then(m => m.OfflineMusicComponent) }
+            { path: 'offline-music', loadComponent: () => import('./components/offline-music/offline-music.component').then(m => m.OfflineMusicComponent) },
+            { path: 'upload-music', loadComponent: () => import('./components/upload-music/upload-music.component').then(m => m.UploadMusicComponent) }
         ]
     },
     { path: 'download', component: DownloadPageComponent },

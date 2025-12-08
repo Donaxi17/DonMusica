@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../../services/toast.service';
+import { SvgIconComponent } from '../svg-icon/svg-icon.component';
 
 @Component({
-    selector: 'app-toast-container',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+  selector: 'app-toast-container',
+  standalone: true,
+  imports: [CommonModule, SvgIconComponent],
+  template: `
+    <div class="fixed top-4 right-4 z-[999999] flex flex-col gap-2 pointer-events-none">
       @for (toast of toastService.toasts(); track toast.id) {
         <div 
           class="pointer-events-auto animate-slide-in-right bg-zinc-900 border rounded-xl shadow-2xl overflow-hidden min-w-[280px] max-w-md"
@@ -20,16 +21,16 @@ import { ToastService } from '../../../services/toast.service';
             <!-- Icon -->
             <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
               @if (toast.type === 'success') {
-                <i class='bx bx-check-circle text-2xl text-emerald-500'></i>
+                <app-svg-icon name="check-circle" class="text-emerald-500" width="24" height="24"></app-svg-icon>
               }
               @if (toast.type === 'error') {
-                <i class='bx bx-error-circle text-2xl text-red-500'></i>
+                <app-svg-icon name="info-circle" class="text-red-500" width="24" height="24"></app-svg-icon>
               }
               @if (toast.type === 'info') {
-                <i class='bx bx-info-circle text-2xl text-blue-500'></i>
+                <app-svg-icon name="info-circle" class="text-blue-500" width="24" height="24"></app-svg-icon>
               }
               @if (toast.type === 'warning') {
-                <i class='bx bx-error text-2xl text-yellow-500'></i>
+                <app-svg-icon name="info-circle" class="text-yellow-500" width="24" height="24"></app-svg-icon>
               }
             </div>
 
@@ -42,14 +43,14 @@ import { ToastService } from '../../../services/toast.service';
             <button 
               (click)="toastService.remove(toast.id)"
               class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-zinc-800">
-              <i class='bx bx-x text-xl'></i>
+              <app-svg-icon name="x" width="20" height="20"></app-svg-icon>
             </button>
           </div>
         </div>
       }
     </div>
   `,
-    styles: [`
+  styles: [`
     @keyframes slide-in-right {
       from {
         transform: translateX(100%);
@@ -67,5 +68,5 @@ import { ToastService } from '../../../services/toast.service';
   `]
 })
 export class ToastContainerComponent {
-    toastService = inject(ToastService);
+  toastService = inject(ToastService);
 }

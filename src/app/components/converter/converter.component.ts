@@ -2,13 +2,14 @@ import { Component, OnInit, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Title, Meta } from '@angular/platform-browser';
-import { ToastService } from '../../services/toast.service';
 import { HttpClient } from '@angular/common/http';
+import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-converter',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, SvgIconComponent],
     templateUrl: './converter.component.html',
     styleUrls: ['./converter.component.css']
 })

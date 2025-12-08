@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
+import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 
 @Component({
   selector: 'app-download-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SvgIconComponent],
   templateUrl: './download-page.component.html',
   styleUrl: './download-page.component.css'
 })
@@ -16,7 +17,10 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   downloadUrl: string = '';
   private intervalId: any;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private location: Location
+  ) {
     // Get data from navigation state
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as any;
@@ -78,6 +82,6 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/']);
+    this.location.back();
   }
 }
