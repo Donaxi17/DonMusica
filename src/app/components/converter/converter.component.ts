@@ -26,7 +26,9 @@ export class ConverterComponent implements OnInit {
 
     // Instancias para probar directamente desde el cliente (bypass Vercel)
     // Nota: Muchas fallarán por CORS, pero vale la pena intentar.
+    // 'api.cobalt.web.gl' suele tener CORS habilitado.
     readonly CLIENT_INSTANCES = [
+        'https://api.cobalt.web.gl',
         'https://api.cobalt.tools',
         'https://api.server.cobalt.tools',
         'https://cobalt.mashedpotat.uno',
