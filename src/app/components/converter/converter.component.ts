@@ -24,6 +24,14 @@ export class ConverterComponent implements OnInit {
     downloadUrl: string = '';
     audioFormat: string = 'MP3'; // Por defecto MP3
 
+    // Instancias para probar directamente desde el cliente (bypass Vercel)
+    readonly CLIENT_INSTANCES = [
+        'https://cobalt.place',
+        'https://api.cobalt.best',
+        'https://cobalt.kwiatekmiki.pl',
+        'https://api.wkr.one',
+    ];
+
     // Alias para el HTML que espera 'downloadLink'
     get downloadLink(): string {
         return this.downloadUrl;
@@ -66,55 +74,97 @@ export class ConverterComponent implements OnInit {
 
         this.isLoading = true;
         this.error = '';
+        this.showResult = false;
 
-        // --- 2. SMART API ROUTING ---
-        // Volvemos a la estrategia híbrida:
-        // DEV: Usa tu servidor local (start_server.bat) -> Más estable y rápido.
-        // PROD: Usa Vercel (/api/convert).
+        // Estrategia: 
+        // 1. Intentar desde el Cliente (Navegador) -> Evita bloqueo de Vercel
+        // 2. Si falla todo, intentar desde el Backend (Vercel/Local) -> Fallback
+
+        this.tryClientSideConversion(0);
+    }
+
+    tryClientSideConversion(index: number) {
+        if (index >= this.CLIENT_INSTANCES.length) {
+            // Se acabaron los intentos cliente, vamos al backend
+            console.log('Fallaron intentos cliente, probando backend...');
+            this.executeBackendConversion();
+            return;
+        }
+
+        const host = this.CLIENT_INSTANCES[index];
+        const payload = {
+            url: this.youtubeUrl,
+            downloadMode: 'audio',
+            audioFormat: 'mp3'
+        };
+
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        this.http.post<any>(`${host}/api/json`, payload, { headers }).subscribe({
+            next: (res) => {
+                // Éxito directo desde el cliente!
+                this.handleSuccess(res);
+            },
+            error: (err) => {
+                console.warn(`Fallo ${host}, probando siguiente...`, err);
+                this.tryClientSideConversion(index + 1);
+            }
+        });
+    }
+
+    executeBackendConversion() {
+        // Fallback: Estrategia original (Vercel Proxy o Local Server)
         const apiUrl = isDevMode()
             ? 'http://localhost:5000/api/convert'
             : '/api/convert';
 
         this.http.post<any>(apiUrl, { url: this.youtubeUrl }).subscribe({
-            next: (res) => {
-                this.isLoading = false;
-
-                if (res.success) {
-                    this.showResult = true;
-                    this.videoTitle = res.title || 'Audio Listo';
-                    this.videoThumb = res.thumbnail || '';
-                    this.audioFormat = res.format || 'M4A';
-
-                    // Si estamos en local, usamos el proxy de descarga local
-                    if (isDevMode() && res.originalUrl) {
-                        const encodedUrl = encodeURIComponent(res.originalUrl);
-                        this.downloadUrl = `http://localhost:5000/api/download?url=${encodedUrl}`;
-                    } else {
-                        this.downloadUrl = res.downloadUrl;
-                    }
-
-                    this.toastService.success(`¡Convertido a ${this.audioFormat}!`);
-                } else {
-                    this.error = res.error || 'No se pudo procesar.';
-                    this.toastService.error(this.error);
-                }
-            },
+            next: (res) => this.handleSuccess(res),
             error: (err) => {
                 this.isLoading = false;
-                console.error('Error details:', err);
+                console.error('Error total:', err);
 
-                // Intentar leer el mensaje de error del backend (ej: 503 Servidores ocupados)
                 if (err.error && err.error.error) {
                     this.error = err.error.error;
-                } else if (err.status === 503) {
-                    this.error = 'Servidores ocupados (503). Intenta en un momento.';
+                } else if (err.status === 503 || err.status === 504) {
+                    this.error = 'Servidores ocupados o bloqueados.';
                 } else {
-                    this.error = 'Error de conexión con el servidor.';
+                    this.error = 'Error de conexión. Intenta más tarde.';
                 }
 
                 this.toastService.error(this.error);
             }
         });
+    }
+
+    handleSuccess(res: any) {
+        this.isLoading = false;
+
+        if (res.status === 'stream' || res.status === 'redirect' || res.url || res.downloadUrl || res.success) {
+            this.showResult = true;
+            this.videoTitle = res.filename || res.title || 'Audio Listo';
+            this.videoThumb = res.thumbnail || '';
+            this.audioFormat = 'MP3';
+
+            // Unificar url de descarga
+            const rawUrl = res.url || res.downloadUrl;
+
+            // Si estamos en local y la respuesta vino del backend local, usar proxy
+            if (isDevMode() && res.originalUrl) {
+                const encodedUrl = encodeURIComponent(res.originalUrl);
+                this.downloadUrl = `http://localhost:5000/api/download?url=${encodedUrl}`;
+            } else {
+                this.downloadUrl = rawUrl;
+            }
+
+            this.toastService.success(`¡Convertido a ${this.audioFormat}!`);
+        } else {
+            this.error = 'Respuesta inesperada del servidor.';
+            this.toastService.error(this.error);
+        }
     }
 
     isDownloading: boolean = false;
