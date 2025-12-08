@@ -1,0 +1,160 @@
+<div class="min-h-screen bg-zinc-950 text-white">
+
+    <!-- Header -->
+    <div class="pt-10 pb-6 px-4 md:px-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <!-- Icon -->
+            <div
+                class="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/30">
+                <i class='bx bx-download text-4xl md:text-5xl text-white'></i>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-4xl md:text-5xl font-black mb-3">Música Offline</h1>
+
+            <!-- Stats -->
+            <div class="flex items-center justify-center gap-4 text-sm mb-4">
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50">
+                    <i class='bx bx-music text-blue-400'></i>
+                    <span class="text-zinc-300">{{ offlineSongs().length }} canciones</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50">
+                    <i class='bx bx-hdd text-cyan-400'></i>
+                    <span class="text-zinc-300">{{ totalSize() }}</span>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mx-auto"
+                [ngClass]="{
+                    'bg-emerald-500/20 text-emerald-400': isOnline(),
+                    'bg-zinc-800 text-zinc-400': !isOnline()
+                }">
+                <div class="w-2 h-2 rounded-full" [ngClass]="{
+                        'bg-emerald-400': isOnline(),
+                        'bg-zinc-500': !isOnline()
+                    }"></div>
+                {{ isOnline() ? '🌐 Conexión Global' : '📡 Modo Offline' }}
+            </div>
+
+            <!-- Description -->
+            <p class="text-zinc-400 text-sm mt-4 max-w-md mx-auto">
+                Tus canciones descargadas disponibles sin conexión. Escucha donde quieras, cuando quieras.
+            </p>
+        </div>
+    </div>
+
+    <!-- Actions Bar -->
+    <div
+        class="sticky top-[60px] md:top-[70px] z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 py-3 px-4 md:px-6">
+        <div class="max-w-7xl mx-auto flex items-center gap-3">
+            <button (click)="playAll()" [disabled]="offlineSongs().length === 0"
+                class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class='bx bx-play text-lg'></i>
+                Reproducir Todo
+            </button>
+
+            <button (click)="clearAll()" [disabled]="offlineSongs().length === 0"
+                class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-sm flex items-center gap-2 transition-all border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class='bx bx-trash text-lg'></i>
+                <span class="hidden md:inline">Eliminar Todo</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6">
+
+        <!-- Empty State -->
+        <div *ngIf="offlineSongs().length === 0" class="text-center py-20">
+            <div
+                class="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-zinc-800">
+                <i class='bx bx-cloud-download text-5xl text-zinc-600'></i>
+            </div>
+            <h3 class="text-xl font-bold text-zinc-300 mb-2">No tienes música descargada</h3>
+            <p class="text-zinc-500 mb-6 max-w-md mx-auto">
+                Descarga tus canciones favoritas para escucharlas sin conexión.
+                Busca el icono <i class='bx bx-download'></i> en cualquier canción.
+            </p>
+            <a routerLink="/browse/trends"
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all">
+                <i class='bx bx-music'></i>
+                Explorar Música
+            </a>
+        </div>
+
+        <!-- Songs List -->
+        <div *ngIf="offlineSongs().length > 0" class="space-y-2">
+            <div *ngFor="let song of offlineSongs()"
+                class="flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 cursor-pointer group relative"
+                [class.z-20]="isSongActive(song)"
+                [style.background-color]="isSongActive(song) ? 'rgba(59, 130, 246, 0.15)' : 'rgba(24, 24, 27, 0.4)'"
+                [style.border-color]="isSongActive(song) ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'"
+                (click)="playSong(song)">
+
+                <!-- Album Cover -->
+                <div class="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
+                    <img [src]="song.imageUrl || song.img" [alt]="song.title"
+                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+
+                    <!-- Overlay Play/Pause -->
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity"
+                        [class.opacity-0]="!isSongActive(song)" [class.group-hover:opacity-100]="!isSongActive(song)">
+                        <i class='bx text-2xl text-white' [class.bx-play]="!isSongActive(song) || !isPlayerPlaying()"
+                            [class.bx-pause]="isSongActive(song) && isPlayerPlaying()"></i>
+                    </div>
+
+                    <!-- Offline Badge -->
+                    <div
+                        class="absolute top-1 right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i class='bx bx-download text-white text-xs'></i>
+                    </div>
+                </div>
+
+                <!-- Song Info -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm md:text-base truncate" [class.text-blue-400]="isSongActive(song)"
+                        [class.text-white]="!isSongActive(song)">
+                        {{ song.title }}
+                    </h3>
+                    <p class="text-xs md:text-sm text-zinc-400 truncate">{{ song.artist }}</p>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Descargado {{ formatDate(song.downloadedAt) }}
+                    </p>
+                </div>
+
+                <!-- Duration -->
+                <div class="hidden md:flex items-center gap-2 text-sm text-zinc-400">
+                    <i class='bx bx-time-five'></i>
+                    <span>{{ song.duration }}</span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-1">
+                    <button (click)="deleteSong(song, $event)"
+                        class="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-800 text-zinc-400 hover:text-red-400 hover:bg-zinc-700 flex items-center justify-center transition-all border border-white/5"
+                        title="Eliminar descarga">
+                        <i class='bx bx-trash text-lg'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div *ngIf="offlineSongs().length > 0" class="mt-8 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+            <div class="flex items-start gap-3">
+                <i class='bx bx-info-circle text-2xl text-blue-400 flex-shrink-0'></i>
+                <div class="text-sm text-zinc-300">
+                    <p class="font-semibold mb-1">Música disponible sin conexión</p>
+                    <p class="text-zinc-400">
+                        Estas canciones están almacenadas en tu dispositivo y puedes escucharlas incluso sin conexión a
+                        internet.
+                        Las descargas se mantienen hasta que las elimines manualmente.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

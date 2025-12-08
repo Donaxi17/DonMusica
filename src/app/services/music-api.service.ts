@@ -418,12 +418,32 @@ export class MusicApiService {
         return ['pop', 'rock', 'hip-hop', 'electronic', 'latin', 'reggaeton', 'indie', 'r-n-b', 'jazz', 'classical', 'metal', 'country', 'salsa', 'vallenato'];
     }
 
-    private getFallbackTracksByGenre(genre: string): Song[] {
-        return []; // Deprecated in favor of iTunes fallback
-    }
-
     getLyrics(artist: string, title: string): Observable<string> {
-        return of('Lyrics not available'); // Simplified for now
+        // Limpiar nombres para mejorar la búsqueda
+        const cleanArtist = artist.split(',')[0].split('feat')[0].split('ft.')[0].trim();
+        const cleanTitle = title.split('(')[0].split('[')[0].split('-')[0].trim();
+
+        // Usar lrclib.net - API más rápida y completa
+        const lrclibUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(cleanArtist)}&track_name=${encodeURIComponent(cleanTitle)}`;
+
+        return this.http.get<any>(lrclibUrl).pipe(
+            map(res => {
+                if (res.plainLyrics) {
+                    return res.plainLyrics;
+                } else if (res.syncedLyrics) {
+                    return res.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2}\]/g, '').trim();
+                }
+                return '';
+            }),
+            catchError(() => {
+                // Fallback a lyrics.ovh
+                const lyricsOvhUrl = `${this.LYRICS_API_URL}/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`;
+                return this.http.get<any>(lyricsOvhUrl).pipe(
+                    map(res => res.lyrics || ''),
+                    catchError(() => of(''))
+                );
+            })
+        );
     }
 
     getStreamUrl(videoId: string): Observable<string | null> {

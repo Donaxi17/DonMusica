@@ -39,8 +39,8 @@ export class TrendsComponent implements OnInit {
     ngOnInit() {
         // SEO optimization with keywords and description
         this.seoService.setSeoData(
-            'Tendencias Musicales Globales 2025 | Top Canciones del Momento | DonMusic',
-            'Descubre las tendencias musicales más populares del 2025. Escucha las canciones más escuchadas en todo el mundo, desde reggaetón hasta pop internacional. ¡Música sin límites!'
+            'Tendencias Musicales Globales 2025 | Top Canciones del Momento | DonMusica',
+            'Descubre las tendencias musicales más populares del 2025 en DonMusica. Escucha las canciones más escuchadas en todo el mundo, desde reggaetón hasta pop internacional. ¡Música sin límites en donmusica.online!'
         );
 
         this.loadInitialData();

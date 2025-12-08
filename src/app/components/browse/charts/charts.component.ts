@@ -36,8 +36,8 @@ export class ChartsComponent implements OnInit {
 
     ngOnInit() {
         this.seoService.setSeoData(
-            'Top Charts Musicales 2025 | Rankings Globales y Latinos | DonMusic',
-            'Explora los rankings musicales más importantes del 2025. Top 50 de Colombia, México y el mundo. Las canciones más virales y escuchadas del momento.'
+            'Top Charts Musicales 2025 | Rankings Globales y Latinos | DonMusica',
+            'Explora los rankings musicales más importantes del 2025 en DonMusica. Top 50 de Colombia, México y el mundo. Las canciones más virales y escuchadas del momento en donmusica.online.'
         );
         this.loadCharts(this.selectedCountry);
     }

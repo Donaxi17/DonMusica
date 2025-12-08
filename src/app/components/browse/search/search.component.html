@@ -4,10 +4,11 @@
     <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-start md:items-center justify-between mb-4 md:mb-8">
         <div>
             <h2
-                class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-400 to-rose-500 bg-clip-text text-transparent">
+                class="text-2xl md:text-3xl text-center md:text-start font-bold bg-gradient-to-r from-pink-400 to-rose-500 bg-clip-text text-transparent">
                 Buscador Global
             </h2>
-            <p class="text-zinc-400 mt-1 text-sm md:text-base">Encuentra canciones, artistas y sus letras.</p>
+            <p class="text-zinc-400 mt-1 text-sm md:text-base text-center">Encuentra canciones, artistas y sus letras.
+            </p>
         </div>
 
         <!-- Search Bar -->
@@ -52,16 +53,40 @@
             <!-- Actions -->
             <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
                 <button (click)="viewLyrics(song)"
-                    class="px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-[10px] md:text-xs font-bold hover:bg-zinc-700 hover:text-white transition-colors flex items-center gap-1 border border-zinc-700">
-                    <i class='bx bx-microphone'></i> <span class="hidden md:inline">LETRA</span>
+                    class="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-[10px] md:text-xs font-bold transition-colors flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
+                    <i class='bx bx-book-open text-base'></i> <span class="hidden md:inline">LEER</span>
                 </button>
-                <button
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 items-center justify-center text-zinc-400 hover:text-pink-500 transition-colors hidden md:flex">
-                    <i class='bx bx-heart text-lg md:text-xl'></i>
+                <button (click)="toggleSaveLyrics(song, $event)"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors"
+                    [class.text-orange-400]="isSongLyricsSaved(song)" [class.text-zinc-400]="!isSongLyricsSaved(song)"
+                    [title]="isSongLyricsSaved(song) ? 'Letra guardada' : 'Guardar letra'">
+                    <i class='bx text-lg md:text-xl' [class.bxs-bookmark]="isSongLyricsSaved(song)"
+                        [class.bx-bookmark]="!isSongLyricsSaved(song)"></i>
                 </button>
-                <button
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                    <i class='bx bx-dots-vertical-rounded text-lg md:text-xl'></i>
+
+                <!-- Offline Download Button -->
+                <button (click)="downloadForOffline(song, $event)" [disabled]="isDownloadingOffline()[song.id]"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors relative"
+                    [class.text-blue-400]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
+                    title="Descargar para uso offline">
+                    <i *ngIf="!isOffline(song.id) && !isDownloadingOffline()[song.id]"
+                        class='bx bx-cloud-download text-lg md:text-xl'></i>
+                    <i *ngIf="isOffline(song.id) && !isDownloadingOffline()[song.id]"
+                        class='bx bxs-cloud-download text-lg md:text-xl'></i>
+                    <div *ngIf="isDownloadingOffline()[song.id]"
+                        class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <!-- Progress indicator -->
+                    <div *ngIf="downloadProgress()[song.id] && downloadProgress()[song.id] < 100"
+                        class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-400">
+                        {{downloadProgress()[song.id]}}%
+                    </div>
+                </button>
+
+                <!-- Share Button -->
+                <button (click)="shareSong(song, $event)"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 flex items-center justify-center transition-colors text-zinc-400 hover:text-green-400"
+                    title="Compartir">
+                    <i class='bx bx-share-alt text-lg md:text-xl'></i>
                 </button>
             </div>
         </div>
@@ -92,6 +117,11 @@
                         [title]="isLyricsSaved() ? 'Guardado' : 'Guardar letra'">
                         <i class='bx text-xl md:text-2xl'
                             [class]="isLyricsSaved() ? 'bxs-bookmark' : 'bx-bookmark'"></i>
+                    </button>
+                    <button (click)="shareLyrics()"
+                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0"
+                        title="Compartir letra">
+                        <i class='bx bx-share-alt text-xl md:text-2xl'></i>
                     </button>
                     <button (click)="closeLyrics()"
                         class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0">

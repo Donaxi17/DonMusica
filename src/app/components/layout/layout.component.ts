@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
@@ -60,12 +60,29 @@ export class LayoutComponent implements OnInit {
     });
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    // Cerrar menú desktop si se hace clic fuera
+    if (this.showMoreMenu) {
+      const target = event.target as HTMLElement;
+      // Asumiendo que el botón y el menú tienen ids o clases específicas, o simplemente cerramos
+      // si el clic no fue procesado por el botón de toggle (que usa stopPropagation)
+      this.showMoreMenu = false;
+    }
+
+    // Cerrar menú móvil si se hace clic fuera
+    if (this.showMobileMoreMenu) {
+      this.showMobileMoreMenu = false;
+    }
+  }
+
   isMoreActive(): boolean {
     const moreRoutes = ['/sin-copyright', '/converter', '/radio', '/playlists', '/blog', '/saved-lyrics', '/about', '/contact'];
     return moreRoutes.some(route => this.isActive(route));
   }
 
-  toggleMoreMenu() {
+  toggleMoreMenu(event?: Event) {
+    if (event) event.stopPropagation();
     this.showMoreMenu = !this.showMoreMenu;
   }
 
@@ -73,7 +90,8 @@ export class LayoutComponent implements OnInit {
     this.showMoreMenu = false;
   }
 
-  toggleMobileMoreMenu() {
+  toggleMobileMoreMenu(event?: Event) {
+    if (event) event.stopPropagation();
     this.showMobileMoreMenu = !this.showMobileMoreMenu;
   }
 

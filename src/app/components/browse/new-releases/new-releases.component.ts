@@ -33,8 +33,8 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
     ngOnInit() {
         // SEO optimization
         this.seoService.setSeoData(
-            'Nuevos Lanzamientos Musicales 2025 | Últimos Estrenos | DonMusic',
-            'Descubre los últimos lanzamientos musicales de 2025. Escucha previews de los estrenos más recientes de reggaetón, trap, pop urbano y música latina. ¡Actualizado diariamente!'
+            'Nuevos Lanzamientos Musicales 2025 | Últimos Estrenos | DonMusica',
+            'Descubre los últimos lanzamientos musicales de 2025 en DonMusica. Escucha previews de los estrenos más recientes de reggaetón, trap, pop urbano y música latina. ¡Actualizado diariamente en donmusica.online!'
         );
 
         // Load new releases

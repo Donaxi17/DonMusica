@@ -5,6 +5,9 @@ import { MusicApiService } from '../../services/music-api.service';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
 import { SeoService } from '../../services/seo.service';
+import { OfflineService } from '../../services/offline.service';
+import { ToastService } from '../../services/toast.service';
+import { ShareService } from '../../services/share.service';
 import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 
 @Component({
@@ -18,6 +21,9 @@ export class FreeMusicComponent implements OnInit {
   private seoService = inject(SeoService);
   private musicApi = inject(MusicApiService);
   private playerService = inject(PlayerService);
+  private offlineService = inject(OfflineService);
+  private toastService = inject(ToastService);
+  private shareService = inject(ShareService);
 
   // Géneros modernos
   latinGenres = [
@@ -43,13 +49,13 @@ export class FreeMusicComponent implements OnInit {
   canDownload = signal(false);
 
   // Estado de reproducción reactivo
-  playingSongId = signal<string | undefined>(undefined);
+  playingSongId = signal<string | number | undefined>(undefined);
   isPlayerPlaying = signal(false);
 
   ngOnInit() {
     this.seoService.setSeoData(
-      'Música Sin Copyright - Streaming Legal Gratis | DonMusica',
-      'Descubre música sin copyright. Pop, rock, electrónica, hip hop y más géneros. Streaming legal y descargas gratuitas.'
+      'Música Sin Copyright Gratis para YouTube y Twitch (2025) | DonMusica',
+      'Descarga la mejor música sin copyright (Royalty Free) para tus videos. Pop, Rock, Electrónica, Hip Hop. 100% Legal, seguro para monetizar y libre de strikes.'
     );
     this.loadMusicByGenre(this.selectedGenre());
 
@@ -64,18 +70,19 @@ export class FreeMusicComponent implements OnInit {
   }
 
   isSongActive(song: Song): boolean {
-    return this.playingSongId() === song.id;
+    // Comparación flexible (string vs number)
+    return String(this.playingSongId()) === String(song.id);
   }
 
   loadMusicByGenre(genre: string) {
     this.selectedGenre.set(genre);
     this.isLoading.set(true);
 
-    // Actualizar SEO dinámicamente según el género
+    // Actualizar SEO dinámicamente según el género con keywords potentes
     const genreName = this.latinGenres.find(g => g.id === genre)?.name || 'Música';
     this.seoService.setSeoData(
-      `${genreName} Sin Copyright - Streaming Legal | DonMusica`,
-      `Escucha ${genreName} sin copyright. Streaming legal de alta calidad. Más de 600,000 canciones disponibles.`
+      `${genreName} Sin Copyright Gratis (Royalty Free) | DonMusica`,
+      `Descarga música ${genreName} sin copyright para tus videos de YouTube, Twitch o Instagram. Audio de alta calidad, gratis y seguro para monetizar.`
     );
 
     // Usar getJamendoByGenre para obtener música por género con mejor variedad
@@ -127,14 +134,17 @@ export class FreeMusicComponent implements OnInit {
     this.canDownload.set(false);
     this.downloadCountdown.set(5);
 
-    // Usar requestAnimationFrame para mejor rendimiento
-    requestAnimationFrame(() => {
+    // Usar setTimeout para esperar a que Angular renderice el div *ngIf
+    setTimeout(() => {
       this.startCountdown();
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
+      const element = document.getElementById('download-section');
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center' // Centrar el elemento en la pantalla
+        });
+      }
+    }, 100);
   }
 
   closeDownloadModal() {
@@ -196,5 +206,41 @@ export class FreeMusicComponent implements OnInit {
 
     // Cerrar modal
     setTimeout(() => this.closeDownloadModal(), 500);
+  }
+
+  // Métodos para descarga offline
+  downloadProgress = this.offlineService.downloadProgress;
+  isDownloadingOffline = this.offlineService.isDownloading;
+
+  async downloadForOffline(song: Song, event: Event) {
+    event.stopPropagation();
+
+    if (this.isOffline(song.id)) {
+      this.toastService.info('Esta canción ya está descargada');
+      return;
+    }
+
+    const success = await this.offlineService.downloadSong(song);
+    if (success) {
+      this.toastService.success('Canción descargada para uso offline');
+    } else {
+      this.toastService.error('Error al descargar la canción');
+    }
+  }
+
+  isOffline(songId: string | number): boolean {
+    return this.offlineService.isOffline(String(songId));
+  }
+
+  // Método para compartir
+  async shareSong(song: Song, event: Event) {
+    event.stopPropagation();
+
+    const success = await this.shareService.shareSong(song);
+    if (success) {
+      this.toastService.success('Enlace copiado al portapapeles');
+    } else {
+      this.toastService.info('Compartir cancelado');
+    }
   }
 }

@@ -1,24 +1,30 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdBannerComponent } from '../../shared/ad-banner/ad-banner.component';
 import { MusicApiService } from '../../../services/music-api.service';
 import { PlayerService } from '../../../services/player.service';
-import { Song } from '../../../services/playlist.service';
-import { SeoService } from '../../../services/seo.service';
 import { LyricsService } from '../../../services/lyrics.service';
 import { ToastService } from '../../../services/toast.service';
+import { SeoService } from '../../../services/seo.service';
+import { OfflineService } from '../../../services/offline.service';
+import { ShareService } from '../../../services/share.service';
+import { Song } from '../../../services/playlist.service';
 
 @Component({
     selector: 'app-search',
     standalone: true,
     imports: [CommonModule, FormsModule],
-    templateUrl: './search.component.html'
+    templateUrl: './search.component.html',
+    styleUrl: './search.component.css'
 })
-export class SearchComponent {
-    private seoService = inject(SeoService);
+export class SearchComponent implements OnInit {
+    private musicApi = inject(MusicApiService);
+    private playerService = inject(PlayerService);
     private lyricsService = inject(LyricsService);
     private toastService = inject(ToastService);
+    private seoService = inject(SeoService);
+    private offlineService = inject(OfflineService);
+    private shareService = inject(ShareService);
 
     searchQuery = signal('');
     isSearching = signal(false);
@@ -28,23 +34,28 @@ export class SearchComponent {
     selectedSongArtist = signal('');
     searchResults = signal<Song[]>([]);
 
-    constructor(
-        private musicApi: MusicApiService,
-        private playerService: PlayerService
-    ) {
+    ngOnInit() {
         this.seoService.setSeoData(
-            'Buscar Música',
-            'Busca tus canciones, artistas y álbumes favoritos. Encuentra lo que quieras escuchar.'
+            'Buscador de Letras y Música | DonMusica',
+            'Encuentra y guarda las letras de tus canciones favoritas en DonMusica. Buscador musical global for lyrics, canciones, artistas y álbumes. ¡Crea tu colección de letras hoy en donmusica.online!'
         );
     }
 
     onSearch() {
         if (!this.searchQuery()) return;
         this.isSearching.set(true);
+        this.searchResults.set([]);
 
-        this.musicApi.search(this.searchQuery()).subscribe(songs => {
-            this.searchResults.set(songs);
-            this.isSearching.set(false);
+        // Búsqueda rápida - mostramos resultados inmediatamente sin validar letras
+        this.musicApi.search(this.searchQuery()).subscribe({
+            next: (songs) => {
+                this.searchResults.set(songs.slice(0, 15));
+                this.isSearching.set(false);
+            },
+            error: () => {
+                this.isSearching.set(false);
+                this.toastService.error('Error al buscar canciones');
+            }
         });
     }
 
@@ -58,8 +69,17 @@ export class SearchComponent {
         this.selectedSongLyrics.set('Cargando letra...');
         this.showLyrics.set(true);
 
-        this.musicApi.getLyrics(song.artist, song.title).subscribe(lyrics => {
-            this.selectedSongLyrics.set(lyrics || 'No se encontró la letra de esta canción.');
+        this.musicApi.getLyrics(song.artist, song.title).subscribe({
+            next: (lyrics) => {
+                if (lyrics && lyrics.length > 50) {
+                    this.selectedSongLyrics.set(lyrics);
+                } else {
+                    this.selectedSongLyrics.set('No se encontró la letra de esta canción.\\n\\nIntenta buscar otra canción o verifica el nombre del artista.');
+                }
+            },
+            error: () => {
+                this.selectedSongLyrics.set('Error al cargar la letra. Por favor intenta de nuevo.');
+            }
         });
     }
 
@@ -83,5 +103,77 @@ export class SearchComponent {
 
     isLyricsSaved(): boolean {
         return this.lyricsService.isSaved(this.selectedSongTitle(), this.selectedSongArtist());
+    }
+
+    isSongLyricsSaved(song: Song): boolean {
+        return this.lyricsService.isSaved(song.title, song.artist);
+    }
+
+    toggleSaveLyrics(song: Song, event: Event) {
+        event.stopPropagation();
+
+        if (this.isSongLyricsSaved(song)) {
+            this.toastService.info('Esta letra ya está guardada');
+            return;
+        }
+
+        // Necesitamos obtener las letras primero
+        this.musicApi.getLyrics(song.artist, song.title).subscribe(lyrics => {
+            if (lyrics && lyrics.length > 50) {
+                this.lyricsService.saveLyric(song.title, song.artist, lyrics);
+                this.toastService.success('Letra guardada en tu colección');
+            } else {
+                this.toastService.error('No se pudo obtener la letra para guardar');
+            }
+        });
+    }
+
+    // Métodos para descarga offline
+    downloadProgress = this.offlineService.downloadProgress;
+    isDownloadingOffline = this.offlineService.isDownloading;
+
+    async downloadForOffline(song: Song, event: Event) {
+        event.stopPropagation();
+
+        if (this.isOffline(song.id)) {
+            this.toastService.info('Esta canción ya está descargada');
+            return;
+        }
+
+        const success = await this.offlineService.downloadSong(song);
+        if (success) {
+            this.toastService.success('Canción descargada para uso offline');
+        } else {
+            this.toastService.error('Error al descargar la canción');
+        }
+    }
+
+    isOffline(songId: string | number): boolean {
+        return this.offlineService.isOffline(String(songId));
+    }
+
+    // Métodos para compartir
+    async shareSong(song: Song, event: Event) {
+        event.stopPropagation();
+
+        const success = await this.shareService.shareSong(song);
+        if (success) {
+            this.toastService.success('Enlace copiado al portapapeles');
+        } else {
+            this.toastService.info('Compartir cancelado');
+        }
+    }
+
+    async shareLyrics() {
+        const title = this.selectedSongTitle();
+        const artist = this.selectedSongArtist();
+        const lyrics = this.selectedSongLyrics();
+
+        const success = await this.shareService.shareLyrics(title, artist, lyrics);
+        if (success) {
+            this.toastService.success('Letra compartida');
+        } else {
+            this.toastService.info('Compartir cancelado');
+        }
     }
 }

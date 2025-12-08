@@ -5,8 +5,8 @@ section {
     height: 100vh;
     width: 50px;
     color: white;
-    z-index: 9999;
-    /* Asegurar que esté por encima de todo */
+    z-index: 100000;
+    /* Asegurar que esté por encima de todo EXTREMO */
 }
 
 section i {
@@ -41,7 +41,7 @@ section i:hover {
         right: 20px;
         width: auto;
         height: auto;
-        z-index: 60;
+        z-index: 100000;
         /* Mantener z-index alto en móvil también */
     }
 
@@ -49,7 +49,6 @@ section i:hover {
         font-size: 1.2rem;
         margin-top: 1.4rem;
         flex-direction: row;
-        z-index: 10000;
     }
 
 }

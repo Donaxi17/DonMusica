@@ -1,9 +1,10 @@
 <div class="min-h-screen bg-zinc-950 text-white pb-4 md:pb-32">
 
     <!-- Hero / Title Section (Compact Mobile) -->
-    <div class="pt-5 pb-4 px-5 md:pt-24">
+    <div class="pt-5 pb-4 px-5 md:pt-10">
         <h1 class="text-4xl md:text-5xl font-black mb-1 animate-fade-in-up text-center">Descubrir</h1>
-        <p class="text-zinc-500 text-sm animate-fade-in-up delay-75 text-center">Explora lo nuevo de la música mundial.</p>
+        <p class="text-zinc-500 text-sm animate-fade-in-up delay-75 text-center">Explora lo nuevo de la música mundial.
+        </p>
     </div>
 
     <!-- Sub-Navigation (Sticky & Premium Pills) -->
@@ -12,31 +13,36 @@
         <div class="max-w-7xl mx-auto px-4">
             <nav class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
 
-                <a routerLink="trends"
-                    routerLinkActive="bg-emerald-500 text-black font-bold shadow-lg shadow-emerald-500/20"
-                    class="flex-shrink-0 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-medium text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
+                <a routerLink="/browse/trends"
+                    routerLinkActive="bg-emerald-500/20 text-emerald-500 font-bold shadow-lg shadow-emerald-500/20 border-emerald-500"
+                    #trendsLink="routerLinkActive" [class.text-zinc-400]="!trendsLink.isActive"
+                    class="flex-shrink-0 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
                     <i class='bx bx-trending-up text-lg'></i>
                     Tendencias
                 </a>
 
-                <a routerLink="new-releases"
-                    routerLinkActive="bg-purple-500 text-white font-bold shadow-lg shadow-purple-500/20"
-                    class="flex-shrink-0 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-medium text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
+                <a routerLink="/browse/new-releases"
+                    routerLinkActive="bg-purple-500/20 text-purple-500 font-bold shadow-lg shadow-purple-500/20 border-purple-500"
+                    #releasesLink="routerLinkActive" [class.text-zinc-400]="!releasesLink.isActive"
+                    class="flex-shrink-0 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
                     <i class='bx bx-rocket text-base'></i>
                     Estrenos
                 </a>
 
-                <a routerLink="charts" routerLinkActive="bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20"
-                    class="flex-shrink-0 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-medium text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
+                <a routerLink="/browse/charts"
+                    routerLinkActive="bg-blue-500/20 text-blue-500 font-bold shadow-lg shadow-blue-500/20 border-blue-500"
+                    #chartsLink="routerLinkActive" [class.text-zinc-400]="!chartsLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
                     <i class='bx bx-trophy text-base'></i>
                     Rankings
                 </a>
 
-                <a routerLink="featured-playlists"
-                    routerLinkActive="bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/20"
-                    class="flex-shrink-0 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-medium text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
-                    <i class='bx bx-list-ul text-base'></i>
-                    Playlists
+                <a routerLink="/browse/search"
+                    routerLinkActive="bg-pink-500/20 text-pink-500 font-bold shadow-lg shadow-pink-500/20 border-pink-500"
+                    #searchLink="routerLinkActive" [class.text-zinc-400]="!searchLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95">
+                    <i class='bx bx-search text-base'></i>
+                    Letras
                 </a>
             </nav>
         </div>

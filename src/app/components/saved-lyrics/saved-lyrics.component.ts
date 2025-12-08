@@ -1,12 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LyricsService, SavedLyric } from '../../services/lyrics.service';
-import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 
 @Component({
   selector: 'app-saved-lyrics',
   standalone: true,
-  imports: [CommonModule, AdBannerComponent],
+  imports: [CommonModule],
   templateUrl: './saved-lyrics.component.html'
 })
 export class SavedLyricsComponent implements OnInit {
