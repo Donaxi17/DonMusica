@@ -26,6 +26,71 @@ INSTANCES = [
     "https://cobalt.154.53.53.53.sslip.io" # Raw IP
 ]
 
+# ... (Cobalt Instances defined above) ...
+
+# Lista de instancias Piped (Fallback robusto)
+PIPED_INSTANCES = [
+    "https://pipedapi.kavin.rocks",
+    "https://pipedapi.tokhmi.xyz",
+    "https://piped-api.lunar.icu",
+    "https://pipedapi.rivo.lol",
+    "https://api.piped.privacydev.net",
+    "https://pipedapi.leptons.xyz"
+]
+
+def try_piped_api(video_url):
+    """Intenta obtener el stream de audio usando API de Piped"""
+    try:
+        # Extraer ID de video simple
+        video_id = ""
+        if "v=" in video_url:
+            video_id = video_url.split("v=")[1].split("&")[0]
+        elif "youtu.be/" in video_url:
+            video_id = video_url.split("youtu.be/")[1].split("?")[0]
+        
+        if not video_id:
+            return None
+
+        # Probar instancias
+        for host in PIPED_INSTANCES:
+            try:
+                print(f"Probando Piped: {host}")
+                resp = requests.get(f"{host}/streams/{video_id}", timeout=6)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    # Buscar streams de audio
+                    audio_streams = data.get('audioStreams', [])
+                    if not audio_streams:
+                        continue
+                        
+                    # Priorizar M4A de mejor calidad
+                    # Piped suele devolver m4a como audio/mp4
+                    best_audio = None
+                    for stream in audio_streams:
+                        if stream.get('mimeType') == 'audio/mp4' or stream.get('format') == 'M4A':
+                            best_audio = stream
+                            break # Encontramos uno bueno
+                    
+                    if not best_audio and len(audio_streams) > 0:
+                        best_audio = audio_streams[0] # Fallback a lo que sea
+
+                    if best_audio:
+                        return {
+                            "success": True,
+                            "status": "stream",
+                            "downloadUrl": best_audio['url'],
+                            "title": data.get('title', 'Audio'),
+                            "thumbnail": data.get('thumbnailUrl', ''),
+                            "format": "M4A" # Piped es nativo M4A usualmente
+                        }
+            except Exception as e:
+                print(f"Error en Piped {host}: {e}")
+                continue
+                
+    except Exception as e:
+        print(f"Error general Piped: {e}")
+        return None
+
 @app.route('/api/convert', methods=['POST'])
 def convert():
     try:
@@ -38,7 +103,6 @@ def convert():
         random.shuffle(config)
         
         # Limite Vercel 10s -> Usamos hilos para probar 3 en paralelo
-        # y retornar el primero que sirva
         import concurrent.futures
 
         def check_instance(host):
@@ -80,22 +144,26 @@ def convert():
                 return {'error': str(e), 'host': host}
             return None
 
-        # Ejecutar en paralelo (max 5 hosts a la vez)
+        # Ejecutar tests Cobalt en paralelo (max 5 hosts)
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            # Tomamos los primeros 5 hosts aleatorios
             futures = [executor.submit(check_instance, host) for host in config[:5]]
-            
             for future in concurrent.futures.as_completed(futures):
                 res = future.result()
                 if res and res.get('success'):
                     return jsonify(res)
-                if res: results.append(res) # Guardar error para debug
+                if res: results.append(res)
 
-        # Si llegamos aquí, todos fallaron
+        # Si Cobalt falla todos, intentar Piped (Fallback)
+        print("Cobalt falló, intentando Piped...")
+        piped_result = try_piped_api(url)
+        if piped_result:
+             return jsonify(piped_result)
+
+        # Si todo falla
         return jsonify({
             'error': 'Servidores ocupados o bloqueados.',
-            'debug': results # Para ver qué pasó en la consola
+            'debug': results 
         }), 503
 
     except Exception as e:
