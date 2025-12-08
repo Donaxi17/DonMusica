@@ -25,11 +25,14 @@ export class ConverterComponent implements OnInit {
     audioFormat: string = 'MP3'; // Por defecto MP3
 
     // Instancias para probar directamente desde el cliente (bypass Vercel)
+    // Lista actualizada y priorizada
     readonly CLIENT_INSTANCES = [
-        'https://cobalt.place',
-        'https://api.cobalt.best',
-        'https://cobalt.kwiatekmiki.pl',
-        'https://api.wkr.one',
+        'https://api.cobalt.tools',      // Oficial (suele ser la mejor)
+        'https://api.server.cobalt.tools', // Alternativa oficial
+        'https://cobalt.mashedpotat.uno', // Comunitaria estable
+        'https://dl.khub.ky',             // Comunitaria estable
+        'https://cobalt.xy24.eu.org',     // Comunitaria estable
+        'https://api.cobalt.best',        // Backup
     ];
 
     // Alias para el HTML que espera 'downloadLink'

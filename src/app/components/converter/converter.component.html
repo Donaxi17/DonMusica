@@ -35,7 +35,9 @@
                 </label>
                 <div class="relative group">
                     <input type="text" [(ngModel)]="youtubeUrl" (ngModelChange)="onUrlChange()" [disabled]="isLoading"
-                        placeholder="https://youtu.be/..." name="youtubeUrl" autocomplete="off" data-lpignore="true"
+                        placeholder="https://youtu.be/..." name="url_input_safe" id="url_input_safe" autocomplete="off"
+                        autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"
+                        data-form-type="other"
                         class="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-base md:text-lg text-white placeholder-gray-600 focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 outline-none transition-all duration-300 shadow-inner">
 
                     <!-- Botón borrar (X) -->
