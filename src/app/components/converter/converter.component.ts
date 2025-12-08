@@ -68,10 +68,10 @@ export class ConverterComponent implements OnInit {
         this.error = '';
 
         // --- 2. SMART API ROUTING ---
-        // En local usamos localhost:5000, en Vercel usamos ruta relativa /api
-        const apiUrl = isDevMode()
-            ? 'http://localhost:5000/api/convert'
-            : '/api/convert';
+        // Usamos ruta relativa /api para todo.
+        // En local: El proxy de Angular redirige /api -> https://donmusica.online/api
+        // En prod: Vercel maneja /api directamente
+        const apiUrl = '/api/convert';
 
         this.http.post<any>(apiUrl, { url: this.youtubeUrl }).subscribe({
             next: (res) => {
@@ -82,15 +82,7 @@ export class ConverterComponent implements OnInit {
                     this.videoTitle = res.title || 'Audio Listo';
                     this.videoThumb = res.thumbnail || '';
                     this.audioFormat = res.format || 'M4A';
-
-                    // Si es entorno local y M4A, usamos el proxy de descarga
-                    if (isDevMode() && res.originalUrl) {
-                        const encodedUrl = encodeURIComponent(res.originalUrl);
-                        this.downloadUrl = `http://localhost:5000/api/download?url=${encodedUrl}`;
-                    } else {
-                        // En producción (Vercel) o si ya viene el link directo MP3
-                        this.downloadUrl = res.downloadUrl;
-                    }
+                    this.downloadUrl = res.downloadUrl;
 
                     this.toastService.success(`¡Convertido a ${this.audioFormat}!`);
                 } else {
@@ -100,8 +92,17 @@ export class ConverterComponent implements OnInit {
             },
             error: (err) => {
                 this.isLoading = false;
-                console.error(err);
-                this.error = 'Error de conexión. Intenta de nuevo.';
+                console.error('Error details:', err);
+
+                // Intentar leer el mensaje de error del backend (ej: 503 Servidores ocupados)
+                if (err.error && err.error.error) {
+                    this.error = err.error.error;
+                } else if (err.status === 503) {
+                    this.error = 'Servidores ocupados (503). Intenta en un momento.';
+                } else {
+                    this.error = 'Error de conexión con el servidor.';
+                }
+
                 this.toastService.error(this.error);
             }
         });

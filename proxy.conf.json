@@ -1,0 +1,8 @@
+{
+    "/api": {
+        "target": "https://donmusica.online",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    }
+}
