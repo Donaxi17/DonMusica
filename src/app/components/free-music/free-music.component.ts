@@ -42,12 +42,29 @@ export class FreeMusicComponent implements OnInit {
   downloadCountdown = signal(5);
   canDownload = signal(false);
 
+  // Estado de reproducción reactivo
+  playingSongId = signal<string | undefined>(undefined);
+  isPlayerPlaying = signal(false);
+
   ngOnInit() {
     this.seoService.setSeoData(
       'Música Sin Copyright - Streaming Legal Gratis | DonMusica',
       'Descubre música sin copyright. Pop, rock, electrónica, hip hop y más géneros. Streaming legal y descargas gratuitas.'
     );
     this.loadMusicByGenre(this.selectedGenre());
+
+    // Suscribirse al estado del reproductor para feedback visual en tiempo real
+    this.playerService.currentSong$.subscribe(song => {
+      this.playingSongId.set(song?.id);
+    });
+
+    this.playerService.isPlaying$.subscribe(isPlaying => {
+      this.isPlayerPlaying.set(isPlaying);
+    });
+  }
+
+  isSongActive(song: Song): boolean {
+    return this.playingSongId() === song.id;
   }
 
   loadMusicByGenre(genre: string) {
