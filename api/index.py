@@ -8,7 +8,7 @@ CORS(app)
 
 # Lista de Servidores Cobalt para Producción (Vercel)
 # Lista de Servidores Cobalt para Producción (Vercel)
-# Actualizada con instancias públicas estables
+# Actualizada con instancias diversas (IPs y Dominios) para evitar bloqueos
 INSTANCES = [
     "https://cobalt.place",
     "https://api.cobalt.best",
@@ -16,7 +16,10 @@ INSTANCES = [
     "https://api.wkr.one",
     "https://cobalt.154.53.53.53.sslip.io", 
     "https://dl.khub.ky",
-    "https://cobalt.q13.me"
+    "https://cobalt.q13.me",
+    "https://cobalt.xy24.eu.org",
+    "https://api.cobalt.biz.id",
+    "https://cobalt.mashedpotat.uno" 
 ]
 
 @app.route('/api/convert', methods=['POST'])
