@@ -17,7 +17,7 @@ interface EvergreenArticle {
 @Component({
     selector: 'app-blog',
     standalone: true,
-    imports: [CommonModule, AdBannerComponent],
+    imports: [CommonModule],
     templateUrl: './blog.component.html'
 })
 export class BlogComponent implements OnInit {

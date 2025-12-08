@@ -7,7 +7,7 @@ import { inject } from '@vercel/analytics';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RedesSocialesComponent, ToastContainerComponent],
+  imports: [RouterOutlet, ToastContainerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
