@@ -32,18 +32,15 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
   }
 
   private loadDesktopScript() {
-    // Force re-execution for SPA: Remove existing script first
-    const existingScript = document.getElementById('adsterra-native-script');
-    if (existingScript) {
-      existingScript.remove();
+    // Only load once globally
+    if (!document.getElementById('adsterra-native-script')) {
+      const script = document.createElement('script');
+      script.id = 'adsterra-native-script';
+      script.async = true;
+      script.setAttribute('data-cfasync', 'false');
+      script.src = '//pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js';
+      document.body.appendChild(script);
     }
-
-    const script = document.createElement('script');
-    script.id = 'adsterra-native-script';
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src = '//pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js';
-    document.body.appendChild(script);
   }
 
   private renderMobileAd() {

@@ -87,9 +87,7 @@
     </section>
 
     <!-- ADSTERRA ADS BOOSTER (End of List) -->
-    <div *ngIf="!loading()">
-        <app-ads-container [index]="0"></app-ads-container>
-    </div>
+    <app-ads-container [index]="0"></app-ads-container>
 
     <!-- Empty state -->
     <div *ngIf="!loading() && releases().length === 0" class="text-center py-12 md:py-16">
