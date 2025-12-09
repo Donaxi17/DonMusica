@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { SafePipe } from '../../pipes/safe.pipe';
 import { SeoService } from '../../services/seo.service';
+import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { lastValueFrom } from 'rxjs';
 
 interface Video {
   id: string;
@@ -15,20 +17,31 @@ interface Video {
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, SafePipe],
+  imports: [CommonModule, SafePipe, SvgIconComponent],
   templateUrl: './videos.component.html',
   styleUrl: './videos.component.css'
 })
 export class VideosComponent {
   private seoService = inject(SeoService);
+  private http = inject(HttpClient);
 
   currentVideoUrl = signal<string | null>(null);
-  searchQuery = signal<string>('');
+  searchQuery = signal<string>('Feid');
   isLoading = signal<boolean>(false);
   isVideoLoading = signal<boolean>(false);
   watchOnYoutubeUrl = signal<string | null>(null);
+  currentVideoIndex = signal<number>(-1);
 
   private readonly API_URL = 'https://itunes.apple.com/search';
+
+  private readonly PIPED_INSTANCES = [
+    'https://pipedapi.kavin.rocks',
+    'https://api.piped.private.coffee',
+    'https://pipedapi.drgns.space',
+    'https://api.piped.projectsegfau.lt',
+    'https://pipedapi.moomoo.me',
+    'https://pipedapi.smnz.de'
+  ];
 
   videos = signal<Video[]>([
     {
@@ -54,13 +67,11 @@ export class VideosComponent {
     }
   ]);
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.seoService.setSeoData(
-      'Videos Musicales',
+      'Videos Musicales - DonMusica',
       'Disfruta de los videoclips oficiales de tus artistas favoritos. Calidad HD y sin interrupciones.'
     );
-
-    this.searchQuery.set('Feid');
     this.search();
   }
 
@@ -68,64 +79,167 @@ export class VideosComponent {
     const query = this.searchQuery();
     if (!query.trim()) return;
     this.isLoading.set(true);
-    this.http.get<any>(this.API_URL, {
+
+    // Ejecutamos ambas búsquedas en paralelo (YouTube + iTunes)
+    const pipedSearch = this.searchPiped(query);
+    const itunesSearch = lastValueFrom(this.http.get<any>(this.API_URL, {
       params: {
         term: query,
         media: 'music',
         entity: 'musicVideo',
-        limit: '20'
+        limit: '49'
       }
-    }).subscribe({
-      next: (response) => {
-        const mappedVideos: Video[] = response.results.map((item: any) => ({
+    })).catch(err => ({ results: [] }));
+
+    Promise.all([pipedSearch, itunesSearch]).then(([youtubeResults, itunesResponse]) => {
+      let combinedVideos: Video[] = [];
+
+      // 1. YouTube Results (Priority)
+      if (youtubeResults && youtubeResults.length > 0) {
+        combinedVideos = [...youtubeResults];
+      }
+
+      // 2. iTunes Results (Fallback/Additional)
+      if (itunesResponse && itunesResponse.results) {
+        const itunesVideos: Video[] = itunesResponse.results.map((item: any) => ({
           id: item.trackId.toString(),
           title: item.trackName,
           artist: item.artistName,
           thumbnail: item.artworkUrl100.replace('100x100', '600x600'),
-          views: item.primaryGenreName
+          views: 'iTunes'
         }));
-        this.videos.set(mappedVideos);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error buscando en iTunes:', err);
-        this.isLoading.set(false);
+        combinedVideos = [...combinedVideos, ...itunesVideos];
       }
+
+      this.videos.set(combinedVideos);
+      this.isLoading.set(false);
+    }).catch(error => {
+      console.error('Error in combined search:', error);
+      this.isLoading.set(false);
     });
+  }
+
+  async searchPiped(query: string): Promise<Video[] | null> {
+    for (const instance of this.PIPED_INSTANCES) {
+      try {
+        const response: any = await lastValueFrom(this.http.get(`${instance}/search`, {
+          params: { q: query, filter: 'all' }
+        }));
+
+        if (response && response.items) {
+          const videos = response.items
+            .filter((item: any) => item.type === 'stream' && !item.isShort)
+            .map((item: any) => ({
+              id: item.url.split('v=')[1],
+              title: item.title,
+              artist: item.uploaderName,
+              thumbnail: item.thumbnail,
+              views: this.formatViews(item.views)
+            }));
+
+          if (videos.length > 0) return videos;
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+    return [];
   }
 
   playVideo(video: Video) {
     this.isVideoLoading.set(true);
-    const query = `${video.title} ${video.artist}`;
 
-    // Llamar a nuestra API serverless
-    this.http.get<any>(`/api/video-proxy?query=${encodeURIComponent(query)}`).subscribe({
-      next: (response) => {
-        if (response.videoId) {
-          // Usar el embed de YouTube con el video ID específico
-          this.currentVideoUrl.set(response.embedUrl);
-          this.watchOnYoutubeUrl.set(response.watchUrl);
+    const index = this.videos().findIndex(v => v.id === video.id);
+    if (index !== -1) {
+      this.currentVideoIndex.set(index);
+    }
+
+    this.seoService.setSeoData(
+      `Ver ${video.title} - ${video.artist} | DonMusica`,
+      `Reproduce el video oficial de ${video.title} interpretado por ${video.artist} en alta definición.`
+    );
+
+    if (!/^\d+$/.test(video.id)) {
+      this.setPlayer(video.id);
+    } else {
+      const query = `${video.title} ${video.artist}`;
+      this.findVideoId(query).then(videoId => {
+        if (videoId) {
+          this.setPlayer(videoId);
         } else {
-          throw new Error('No video ID');
+          const origin = window.location.origin;
+          const searchQ = encodeURIComponent(`${query} video`);
+          this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed?listType=search&list=${searchQ}&autoplay=1&origin=${origin}`);
+          this.watchOnYoutubeUrl.set(`https://www.youtube.com/results?search_query=${searchQ}`);
+          this.isVideoLoading.set(false);
         }
-        this.isVideoLoading.set(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      },
-      error: (err) => {
-        console.error('Error fetching video:', err);
-        // Fallback a búsqueda de YouTube
-        const searchQuery = encodeURIComponent(query);
-        this.currentVideoUrl.set(`https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1`);
-        this.watchOnYoutubeUrl.set(`https://www.youtube.com/results?search_query=${searchQuery}`);
-        this.isVideoLoading.set(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  }
+
+  private setPlayer(videoId: string) {
+    const origin = window.location.origin;
+    this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&origin=${origin}`);
+    this.watchOnYoutubeUrl.set(`https://www.youtube.com/watch?v=${videoId}`);
+    this.isVideoLoading.set(false);
+  }
+
+  nextVideo() {
+    const currentIndex = this.currentVideoIndex();
+    const videos = this.videos();
+    if (currentIndex < videos.length - 1) {
+      this.playVideo(videos[currentIndex + 1]);
+    }
+  }
+
+  prevVideo() {
+    const currentIndex = this.currentVideoIndex();
+    const videos = this.videos();
+    if (currentIndex > 0) {
+      this.playVideo(videos[currentIndex - 1]);
+    }
+  }
+
+  private async findVideoId(query: string): Promise<string | null> {
+    for (const instance of this.PIPED_INSTANCES) {
+      try {
+        const response: any = await lastValueFrom(this.http.get(`${instance}/search`, {
+          params: { q: query, filter: 'music_videos' }
+        }));
+
+        if (response && response.items && response.items.length > 0) {
+          const video = response.items.find((item: any) => item.type === 'stream' && !item.isShort);
+          if (video && video.url) {
+            return video.url.split('v=')[1];
+          }
+          if (response.items[0]?.url) {
+            return response.items[0].url.split('v=')[1];
+          }
+        }
+      } catch (error) {
+        continue;
       }
-    });
+    }
+    return null;
+  }
+
+  private formatViews(views: number): string {
+    if (views >= 1000000) {
+      return (views / 1000000).toFixed(1) + 'M vistas';
+    } else if (views >= 1000) {
+      return (views / 1000).toFixed(1) + 'K vistas';
+    }
+    return views + ' vistas';
   }
 
   closeVideo() {
     this.currentVideoUrl.set(null);
     this.watchOnYoutubeUrl.set(null);
+    this.currentVideoIndex.set(-1);
+    this.seoService.setSeoData(
+      'Videos Musicales - DonMusica',
+      'Disfruta de los videoclips oficiales de tus artistas favoritos. Calidad HD y sin interrupciones.'
+    );
   }
 
   onKeydown(event: KeyboardEvent) {

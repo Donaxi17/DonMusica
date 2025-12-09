@@ -141,5 +141,5 @@ html {
 }
 
 .play-button-pulse {
-    animation: playPulse 2s infinite;
+    animation: playPulse 2s infinite; 
 }
