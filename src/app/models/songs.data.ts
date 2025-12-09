@@ -6,7 +6,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 1,
         artistId: 1,
-        img: "/assets/img/Epico-canserbero.jpg",
+        img: "/assets/img/Epico-canserbero.webp",
         title: "Es Épico",
         artist: "Canserbero",
         duration: "6:20",
@@ -15,7 +15,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 2,
         artistId: 1,
-        img: "/assets/img/Muerte.jpg",
+        img: "/assets/img/Muerte.webp",
         title: "Mundo de Piedra",
         artist: "Canserbero",
         duration: "4:45",
@@ -24,7 +24,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 3,
         artistId: 1,
-        img: "/assets/img/Muerte.jpg",
+        img: "/assets/img/Muerte.webp",
         title: "Maquiavélico",
         artist: "Canserbero",
         duration: "4:45",
@@ -33,7 +33,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 4,
         artistId: 1,
-        img: "/assets/img/Muerte.jpg",
+        img: "/assets/img/Muerte.webp",
         title: "Jeremías 17:5",
         artist: "Canserbero",
         duration: "5:18",
@@ -42,7 +42,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 5,
         artistId: 1,
-        img: "/assets/img/Muerte.jpg",
+        img: "/assets/img/Muerte.webp",
         title: "El Primer Trago",
         artist: "Canserbero",
         duration: "6:20",
@@ -51,7 +51,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 6,
         artistId: 1,
-        img: "/assets/img/Vida.jpg",
+        img: "/assets/img/Vida.webp",
         title: "Pensando en Tí",
         artist: "Canserbero",
         duration: "4:02",
@@ -60,7 +60,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 7,
         artistId: 1,
-        img: "/assets/img/Epico-canserbero.jpg",
+        img: "/assets/img/Epico-canserbero.webp",
         title: "Querer Querernos (Versión Acústica)",
         artist: "Canserbero",
         duration: "3:56",
@@ -69,7 +69,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 8,
         artistId: 1,
-        img: "/assets/img/Vida.jpg",
+        img: "/assets/img/Vida.webp",
         title: "Y la Felicidad Qué?",
         artist: "Canserbero",
         duration: "4:54",
@@ -78,7 +78,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 9,
         artistId: 1,
-        img: "/assets/img/Epico-canserbero.jpg",
+        img: "/assets/img/Epico-canserbero.webp",
         title: "Stupid Love Story",
         artist: "Canserbero",
         duration: "4:41",
@@ -87,7 +87,7 @@ export const ALL_SONGS: Song[] = [
     {
         id: 10,
         artistId: 1,
-        img: "/assets/img/Epico-canserbero.jpg",
+        img: "/assets/img/Epico-canserbero.webp",
         title: "Cuando Vayas Conmigo",
         artist: "Canserbero",
         duration: "4:16",

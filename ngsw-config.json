@@ -34,8 +34,7 @@
       "resources": {
         "urls": [
           "https://fonts.googleapis.com/**",
-          "https://fonts.gstatic.com/**",
-          "https://unpkg.com/boxicons@2.1.4/**"
+          "https://fonts.gstatic.com/**"
         ]
       }
     }
@@ -48,8 +47,8 @@
         "https://pipedapi.kavin.rocks/**"
       ],
       "cacheConfig": {
-        "maxSize": 100,
-        "maxAge": "1h",
+        "maxSize": 150,
+        "maxAge": "2h",
         "timeout": "10s",
         "strategy": "freshness"
       }
@@ -63,9 +62,9 @@
         "https://*.mzstatic.com/**"
       ],
       "cacheConfig": {
-        "maxSize": 200,
-        "maxAge": "7d",
-        "timeout": "5s",
+        "maxSize": 300,
+        "maxAge": "14d",
+        "timeout": "8s",
         "strategy": "performance"
       }
     },
@@ -77,9 +76,9 @@
         "/assets/audio/**"
       ],
       "cacheConfig": {
-        "maxSize": 50,
-        "maxAge": "30d",
-        "timeout": "10s",
+        "maxSize": 100,
+        "maxAge": "60d",
+        "timeout": "15s",
         "strategy": "performance"
       }
     }

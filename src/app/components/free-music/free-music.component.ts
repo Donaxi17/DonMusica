@@ -50,9 +50,12 @@ export class FreeMusicComponent implements OnInit {
   // Sistema de descarga con anuncios
   showDownloadModal = signal(false);
   selectedDownloadSong = signal<Song | null>(null);
-  downloadCountdown = signal(5);
-  canDownload = signal(false);
+  downloadCountdown = signal(0); // Sin countdown
+  canDownload = signal(true); // Puede descargar inmediatamente
   isProcessingDownload = signal(false);
+
+  // Smartlink configuration
+  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
   // Estado de reproducción reactivo
   playingSongId = signal<string | number | undefined>(undefined);
@@ -145,18 +148,17 @@ export class FreeMusicComponent implements OnInit {
   openDownloadModal(song: Song) {
     this.selectedDownloadSong.set(song);
     this.showDownloadModal.set(true);
-    this.canDownload.set(false);
-    this.downloadCountdown.set(5);
+    this.canDownload.set(true); // Puede descargar inmediatamente
+    this.downloadCountdown.set(0); // Sin countdown
     this.isProcessingDownload.set(false);
 
-    // Usar setTimeout para esperar a que Angular renderice el div *ngIf
+    // Scroll al modal
     setTimeout(() => {
-      this.startCountdown();
       const element = document.getElementById('download-section');
       if (element) {
         element.scrollIntoView({
           behavior: 'smooth',
-          block: 'center' // Centrar el elemento en la pantalla
+          block: 'center'
         });
       }
     }, 100);
@@ -169,16 +171,13 @@ export class FreeMusicComponent implements OnInit {
     this.isProcessingDownload.set(false);
   }
 
+  private openSmartlinkIfAllowed(): void {
+    console.log('🔗 Abriendo Smartlink:', this.SMARTLINK_URL);
+    window.open(this.SMARTLINK_URL, '_blank');
+  }
+
   private startCountdown() {
-    const interval = setInterval(() => {
-      const current = this.downloadCountdown();
-      if (current > 0) {
-        this.downloadCountdown.set(current - 1);
-      } else {
-        this.canDownload.set(true);
-        clearInterval(interval);
-      }
-    }, 1000);
+    // Ya no se usa
   }
 
   // Manejar error de imagen con fallback
@@ -238,7 +237,12 @@ export class FreeMusicComponent implements OnInit {
 
         this.isProcessingDownload.set(false);
         this.closeDownloadModal();
-        this.toastService.success('Descarga completada');
+        this.toastService.success('✅ Descarga completada');
+
+        // Abrir Smartlink 1 segundo después del éxito
+        setTimeout(() => {
+          this.openSmartlinkIfAllowed();
+        }, 1000);
       },
       error: (error) => {
         console.warn('Error en descarga directa (posible CORS), usando fallback', error);
@@ -248,6 +252,11 @@ export class FreeMusicComponent implements OnInit {
 
         this.isProcessingDownload.set(false);
         this.closeDownloadModal();
+
+        // También abrir Smartlink en caso de fallback
+        setTimeout(() => {
+          this.openSmartlinkIfAllowed();
+        }, 1000);
       }
     });
   }

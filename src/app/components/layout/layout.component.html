@@ -1,5 +1,15 @@
 <div class="min-h-screen bg-zinc-950 text-white flex flex-col">
 
+    <!-- Skip Links for Accessibility -->
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-emerald-500 focus:text-black focus:rounded-lg focus:font-bold">
+        Saltar al contenido principal
+    </a>
+    <a href="#navigation"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-48 focus:z-[100] focus:px-4 focus:py-2 focus:bg-emerald-500 focus:text-black focus:rounded-lg focus:font-bold">
+        Saltar a navegación
+    </a>
+
     <!-- HEADER DESKTOP (Sticky) -->
     <header class="border-b border-zinc-800 bg-black/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
@@ -11,7 +21,7 @@
             </h1>
 
             <!-- Desktop Nav -->
-            <nav class="hidden md:flex items-center gap-1">
+            <nav id="navigation" class="hidden md:flex items-center gap-1">
                 <button (click)="navigateTo('/')" [class.text-emerald-400]="isActive('/')"
                     [class.text-zinc-400]="!isActive('/')"
                     class="px-4 py-2 rounded-full hover:bg-white/5 transition-colors text-sm font-medium hover:text-white">
@@ -130,7 +140,7 @@
     </header>
 
     <!-- MAIN CONTENT (Dynamic Padding) -->
-    <main class="flex-1 transition-all duration-300 relative z-0" [class.pb-28]="currentSong"
+    <main id="main-content" class="flex-1 transition-all duration-300 relative z-0" [class.pb-28]="currentSong"
         [class.pb-safe-bottom]="!currentSong" [class.md:pb-0]="true">
         <router-outlet></router-outlet>
     </main>

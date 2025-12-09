@@ -13,7 +13,7 @@ export const ARTISTS_DATA: Artist[] = [
         id: 1,
         name: "Canserbero",
         genre: "Rap / Hip-Hop",
-        image: "/assets/img/Epico-canserbero.jpg",
+        image: "/assets/img/Epico-canserbero.webp",
         description: "Ícono del rap latinoamericano"
     },
     {

@@ -2,20 +2,24 @@ import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-download-page',
   standalone: true,
-  imports: [CommonModule, SvgIconComponent],
+  imports: [CommonModule, SvgIconComponent, AdsContainerComponent],
   templateUrl: './download-page.component.html',
   styleUrl: './download-page.component.css'
 })
 export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
-  countdown: number = 5;
+  countdown: number = 0; // Sin countdown
   songTitle: string = '';
   artistName: string = '';
   downloadUrl: string = '';
   private intervalId: any;
+
+  // Smartlink configuration
+  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c'; // CAMBIA ESTO
 
   constructor(
     private router: Router,
@@ -33,14 +37,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Start countdown
-    this.intervalId = setInterval(() => {
-      if (this.countdown > 0) {
-        this.countdown--;
-      } else {
-        clearInterval(this.intervalId);
-      }
-    }, 1000);
+    // No countdown needed
   }
 
   ngAfterViewInit(): void {
@@ -64,19 +61,32 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  /**
+   * Opens Smartlink on EVERY download (Mobile + PC)
+   */
+  private openSmartlinkIfAllowed(): void {
+    console.log('🔗 Abriendo Smartlink:', this.SMARTLINK_URL);
+    window.open(this.SMARTLINK_URL, '_blank');
+  }
+
   startDownload(): void {
     if (this.downloadUrl) {
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = this.downloadUrl;
-      link.download = `${this.songTitle} - ${this.artistName}.mp3`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // 1. First, open Smartlink (if allowed)
+      this.openSmartlinkIfAllowed();
 
-      // Go back after a short delay
+      // 2. Wait 1 second, then start download
       setTimeout(() => {
-        this.goBack();
+        const link = document.createElement('a');
+        link.href = this.downloadUrl;
+        link.download = `${this.songTitle} - ${this.artistName}.mp3`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Go back after download starts
+        setTimeout(() => {
+          this.goBack();
+        }, 1000);
       }, 1000);
     }
   }
