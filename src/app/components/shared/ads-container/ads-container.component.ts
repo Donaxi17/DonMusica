@@ -14,10 +14,13 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
 
   isBrowser: boolean;
   mobileContainerId: string = '';
+  desktopContainerId: string = '';
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
-    this.mobileContainerId = `mobile-ad-${Math.random().toString(36).substr(2, 9)}`;
+    const uniqueId = Math.random().toString(36).substr(2, 9);
+    this.mobileContainerId = `mobile-ad-${uniqueId}`;
+    this.desktopContainerId = `desktop-ad-${uniqueId}`;
   }
 
   ngOnInit() {
@@ -32,15 +35,16 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
   }
 
   private loadDesktopScript() {
-    // Only load once globally
-    if (!document.getElementById('adsterra-native-script')) {
-      const script = document.createElement('script');
-      script.id = 'adsterra-native-script';
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      script.src = '//pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js';
-      document.body.appendChild(script);
-    }
+    setTimeout(() => {
+      const container = document.getElementById(this.desktopContainerId);
+      if (container && !container.hasChildNodes()) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.setAttribute('data-cfasync', 'false');
+        script.src = '//pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js';
+        container.appendChild(script);
+      }
+    }, 500 + (this.index * 300));
   }
 
   private renderMobileAd() {
