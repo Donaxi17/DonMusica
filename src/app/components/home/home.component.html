@@ -1,11 +1,12 @@
 <div class="relative min-h-screen pb-4 md:pb-24 overflow-x-hidden">
 
     <!-- Hero Background -->
-    <div class="absolute top-0 left-0 right-0 h-[77vh] md:h-[87vh] z-0 pointer-events-none">
+    <div class="absolute top-0 left-0 right-0 h-[70vh] sm:h-[75vh] md:h-[85vh] lg:h-[87vh] z-0 pointer-events-none">
         <div class="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/80 to-zinc-950 z-10"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/20 to-black/50 z-10"></div>
         <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070&auto=format&fit=crop"
-            alt="Concert Background" class="w-full h-full object-cover opacity-50 animate-fade-in">
+            alt="Concert Background"
+            class="w-full h-full object-cover object-center sm:object-center md:object-top opacity-50 animate-fade-in">
     </div>
 
     <!-- Contenido Principal -->
@@ -120,8 +121,8 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Explorar</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3 line-clamp-2">
-                        Descubre lo último. Nuevos lanzamientos y listas curadas.
+                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                        Tendencias globales, rankings actualizados y estrenos. Todo lo que suena ahora mismo.
                     </p>
                     <span class="text-blue-500 text-xs font-bold uppercase tracking-wide">Ver Novedades</span>
                 </div>
@@ -143,8 +144,8 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Top Charts</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3 line-clamp-2">
-                        Ranking global y local de las canciones más sonadas.
+                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                        Rankings en tiempo real por país. Descubre qué está sonando en Colombia, USA, España y más.
                     </p>
                     <span class="text-yellow-500 text-xs font-bold uppercase tracking-wide">Ver Ranking</span>
                 </div>
@@ -166,8 +167,8 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Artistas</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3 line-clamp-2">
-                        Discografías completas y biografías de tus ídolos.
+                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                        Catálogo completo de artistas urbanos. Discografías, álbumes y toda su música en un solo lugar.
                     </p>
                     <span class="text-purple-500 text-xs font-bold uppercase tracking-wide">Buscar Artista</span>
                 </div>
@@ -189,43 +190,794 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Sin Copyright</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3 line-clamp-2">
-                        Música libre de derechos para tus videos y streams.
+                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                        Miles de tracks libres de derechos. Perfectos para YouTube, Twitch, TikTok y proyectos
+                        comerciales.
                     </p>
                     <span class="text-emerald-500 text-xs font-bold uppercase tracking-wide">Descargar Gratis</span>
                 </div>
             </div>
         </div>
 
-        <!-- TRENDING MINI -->
-        <div class="mb-12 md:mb-16">
-            <div class="flex items-center justify-between mb-4 md:mb-6 pl-1 pr-1">
-                <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                    <svg class="w-6 h-6 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M13 6.99h3L12 3 8 6.99h3v10.02H8L12 21l4-3.99h-3z" />
-                    </svg> Tendencias
-                </h2>
-                <button (click)="navigateTo('/browse/trends')"
-                    class="text-zinc-400 text-xs font-bold hover:text-white transition-colors bg-zinc-800 px-3 py-1.5 rounded-full">
-                    Ver Top 10
-                </button>
-            </div>
+        <!-- DETAILED FEATURES SECTIONS -->
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                @for(song of trendingSongs; track song.id) {
-                <div
-                    class="group relative aspect-[1/1] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer border border-white/5 hover:border-emerald-500/30 transition-all">
-                    <img [src]="song.img"
-                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-70 group-hover:opacity-100">
+        <!-- Explorar Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
                     <div
-                        class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-3">
-                        <h4 class="text-white text-xs font-bold truncate">{{song.title}}</h4>
-                        <p class="text-zinc-400 text-[10px] truncate">{{song.artist}}</p>
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M12 10.999c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zm-2.121-1.414l-1.414 1.414 3.535 3.535 1.414-1.414-3.535-3.535z" />
+                        </svg>
+                        <span class="text-blue-400 text-xs font-bold uppercase">Descubre</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Explora lo <span
+                            class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Último</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Mantente al día con las <strong class="text-white">tendencias globales</strong>, descubre los
+                        <strong class="text-white">nuevos lanzamientos</strong> y explora rankings actualizados
+                        diariamente. Todo lo que está sonando ahora mismo en un solo lugar.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Tendencias actualizadas cada hora</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Estrenos de la semana destacados</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Listas curadas por género musical</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/browse')"
+                        class="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Explorar Ahora
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-blue-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-blue-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13 6.99h3L12 3 8 6.99h3v10.02H8L12 21l4-3.99h-3z" />
+                        </svg>
                     </div>
                 </div>
-                }
             </div>
         </div>
+
+        <!-- Charts Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-yellow-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-yellow-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-yellow-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M21 4h-3V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v3c0 4.31 1.799 6.91 4.819 7.012A6.001 6.001 0 0 0 11 17.91V20H9v2h6v-2h-2v-2.09a6.01 6.01 0 0 0 4.181-2.898C20.201 14.91 22 12.31 22 8V5a1 1 0 0 0-1-1zM4 8V6h2v6.83C4.216 12.078 4 9.299 4 8zm8 8c-2.206 0-4-1.794-4-4V4h8v8c0 2.206-1.794 4-4 4zm8-3.17V6h2v2c0 1.299-.216 4.078-2 4.83z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-4">
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                        <span class="text-yellow-400 text-xs font-bold uppercase">Rankings</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Top <span
+                            class="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">Charts</span>
+                        Globales
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Descubre qué está sonando en <strong class="text-white">cada país</strong>. Rankings
+                        actualizados en tiempo real de Colombia, Estados Unidos, España, México y más de 50 países.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Top 100 por país actualizado diariamente</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Filtros por región y género</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Reproduce directamente desde el ranking</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/browse/charts')"
+                        class="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Rankings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artistas Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mb-4">
+                        <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
+                        </svg>
+                        <span class="text-purple-400 text-xs font-bold uppercase">Catálogo</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Tus <span
+                            class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Artistas</span>
+                        Favoritos
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Accede al catálogo completo de <strong class="text-white">artistas urbanos</strong>.
+                        Discografías, álbumes, sencillos y toda su música organizada en un solo lugar. Desde Bad Bunny
+                        hasta artistas emergentes.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Discografías completas organizadas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Biografías y datos del artista</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Descarga canciones individuales o álbumes
+                                completos</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/artists')"
+                        class="px-6 py-3 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Artistas
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-purple-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-purple-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Videos Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-red-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-red-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-red-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M4 6.47L5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
+                        <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 6v12l10-6z" />
+                        </svg>
+                        <span class="text-red-400 text-xs font-bold uppercase">Multimedia</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Videos <span
+                            class="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">Musicales</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Disfruta de los <strong class="text-white">videos oficiales</strong> de tus canciones favoritas.
+                        Clips musicales en alta calidad directamente desde YouTube.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Videos oficiales en HD</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Busca cualquier video musical</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Reproductor integrado sin salir de la app</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/videos')"
+                        class="px-6 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Videos
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sin Copyright Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+                        <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm6 9.09c0 4-2.55 7.7-6 8.83-3.45-1.13-6-4.82-6-8.83V6.31l6-2.12 6 2.12v4.78z" />
+                        </svg>
+                        <span class="text-emerald-400 text-xs font-bold uppercase">Libre de Derechos</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Música <span
+                            class="bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">Sin
+                            Copyright</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Miles de tracks <strong class="text-white">100% libres de derechos</strong>. Perfectos para tus
+                        videos de YouTube, streams de Twitch, TikToks y proyectos comerciales sin preocuparte por
+                        copyright strikes.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Uso comercial permitido</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Múltiples géneros disponibles</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Descarga ilimitada y gratuita</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/sin-copyright')"
+                        class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg transition-all transform active:scale-95">
+                        Descargar Gratis
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-emerald-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-emerald-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm6 9.09c0 4-2.55 7.7-6 8.83-3.45-1.13-6-4.82-6-8.83V6.31l6-2.12 6 2.12v4.78z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Convertidor Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-orange-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-orange-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-orange-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4">
+                        <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z" />
+                        </svg>
+                        <span class="text-orange-400 text-xs font-bold uppercase">Herramienta</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Convertidor <span
+                            class="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">YouTube a
+                            MP3</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Convierte cualquier video de YouTube a <strong class="text-white">MP3 de alta calidad</strong>.
+                        Rápido, fácil y completamente gratis. Solo pega el link y descarga.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Conversión en segundos</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Calidad de audio 320kbps</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Sin límites ni registro</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/convertidor')"
+                        class="px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Convertir Ahora
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Letras Guardadas Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 mb-4">
+                        <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.805 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zm0 14H5V5c0-.806.55-.988 1-1h13v12z" />
+                        </svg>
+                        <span class="text-pink-400 text-xs font-bold uppercase">Letras</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Letras <span
+                            class="bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">Guardadas</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Guarda las <strong class="text-white">letras de tus canciones favoritas</strong> y accede a
+                        ellas sin conexión. Crea tu biblioteca personal de letras.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Acceso offline a tus letras</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Organiza por carpetas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Búsqueda instantánea</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/letras-guardadas')"
+                        class="px-6 py-3 bg-pink-500 hover:bg-pink-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Mis Letras
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-pink-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-pink-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.805 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zm0 14H5V5c0-.806.55-.988 1-1h13v12z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radio Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-cyan-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-cyan-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-cyan-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 12 7.4l3.38 4.6L17 10.83 14.92 8H20v6z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
+                        <svg class="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 12 7.4l3.38 4.6L17 10.83 14.92 8H20v6z" />
+                        </svg>
+                        <span class="text-cyan-400 text-xs font-bold uppercase">En Vivo</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Radio <span
+                            class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Online</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Escucha <strong class="text-white">emisoras de radio en vivo</strong> de todo el mundo. Música
+                        24/7 sin interrupciones.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Emisoras de todo el mundo</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Streaming en alta calidad</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Filtros por género y país</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/radio')"
+                        class="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Escuchar Radio
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad After Modules -->
+        <div class="mb-12 md:mb-16">
+            <app-ads-container [index]="0"></app-ads-container>
+        </div>
+
+        <!-- Playlists Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M13 16.94v-2.02c3.95-.49 7-3.85 7-7.92s-3.05-7.43-7-7.92V1h-2v2.08C7.05 3.57 4 6.93 4 11s3.05 7.43 7 7.92v2.02c-5.05-.5-9-4.76-9-9.94s3.95-9.44 9-9.94V0h2v1.06c5.05.5 9 4.76 9 9.94s-3.95 9.44-9 9.94z" />
+                        </svg>
+                        <span class="text-amber-400 text-xs font-bold uppercase">Colecciones</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Tus <span
+                            class="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Playlists</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Crea y organiza tus <strong class="text-white">playlists personalizadas</strong>. Guarda tus
+                        canciones favoritas y accede a ellas cuando quieras.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Crea playlists ilimitadas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Organiza por estado de ánimo o género</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Sincronización en todos tus dispositivos</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/playlists')"
+                        class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Playlists
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-amber-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M13 16.94v-2.02c3.95-.49 7-3.85 7-7.92s-3.05-7.43-7-7.92V1h-2v2.08C7.05 3.57 4 6.93 4 11s3.05 7.43 7 7.92v2.02c-5.05-.5-9-4.76-9-9.94s3.95-9.44 9-9.94V0h2v1.06c5.05.5 9 4.76 9 9.94s-3.95 9.44-9 9.94z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Música Offline Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-indigo-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-indigo-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-indigo-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46C10.21 6.23 11.08 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27zM7.73 10l8 8H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h1.73z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-4">
+                        <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46C10.21 6.23 11.08 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27zM7.73 10l8 8H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h1.73z" />
+                        </svg>
+                        <span class="text-indigo-400 text-xs font-bold uppercase">Sin Conexión</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Música <span
+                            class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Offline</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Descarga tus canciones favoritas y <strong class="text-white">escúchalas sin internet</strong>.
+                        Perfecta para viajes, gimnasio o cuando no tengas datos.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Descarga ilimitada</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Alta calidad de audio</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Gestión de almacenamiento inteligente</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/musica-offline')"
+                        class="px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Ver Descargas
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Añadir Música Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="order-2 md:order-1">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 mb-4">
+                        <svg class="w-4 h-4 text-teal-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                        </svg>
+                        <span class="text-teal-400 text-xs font-bold uppercase">Subir</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Añadir <span
+                            class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Música</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Sube tu <strong class="text-white">propia música</strong> y organízala en carpetas
+                        personalizadas. Tu biblioteca musical en la nube.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Sube archivos MP3, WAV, FLAC</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Organiza en carpetas personalizadas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Acceso desde cualquier dispositivo</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/upload-music')"
+                        class="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Subir Música
+                    </button>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-teal-500/10 to-transparent p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-teal-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Section -->
+        <div class="mb-16 md:mb-20">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div
+                        class="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-violet-500/10 to-transparent p-8">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-violet-500/20 blur-3xl rounded-full"></div>
+                        <svg class="w-full h-48 text-violet-500/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.805 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zM9.503 5a1.503 1.503 0 1 1 0 3.006 1.503 1.503 0 0 1 0-3.006zM12 13H7V9h5v4zm5 0h-3V9h3v4z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 mb-4">
+                        <svg class="w-4 h-4 text-violet-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.805 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zM9.503 5a1.503 1.503 0 1 1 0 3.006 1.503 1.503 0 0 1 0-3.006zM12 13H7V9h5v4zm5 0h-3V9h3v4z" />
+                        </svg>
+                        <span class="text-violet-400 text-xs font-bold uppercase">Contenido</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Blog <span
+                            class="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">Musical</span>
+                    </h2>
+                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                        Artículos, noticias y <strong class="text-white">curiosidades del mundo musical</strong>.
+                        Mantente informado sobre tus artistas favoritos.
+                    </p>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-violet-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Noticias de la industria musical</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-violet-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Entrevistas exclusivas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-violet-500 mt-0.5 flex-shrink-0" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
+                            </svg>
+                            <span class="text-zinc-300 text-sm">Guías y tutoriales</span>
+                        </li>
+                    </ul>
+                    <button (click)="navigateTo('/blog')"
+                        class="px-6 py-3 bg-violet-500 hover:bg-violet-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
+                        Leer Blog
+                    </button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- REQUEST FORM (Updated Contact) -->
         <div #requestForm id="requestForm"
@@ -271,23 +1023,30 @@
             </div>
         </div>
 
-        <!-- Mobile Contact (Links Updated) - Removed excessive padding -->
-        <div class="grid grid-cols-2 gap-3 pb-0 md:hidden">
+        <!-- Ad Before Contact -->
+        <div class="mb-8">
+            <app-ads-container [index]="1"></app-ads-container>
+        </div>
+
+        <!-- Contact Buttons - Now visible on all screens -->
+        <div class="grid grid-cols-2 gap-3 md:gap-4 pb-0 max-w-md mx-auto">
             <button (click)="scrollToRequest()"
-                class="flex flex-col items-center justify-center p-4 rounded-xl bg-zinc-900 border border-zinc-800 active:scale-95 transition-transform">
-                <svg class="w-6 h-6 text-emerald-500 mb-2" fill="currentColor" viewBox="0 0 24 24">
+                class="flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 active:scale-95 transition-all group">
+                <svg class="w-6 h-6 md:w-8 md:h-8 text-emerald-500 mb-2 group-hover:scale-110 transition-transform"
+                    fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M20 4H4c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm0 2v.511l-8 6.223-8-6.222V6h16zM4 18V9.044l7.386 5.745a.994.994 0 0 0 1.228 0L20 9.044 20.002 18H4z" />
                 </svg>
-                <p class="text-white text-xs font-bold">Contacto</p>
+                <p class="text-white text-xs md:text-sm font-bold">Contacto</p>
             </button>
             <a href="https://wa.me/573017966272" target="_blank"
-                class="flex flex-col items-center justify-center p-4 rounded-xl bg-zinc-900 border border-zinc-800 active:scale-95 transition-transform">
-                <svg class="w-6 h-6 text-blue-500 mb-2" fill="currentColor" viewBox="0 0 24 24">
+                class="flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-green-500/30 active:scale-95 transition-all group">
+                <svg class="w-6 h-6 md:w-8 md:h-8 text-green-500 mb-2 group-hover:scale-110 transition-transform"
+                    fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-6.99A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.17-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.86-.87 2.07 0 1.22.89 2.39 1 2.56.14.17 1.76 2.67 4.25 3.73.59.27 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.16-.48-.27-.25-.14-1.47-.74-1.69-.82-.23-.08-.37-.12-.56.12-.16.25-.64.81-.78.97-.15.17-.29.19-.53.07-.26-.13-1.06-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.12-.24-.01-.39.11-.5.11-.11.27-.29.37-.44.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.11-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43-.14 0-.3-.01-.47-.01z" />
                 </svg>
-                <p class="text-white text-xs font-bold">WhatsApp</p>
+                <p class="text-white text-xs md:text-sm font-bold">WhatsApp</p>
             </a>
         </div>
 

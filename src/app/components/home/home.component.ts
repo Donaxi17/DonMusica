@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { Song } from '../../services/playlist.service';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdsContainerComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -25,9 +26,10 @@ export class HomeComponent implements OnInit {
   trendingSongs: Song[] = [];
 
   ngOnInit() {
+    // Enhanced SEO with rich meta tags
     this.seoService.setSeoData(
-      'Inicio',
-      'Bienvenido a DonMusica. Escucha y descarga tu música favorita gratis. La mejor calidad de sonido y los artistas del momento.'
+      'DonMusica - Música Urbana Gratis | Descargar MP3, Letras y Videos',
+      'Escucha y descarga música urbana gratis en DonMusica. Reggaeton, trap, rap y más. Rankings actualizados, letras de canciones, videos musicales y música sin copyright para tus proyectos. Artistas como Bad Bunny, Karol G, Feid y más en donmusica.online'
     );
 
     // Load trending songs from the same source as the Trends page
