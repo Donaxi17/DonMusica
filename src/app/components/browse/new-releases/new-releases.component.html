@@ -1,4 +1,4 @@
-<div class="space-y-4 md:space-y-8 animate-fade-in pb-20 md:pb-24">
+<div class="space-y-4 md:space-y-8 animate-fade-in">
     <!-- SEO-optimized header -->
     <header
         class="mb-5 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-4 text-center">
@@ -27,8 +27,6 @@
         <app-skeleton type="card"></app-skeleton>
         }
     </div>
-
-    <!-- <app-ad-banner adType="Banner Promocional" class="mb-4 md:mb-8 block" aria-label="Publicidad"></app-ad-banner> -->
 
     <!-- Grid of New Songs - Compact on mobile -->
     <section *ngIf="!loading()" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6"
@@ -87,6 +85,11 @@
             </div>
         </article>
     </section>
+
+    <!-- ADSTERRA ADS BOOSTER (End of List) -->
+    <div *ngIf="!loading()">
+        <app-ads-container [index]="0"></app-ads-container>
+    </div>
 
     <!-- Empty state -->
     <div *ngIf="!loading() && releases().length === 0" class="text-center py-12 md:py-16">

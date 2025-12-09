@@ -46,6 +46,15 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/artists']);
   }
 
+  openAdAndStart(): void {
+    // 1. Open Adsterra link in new tab
+    const adUrl = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
+    window.open(adUrl, '_blank');
+
+    // 2. Navigate to the app functionality (Artists)
+    this.navigateToArtists();
+  }
+
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }

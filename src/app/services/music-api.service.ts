@@ -68,47 +68,11 @@ export class MusicApiService {
     }
 
     // --- TRENDING (Hybrid) ---
+    // --- TRENDING (Direct iTunes for reliability and speed) ---
     getTrending(region: string = 'US'): Observable<Song[]> {
-        return this.getSpotifyToken().pipe(
-            switchMap(token => {
-                if (!token) {
-                    return this.getTrendingFromITunes(region);
-                }
-
-                const headers = new HttpHeaders({
-                    'Authorization': `Bearer ${token}`
-                });
-
-                return this.http.get<any>(`${this.SPOTIFY_API_URL}/browse/featured-playlists?country=${region}&limit=1`, { headers }).pipe(
-                    switchMap(playlistResponse => {
-                        if (playlistResponse.playlists?.items?.length > 0) {
-                            const playlistId = playlistResponse.playlists.items[0].id;
-                            return this.http.get<any>(`${this.SPOTIFY_API_URL}/playlists/${playlistId}/tracks?limit=30`, { headers }).pipe(
-                                switchMap(tracksResponse => {
-                                    if (tracksResponse.items && tracksResponse.items.length > 0) {
-                                        const requests = tracksResponse.items
-                                            .filter((item: any) => item.track)
-                                            .slice(0, 20)
-                                            .map((item: any) => this.getITunesPreviewForTrack(item.track, region));
-
-                                        return forkJoin(requests as Observable<Song | null>[]).pipe(
-                                            map((songs: (Song | null)[]) => {
-                                                const validSongs = songs.filter((s): s is Song => s !== null && s.url !== '');
-                                                return validSongs.length >= 5 ? validSongs : [];
-                                            })
-                                        );
-                                    }
-                                    return of([]);
-                                })
-                            );
-                        }
-                        return of([]);
-                    }),
-                    catchError(() => of([])),
-                    switchMap(songs => songs.length > 0 ? of(songs) : this.getTrendingFromITunes(region))
-                );
-            })
-        );
+        // Skip Spotify to avoid 404s on featured-playlists for some regions
+        // and because we need iTunes previews anyway.
+        return this.getTrendingFromITunes(region);
     }
 
     private getTrendingFromITunes(region: string = 'US'): Observable<Song[]> {
@@ -204,15 +168,17 @@ export class MusicApiService {
     }
 
     private getNewReleasesFromITunes(country: string, limit: number): Observable<Song[]> {
-        const currentYear = new Date().getFullYear();
-        const term = country === 'CO' ? `latin ${currentYear}` : `pop ${currentYear}`;
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=${limit * 2}&country=${country}&attribute=releaseYearTerm`;
+        // Search broader terms to get more candidates, then filter by date locally
+        const term = country === 'CO' ? 'Latino' : 'Pop';
+
+        // Request 200 items to ensure we have enough after date filtering
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=200&country=${country}`;
 
         return this.http.get<any>(url).pipe(
             map(res => {
                 if (!res.results) return [];
                 const sixMonthsAgo = new Date();
-                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 7);
 
                 return res.results
                     .filter((t: any) => new Date(t.releaseDate) > sixMonthsAgo)

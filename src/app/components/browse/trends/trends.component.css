@@ -1,0 +1,20 @@
+/* Force Adsterra Desktop Banner to be a Row */
+@media (min-width: 768px) {
+    div[id^="container-"] {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+    }
+
+    div[id^="container-"]>div,
+    div[id^="container-"]>a {
+        flex: 1 !important;
+        min-width: 0 !important;
+        /* Allow shrinking */
+        margin: 0 !important;
+        display: block !important;
+    }
+}

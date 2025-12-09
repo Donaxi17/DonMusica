@@ -11,11 +11,12 @@ import { SeoService } from '../../../services/seo.service';
 import { OfflineService } from '../../../services/offline.service';
 import { ShareService } from '../../../services/share.service';
 import { Song } from '../../../services/playlist.service';
+import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 
 @Component({
     selector: 'app-search',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, AdsContainerComponent],
     templateUrl: './search.component.html',
     styleUrl: './search.component.css'
 })
@@ -32,9 +33,10 @@ export class SearchComponent implements OnInit {
     searchQuery = signal('');
     isSearching = signal(false);
     showLyrics = signal(false);
-    selectedSongLyrics = signal('');
-    selectedSongTitle = signal('');
     selectedSongArtist = signal('');
+    selectedSongTitle = signal('');
+    selectedSongLyrics = signal('');
+    loadingLyrics = signal(false);
     searchResults = signal<Song[]>([]);
 
     ngOnInit() {
@@ -88,19 +90,22 @@ export class SearchComponent implements OnInit {
     viewLyrics(song: Song) {
         this.selectedSongTitle.set(song.title);
         this.selectedSongArtist.set(song.artist);
-        this.selectedSongLyrics.set('Cargando letra...');
+        this.selectedSongLyrics.set('');
+        this.loadingLyrics.set(true);
         this.showLyrics.set(true);
 
         this.musicApi.getLyrics(song.artist, song.title).subscribe({
             next: (lyrics) => {
+                this.loadingLyrics.set(false);
                 if (lyrics && lyrics.length > 50) {
                     this.selectedSongLyrics.set(lyrics);
                 } else {
-                    this.selectedSongLyrics.set('No se encontró la letra de esta canción.\\n\\nIntenta buscar otra canción o verifica el nombre del artista.');
+                    this.selectedSongLyrics.set(''); // Empty indicates not found
                 }
             },
             error: () => {
-                this.selectedSongLyrics.set('Error al cargar la letra. Por favor intenta de nuevo.');
+                this.loadingLyrics.set(false);
+                this.selectedSongLyrics.set(''); // Error also treated as empty/not found for simplicity
             }
         });
     }

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdBannerComponent } from '../../shared/ad-banner/ad-banner.component';
+import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component'; // Import new component
 import { InfiniteScrollDirective } from '../../../directives/infinite-scroll.directive';
 import { MusicApiService } from '../../../services/music-api.service';
 import { PlayerService } from '../../../services/player.service';
@@ -10,7 +10,7 @@ import { SeoService } from '../../../services/seo.service';
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective],
+    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent], // Add to imports
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {
@@ -37,14 +37,21 @@ export class TrendsComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        // SEO optimization with keywords and description
+        // FORCE PAUSE: Stop any playback immediately when entering trends
+        setTimeout(() => {
+            this.playerService.pause();
+        }, 100);
+
+        // SEO optimization
         this.seoService.setSeoData(
-            'Tendencias Musicales Globales 2025 | Top Canciones del Momento | DonMusica',
-            'Descubre las tendencias musicales más populares del 2025 en DonMusica. Escucha las canciones más escuchadas en todo el mundo, desde reggaetón hasta pop internacional. ¡Música sin límites en donmusica.online!'
+            'Tendencias Globales | DonMusica',
+            'Lo más escuchado del momento.'
         );
 
         this.loadInitialData();
     }
+    // Adsterra scripts removed - now handled by AdsContainerComponent
+
 
     loadInitialData() {
         this.loading.set(true);
@@ -102,11 +109,11 @@ export class TrendsComponent implements OnInit {
         }, 300);
     }
 
-    // Method intentionally does nothing - visual only as requested
+    // Play song on click
     onSongClick(song: Song, event: Event) {
-        // Visual only - no action on click as requested by user
         event.preventDefault();
         event.stopPropagation();
+        // this.playerService.playSong(song); // Disabled as per user request
     }
 
     // Image error handler - fallback to placeholder

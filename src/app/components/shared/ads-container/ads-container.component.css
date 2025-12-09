@@ -1,0 +1,38 @@
+/* Force Adsterra Desktop Banner to be a Row (Fila) */
+@media (min-width: 768px) {
+
+    /* Main Container */
+    div[id^="container-"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        /* Allow scroll if needed, but prefer fit */
+        margin-bottom: 2rem !important;
+    }
+
+    /* Direct Children (The Ads) */
+    div[id^="container-"]>* {
+        flex: 1 1 0% !important;
+        /* Grow, Shrink, Basis 0 */
+        width: auto !important;
+        max-width: 25% !important;
+        /* Cap at 25% width to fit 4 */
+        min-width: 200px !important;
+        /* Minimum width for readability */
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* Images/Iframes inside ads */
+    div[id^="container-"] img,
+    div[id^="container-"] iframe {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+    }
+}

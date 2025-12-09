@@ -1,4 +1,4 @@
-<div class="space-y-6 md:space-y-8 animate-fade-in pb-24">
+<div class="space-y-6 md:space-y-8 animate-fade-in">
     <header class="mb-6 md:mb-8">
         <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
             <h2
@@ -56,13 +56,19 @@
             <div class="space-y-3">
                 <ng-container *ngFor="let song of chartSongs(); let i = index">
                     <!-- Song Item -->
-                    <div (click)="playSong(song)"
-                        class="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl bg-zinc-900/40 border border-zinc-800 hover:bg-zinc-800 hover:border-blue-500/50 transition-all group cursor-pointer">
+                    <div (click)="playSong(song)" [ngClass]="{
+                            'bg-emerald-500/10 border-emerald-500 ring-1 ring-emerald-500/50': isCurrentSong(song),
+                            'bg-yellow-500/30 border-yellow-500/50 hover:bg-yellow-500/40': !isCurrentSong(song) && i === 0,
+                            'bg-zinc-400/25 border-zinc-400/40 hover:bg-zinc-400/35': !isCurrentSong(song) && i === 1,
+                            'bg-amber-700/30 border-amber-600/50 hover:bg-amber-700/40': !isCurrentSong(song) && i === 2,
+                            'bg-zinc-900/40 border-zinc-800 hover:bg-zinc-800 hover:border-blue-500/50': !isCurrentSong(song) && i > 2
+                        }"
+                        class="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl border transition-all group cursor-pointer">
 
                         <!-- Ranking Number -->
                         <div class="flex items-center justify-center w-8 md:w-10 flex-shrink-0">
                             <span class="text-xl md:text-2xl font-bold" [class.text-yellow-400]="i === 0"
-                                [class.text-zinc-400]="i === 1" [class.text-amber-600]="i === 2"
+                                [class.text-zinc-300]="i === 1" [class.text-orange-500]="i === 2"
                                 [class.text-zinc-600]="i > 2">
                                 {{i + 1}}
                             </span>
@@ -73,7 +79,20 @@
                             class="relative w-12 h-12 md:w-14 md:h-14 bg-zinc-800 rounded-lg flex-shrink-0 overflow-hidden shadow-md group-hover:scale-105 transition-transform">
                             <img [src]="song.img" [alt]="song.title" (error)="handleImageError($event, song.title)"
                                 loading="lazy" class="w-full h-full object-cover">
-                            <div
+
+                            <!-- Playing Overlay -->
+                            <div *ngIf="isCurrentSong(song)"
+                                class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <span class="relative flex h-3 w-3 md:h-4 md:w-4">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span
+                                        class="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4 bg-emerald-500"></span>
+                                </span>
+                            </div>
+
+                            <!-- Hover Overlay -->
+                            <div *ngIf="!isCurrentSong(song)"
                                 class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                                     <path
@@ -85,26 +104,32 @@
 
                         <!-- Song Info -->
                         <div class="flex-1 min-w-0">
-                            <h4
-                                class="font-bold truncate text-xs md:text-base text-white group-hover:text-blue-400 transition-colors">
+                            <h4 class="font-bold truncate text-xs md:text-base transition-colors"
+                                [ngClass]="isCurrentSong(song) ? 'text-emerald-400' : 'text-white group-hover:text-blue-400'">
                                 {{song.title}}
                             </h4>
                             <p class="text-[10px] md:text-sm text-zinc-400 truncate">{{song.artist}}</p>
                             <div class="flex items-center gap-1 mt-1">
-                                <span class="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                                    [ngClass]="isCurrentSong(song) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'">
                                     {{song.genre}}
                                 </span>
                                 <span class="text-xs text-zinc-500">{{song.duration}}</span>
                             </div>
                         </div>
 
-                        <!-- Play Button -->
-                        <button
-                            class="w-7 h-7 md:w-10 md:h-10 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white transition-all hover:scale-110 opacity-0 group-hover:opacity-100 shadow-lg">
-                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 6v12l10-6z" />
-                            </svg>
-                        </button>
+                        <!-- Play/Active Indicator -->
+                        <div class="mr-2">
+                            <span *ngIf="isCurrentSong(song)"
+                                class="text-emerald-500 text-xs font-bold animate-pulse">Reproduciendo</span>
+
+                            <button *ngIf="!isCurrentSong(song)"
+                                class="w-7 h-7 md:w-10 md:h-10 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white transition-all hover:scale-110 opacity-0 group-hover:opacity-100 shadow-lg">
+                                <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 6v12l10-6z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Ad Banner after 10th item (index 9) -->
@@ -116,34 +141,32 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="w-full lg:w-80 xl:w-96 flex-shrink-0">
-            <div class="sticky top-24">
-                <!-- Ad Banner -->
-                <!-- <app-ad-banner adType="Anuncio Lateral" class="hidden md:block mb-6"></app-ad-banner> -->
+        <div class="w-full lg:w-48 xl:w-52 flex-shrink-0">
+            <div class="sticky top-36 z-10">
 
                 <!-- Featured Song Card -->
                 <div *ngIf="chartSongs().length > 0"
-                    class="bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl p-5 md:p-6 border border-zinc-700 shadow-xl">
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                    class="bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-xl p-3 border border-zinc-700 shadow-xl">
+                    <div class="flex items-center justify-center gap-1.5 mb-2">
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M21 4h-3V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v3c0 4.31 1.799 6.91 4.819 7.012A6.001 6.001 0 0 0 11 17.91V20H9v2h6v-2h-2v-2.09a6.01 6.01 0 0 0 4.181-2.898C20.201 14.91 22 12.31 22 8V5a1 1 0 0 0-1-1zM4 8V6h2v6.83C4.216 12.078 4 9.299 4 8zm8 8c-2.206 0-4-1.794-4-4V4h8v8c0 2.206-1.794 4-4 4zm8-3.17V6h2v2c0 1.299-.216 4.078-2 4.83z" />
                         </svg>
-                        <h3 class="font-bold text-white text-base md:text-lg">
+                        <h3 class="font-bold text-white text-xs md:text-sm">
                             #1 en {{selectedCountryName}}
                         </h3>
                     </div>
 
-                    <!-- Featured Image -->
-                    <div class="aspect-square bg-zinc-800 rounded-xl mb-4 shadow-2xl overflow-hidden relative group cursor-pointer"
+                    <!-- Featured Image (Small Centered Square) -->
+                    <div class="w-28 h-28 md:w-32 md:h-32 mx-auto bg-zinc-800 rounded-lg mb-2 shadow-lg overflow-hidden relative group cursor-pointer"
                         (click)="playSong(chartSongs()[0])">
                         <img [src]="chartSongs()[0].img" [alt]="chartSongs()[0].title"
                             (error)="handleImageError($event, chartSongs()[0].title)" loading="lazy"
                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         <div
                             class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
-                            <svg class="text-white opacity-90 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 duration-300 drop-shadow-2xl"
-                                style="width: 4rem; height: 4rem;" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="text-white opacity-90 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 duration-300 drop-shadow-xl w-8 h-8"
+                                fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                                 <path d="m9 16 7-4-7-4z" />
@@ -152,58 +175,61 @@
                     </div>
 
                     <!-- Song Details -->
-                    <div class="mb-4">
-                        <h4 class="font-bold text-white text-base md:text-lg mb-1 truncate">
+                    <div class="mb-3 text-center">
+                        <h4 class="font-bold text-white text-xs md:text-sm mb-0.5 truncate">
                             {{chartSongs()[0].title}}
                         </h4>
-                        <p class="text-sm text-zinc-400 mb-2">{{chartSongs()[0].artist}}</p>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full font-medium">
+                        <p class="text-[10px] md:text-xs text-zinc-400 mb-2">{{chartSongs()[0].artist}}</p>
+                        <div class="flex items-center justify-center gap-1.5">
+                            <span
+                                class="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-full font-medium">
                                 {{chartSongs()[0].genre}}
                             </span>
-                            <span class="text-xs text-zinc-500">{{chartSongs()[0].duration}}</span>
+                            <span class="text-[10px] text-zinc-500">{{chartSongs()[0].duration}}</span>
                         </div>
                     </div>
 
                     <!-- Action Button -->
                     <button (click)="playSong(chartSongs()[0])"
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 md:py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-900 text-sm md:text-base flex items-center justify-center gap-2 hover:scale-105">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-bold transition-all shadow-md shadow-blue-900/50 text-xs flex items-center justify-center gap-1.5 hover:scale-105">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                             <path d="m9 16 7-4-7-4z" />
                         </svg>
-                        Escuchar Ahora
+                        Escuchar
                     </button>
                 </div>
 
                 <!-- Info Card -->
-                <div class="mt-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-                    <h4 class="font-bold text-white mb-2 flex items-center gap-2 text-sm">
-                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                <div class="mt-4 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+                    <h4 class="font-bold text-white mb-1.5 flex items-center gap-1.5 text-xs">
+                        <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                             <path d="M11 11h2v6h-2zm0-4h2v2h-2z" />
                         </svg>
                         Sobre los Rankings
                     </h4>
-                    <p class="text-xs text-zinc-400 leading-relaxed mb-2">
-                        Rankings actualizados basados en las canciones más escuchadas. Descubre lo que está sonando
-                        ahora mismo.
+                    <p class="text-[11px] text-zinc-400 leading-tight mb-2">
+                        Lo más escuchado del momento actualizado en tiempo real.
                     </p>
-                    <div class="flex items-start gap-2 pt-2 border-t border-zinc-800">
-                        <svg class="w-4 h-4 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-start gap-1.5 pt-2 border-t border-zinc-800">
+                        <svg class="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor"
+                            viewBox="0 0 24 24">
                             <path
                                 d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                             <path d="M13 7h-2v6h6v-2h-4z" />
                         </svg>
-                        <p class="text-xs text-zinc-500 italic">
-                            Las canciones son previews de 30 segundos cortesía de iTunes. Para canciones completas,
-                            visita la sección "Sin Copyright".
+                        <p class="text-[11px] text-zinc-500 italic leading-tight">
+                            Previews de 30s. Canciones completas en "Sin Copyright".
                         </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Ads Container (At the end) -->
+    <app-ads-container [index]="0"></app-ads-container>
 </div>

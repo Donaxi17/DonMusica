@@ -1,4 +1,4 @@
-<div class="space-y-4 md:space-y-8 animate-fade-in pb-4 md:pb-20" appInfiniteScroll (scrolled)="loadMore()">
+<div class="space-y-4 md:space-y-8 animate-fade-in" appInfiniteScroll (scrolled)="loadMore()">
     <!-- SEO-optimized header with semantic HTML -->
     <header class="mb-4 md:mb-8 px-1 text-center">
         <h1
@@ -51,55 +51,61 @@
         <!-- LIST OF SONGS -->
         <div *ngIf="trendingSongs().length > 0" class="flex flex-col gap-3 min-h-[50vh]">
 
-            <!-- Items -->
-            <article *ngFor="let song of trendingSongs(); let i = index" (click)="onSongClick(song, $event)"
-                class="group flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 hover:bg-zinc-800 border border-white/5 hover:border-emerald-500/30 transition-all cursor-pointer active:scale-[0.99]">
+            <!-- Items Loop -->
+            <ng-container *ngFor="let song of trendingSongs(); let i = index">
+                <article (click)="onSongClick(song, $event)" [ngClass]="{
+                        'bg-yellow-500/30 border-yellow-500/50 hover:bg-yellow-500/40': i === 0,
+                        'bg-zinc-400/25 border-zinc-400/40 hover:bg-zinc-400/35': i === 1,
+                        'bg-amber-700/30 border-amber-600/50 hover:bg-amber-700/40': i === 2,
+                        'bg-zinc-900/40 border-white/5 hover:border-white/20': i > 2
+                    }" class="group flex items-center gap-3 p-3 rounded-xl border transition-all">
 
-                <!-- Rank -->
-                <span class="text-lg font-black w-8 text-center" [ngClass]="{
-                        'text-emerald-400': i < 3,
-                        'text-zinc-600': i >= 3
-                    }">
-                    {{i + 1}}
-                </span>
-
-                <!-- Image -->
-                <div
-                    class="relative w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-800 shadow-lg">
-                    <img [src]="song.img" [alt]="song.title" (error)="onImageError($event)" loading="lazy"
-                        class="w-full h-full object-cover">
-                    <div
-                        class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 6v12l10-6z" />
-                        </svg>
+                    <!-- Rank -->
+                    <div class="flex items-center justify-center w-8 md:w-10 flex-shrink-0">
+                        <span class="text-xl md:text-2xl font-bold" [class.text-yellow-400]="i === 0"
+                            [class.text-zinc-300]="i === 1" [class.text-orange-500]="i === 2"
+                            [class.text-zinc-600]="i > 2">
+                            {{i + 1}}
+                        </span>
                     </div>
-                </div>
 
-                <!-- Info -->
-                <div class="flex-1 min-w-0">
-                    <h3
-                        class="text-white font-bold text-sm md:text-base truncate group-hover:text-emerald-400 transition-colors">
-                        {{song.title}}
-                    </h3>
-                    <p class="text-zinc-400 text-xs truncate">
-                        {{song.artist}}
-                    </p>
-                </div>
+                    <!-- Image -->
+                    <div
+                        class="relative w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-800 shadow-lg">
+                        <img [src]="song.img" [alt]="song.title" (error)="onImageError($event)" loading="lazy"
+                            class="w-full h-full object-cover">
+                    </div>
 
-                <!-- Duration / Icon -->
-                <div class="text-zinc-600 text-xs font-mono">
-                    {{song.duration || '0:00'}}
-                </div>
-            </article>
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-bold text-sm md:text-base truncate transition-colors">
+                            {{song.title}}
+                        </h3>
+                        <p class="text-zinc-400 text-xs truncate">
+                            {{song.artist}}
+                        </p>
+                    </div>
+
+                    <!-- Duration / Icon -->
+                    <div class="text-zinc-400 text-xs font-mono">
+                        {{song.duration || '0:00'}}
+                    </div>
+                </article>
+
+                <!-- ADSTERRA ADS (After 5th item / Top 5) -->
+
+            </ng-container>
 
             <!-- End Message -->
-            <div *ngIf="!hasMore" class="text-center py-8 opacity-50">
+            <div *ngIf="!hasMore" class="text-center opacity-50">
                 <div class="h-px w-24 bg-gradient-to-r from-transparent via-zinc-700 to-transparent mx-auto mb-4"></div>
                 <p class="text-zinc-500 text-xs">Fin de la lista</p>
             </div>
         </div>
     </div>
+
+    <!-- ADSTERRA ADS BOOSTER (End of List) -->
+    <app-ads-container [index]="1"></app-ads-container>
 
     <!-- Loading More -->
     <div *ngIf="loadingMore()" class="flex justify-center py-4">
