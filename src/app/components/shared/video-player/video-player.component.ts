@@ -22,9 +22,13 @@ export class VideoPlayerComponent {
   currentVideoIndex = this.videoService.currentVideoIndex;
   videos = this.videoService.currentVideoList;
 
-  // Auto-advance timer (fallback for localhost)
-  private autoAdvanceTimer: any = null;
+  // Auto-advance system
+  private checkInterval: any = null;
   private hasAutoAdvanced = false;
+  private actualPlayingTime = 0; // milliseconds of actual playback
+  private lastCheckTime = 0;
+  private isCurrentlyPlaying = false;
+  private playerState = -1; // -1 = unstarted, 0 = ended, 1 = playing, 2 = paused
 
   // Drag and Drop
   isDragging = false;
@@ -40,10 +44,14 @@ export class VideoPlayerComponent {
       if (url) {
         // Reset state
         this.hasAutoAdvanced = false;
+        this.actualPlayingTime = 0;
+        this.lastCheckTime = Date.now();
+        this.isCurrentlyPlaying = true; // Assume playing since autoplay=1
+        this.playerState = -1;
 
-        // Clear any existing timer
-        if (this.autoAdvanceTimer) {
-          clearTimeout(this.autoAdvanceTimer);
+        // Clear any existing interval
+        if (this.checkInterval) {
+          clearInterval(this.checkInterval);
         }
 
         // Enable YouTube event listening (works in production)
@@ -51,24 +59,50 @@ export class VideoPlayerComponent {
           this.enableYouTubeListening();
         }, 1000);
 
-        // Fallback timeout for localhost (4 minutes)
-        // In production, the onStateChange event will trigger first
-        this.autoAdvanceTimer = setTimeout(() => {
-          if (!this.hasAutoAdvanced) {
-            console.log('⏭️ [Fallback] Auto-advancing after 4 minutes (localhost mode)');
-            this.handleVideoEnd();
-          }
-        }, 240000); // 4 minutes
+        // Start checking every 10 seconds
+        this.checkInterval = setInterval(() => {
+          this.checkPlaybackProgress();
+        }, 10000); // Check every 10 seconds
 
-        console.log('🎬 Video loaded - YouTube events enabled + 4min fallback timer');
+        console.log('🎬 Video loaded - Auto-advance system active (checks every 10s)');
       } else {
-        // Video closed, clear timer
-        if (this.autoAdvanceTimer) {
-          clearTimeout(this.autoAdvanceTimer);
-          this.autoAdvanceTimer = null;
+        // Video closed, clear interval
+        if (this.checkInterval) {
+          clearInterval(this.checkInterval);
+          this.checkInterval = null;
         }
+        this.actualPlayingTime = 0;
+        this.isCurrentlyPlaying = false;
       }
     });
+  }
+
+  /**
+   * Check playback progress and advance if needed
+   * This runs every 10 seconds
+   */
+  private checkPlaybackProgress() {
+    if (this.hasAutoAdvanced) return;
+
+    const now = Date.now();
+    const elapsed = now - this.lastCheckTime;
+
+    // If video is playing, add elapsed time to actual playing time
+    if (this.isCurrentlyPlaying) {
+      this.actualPlayingTime += elapsed;
+
+      const minutes = Math.floor(this.actualPlayingTime / 60000);
+      const seconds = Math.floor((this.actualPlayingTime % 60000) / 1000);
+      console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
+    }
+
+    this.lastCheckTime = now;
+
+    // Auto-advance after 4 minutes of ACTUAL playing time
+    if (this.actualPlayingTime > 240000 && !this.hasAutoAdvanced) {
+      console.log(`⏭️ Video timeout (4m 0s), advancing to next...`);
+      this.handleVideoEnd();
+    }
   }
 
   /**
@@ -115,18 +149,44 @@ export class VideoPlayerComponent {
       // Check for state change event
       if (data.event === 'onStateChange') {
         const state = data.info;
+        this.playerState = state;
 
         // State 0 = Video ended
         if (state === 0) {
           console.log('✅ YouTube event: Video ended, advancing to next...');
+          this.isCurrentlyPlaying = false;
           this.handleVideoEnd();
+        }
+        // State 1 = Playing
+        else if (state === 1) {
+          console.log('▶️ YouTube event: Video playing');
+          this.isCurrentlyPlaying = true;
+          this.lastCheckTime = Date.now(); // Reset timer when resuming
+        }
+        // State 2 = Paused
+        else if (state === 2) {
+          console.log('⏸️ YouTube event: Video paused');
+          this.isCurrentlyPlaying = false;
         }
       }
 
       // Also check infoDelivery events
-      if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
-        console.log('✅ YouTube infoDelivery: Video ended, advancing to next...');
-        this.handleVideoEnd();
+      if (data.event === 'infoDelivery' && data.info) {
+        if (data.info.playerState !== undefined) {
+          const state = data.info.playerState;
+          this.playerState = state;
+
+          if (state === 0) {
+            console.log('✅ YouTube infoDelivery: Video ended, advancing to next...');
+            this.isCurrentlyPlaying = false;
+            this.handleVideoEnd();
+          } else if (state === 1) {
+            this.isCurrentlyPlaying = true;
+            this.lastCheckTime = Date.now();
+          } else if (state === 2) {
+            this.isCurrentlyPlaying = false;
+          }
+        }
       }
     } catch (e) {
       // Silently ignore parsing errors
@@ -141,10 +201,10 @@ export class VideoPlayerComponent {
 
     this.hasAutoAdvanced = true;
 
-    // Clear the fallback timer
-    if (this.autoAdvanceTimer) {
-      clearTimeout(this.autoAdvanceTimer);
-      this.autoAdvanceTimer = null;
+    // Clear the check interval
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
     }
 
     // Advance to next video
@@ -214,9 +274,9 @@ export class VideoPlayerComponent {
 
   closeVideo() {
     this.videoService.closeVideo();
-    if (this.autoAdvanceTimer) {
-      clearTimeout(this.autoAdvanceTimer);
-      this.autoAdvanceTimer = null;
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
     }
   }
 

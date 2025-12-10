@@ -43,13 +43,24 @@
 
             <!-- Video Frame -->
             <div
-                [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-xl overflow-hidden border border-white/10 ring-1 ring-white/5'">
+                [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none relative' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-xl overflow-hidden border border-white/10 ring-1 ring-white/5'">
 
                 <!-- YouTube Iframe - Simple and Reliable -->
                 <iframe [src]="currentVideoUrl()! | safe" class="w-full h-full" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen [style.pointer-events]="isMinimized() ? 'none' : 'auto'">
+                    allowfullscreen>
                 </iframe>
+
+                <!-- Clickable Overlay for Minimized Video (Mobile) -->
+                @if (isMinimized()) {
+                <div (click)="videoService.maximizeVideo(); $event.stopPropagation()"
+                    class="absolute inset-0 bg-transparent cursor-pointer z-10 flex items-center justify-center group">
+                    <!-- Subtle "Tap to Expand" hint -->
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full p-2">
+                        <app-svg-icon name="maximize" class="w-5 h-5 text-white"></app-svg-icon>
+                    </div>
+                </div>
+                }
             </div>
 
             <!-- Mobile Controls (Below Video) - Hidden when minimized -->
