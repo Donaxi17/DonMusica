@@ -1,7 +1,7 @@
 <div class="relative min-h-screen pb-4 md:pb-24 overflow-x-hidden">
 
     <!-- HERO SECTION (Dynamic Height) -->
-    <div class="relative w-full mb-12 min-h-[85vh] flex flex-col justify-start overflow-hidden">
+    <div class="relative w-full overflow-hidden mb-8 min-h-[88vh] flex items-center">
 
         <!-- Background Image & Gradients (Fills parent height) -->
         <div class="absolute inset-0 z-0 select-none pointer-events-none bg-black">
@@ -20,18 +20,18 @@
 
         <!-- HERO CONTENT (Centered by parent flex) -->
         <div
-            class="relative z-10 w-full max-w-7xl mx-auto px-5 pt-10 md:pt-24 pb-12 flex flex-col items-center justify-center text-center">
+            class="relative w-full max-w-7xl mx-auto px-5 pt-10 md:pt-24 pb-12 flex flex-col items-center justify-center text-center">
 
             <!-- Badge -->
             <div
-                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 backdrop-blur-md animate-fade-in-up">
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8 backdrop-blur-md animate-fade-in-up">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-emerald-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Plataforma
                     #1</span>
             </div>
 
             <!-- Title -->
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-none tracking-tight animate-fade-in-up"
+            <h1 class="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-none tracking-tight animate-fade-in-up"
                 style="animation-delay: 100ms;">
                 Siente <br class="md:hidden" />
                 <span class="bg-gradient-to-r from-emerald-400 to-green-600 bg-clip-text text-transparent">El
@@ -39,7 +39,7 @@
             </h1>
 
             <!-- Description -->
-            <p class="text-zinc-300 text-base md:text-xl max-w-lg mx-auto mb-8 leading-relaxed animate-fade-in-up px-4"
+            <p class="text-zinc-300 text-lg md:text-xl max-w-lg mx-auto mb-10 leading-relaxed animate-fade-in-up px-4"
                 style="animation-delay: 200ms;">
                 Tu portal definitivo de música urbana. Escucha, descarga y comparte sin límites.
             </p>
@@ -49,7 +49,7 @@
                 style="animation-delay: 300ms;">
 
                 <button (click)="openAdAndStart()" aria-label="Comenzar a escuchar música gratis"
-                    class="w-full sm:w-auto h-12 md:h-14 px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-full text-base md:text-lg transition-all transform active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
+                    class="w-full sm:w-auto h-14 px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-full text-lg md:text-xl transition-all transform active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M7 6v12l10-6z" />
                     </svg>
@@ -58,7 +58,7 @@
 
                 <!-- Install Button (Conditional) -->
                 <button *ngIf="canInstall" (click)="installPwa()" aria-label="Instalar aplicación en el dispositivo"
-                    class="w-full sm:w-auto h-12 md:h-14 px-8 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-full text-base md:text-lg transition-all transform active:scale-95 border border-zinc-700 flex items-center justify-center gap-2">
+                    class="w-full sm:w-auto h-14 px-8 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-full text-lg md:text-xl transition-all transform active:scale-95 border border-zinc-700 flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -69,7 +69,7 @@
 
             <!-- Fixed PWA Banner (Keep inside or outside, logically fits here for view context but ensures z-index) -->
             <div *ngIf="showInstallBanner"
-                class="fixed bottom-20 md:bottom-4 left-0 right-0 z-50 p-2 animate-fade-in-up text-left">
+                class="fixed bottom-20 md:bottom-4 left-0 right-0 z-[100] p-2 animate-fade-in-up text-left">
                 <div
                     class="max-w-md mx-auto bg-zinc-900/95 backdrop-blur-xl border border-emerald-500/20 rounded-xl p-3 shadow-2xl flex items-center gap-3">
                     <div class="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center shrink-0">
@@ -97,7 +97,7 @@
     </div>
 
     <!-- MAIN CONTENT START -->
-    <div class="relative z-10 max-w-7xl mx-auto px-5">
+    <div class="relative max-w-7xl mx-auto px-5">
 
         <!-- "PRO BETA" CARD -->
         <div class="max-w-4xl mx-auto mt-0 mb-6 px-4 md:px-0 animate-fade-in-up" style="animation-delay: 400ms;">
