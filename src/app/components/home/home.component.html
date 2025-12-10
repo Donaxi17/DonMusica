@@ -282,7 +282,7 @@
                     <ul class="space-y-3 mb-6">
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor"
-                                viewBox="0 0 24 24">
+                                aria-hidden="true" viewBox="0 0 24 24">
                                 <path
                                     d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
                             </svg>
@@ -305,7 +305,7 @@
                             <span class="text-zinc-300 text-sm">Listas curadas por género musical</span>
                         </li>
                     </ul>
-                    <button (click)="navigateTo('/browse')"
+                    <button (click)="navigateTo('/browse')" aria-label="Explorar tendencias musicales ahora"
                         class="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
                         Explorar Ahora
                     </button>
@@ -379,7 +379,7 @@
                             <span class="text-zinc-300 text-sm">Reproduce directamente desde el ranking</span>
                         </li>
                     </ul>
-                    <button (click)="navigateTo('/browse/charts')"
+                    <button (click)="navigateTo('/browse/charts')" aria-label="Ver rankings musicales globales"
                         class="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold rounded-lg transition-all transform active:scale-95">
                         Ver Rankings
                     </button>
@@ -436,7 +436,7 @@
                                 completos</span>
                         </li>
                     </ul>
-                    <button (click)="navigateTo('/artists')"
+                    <button (click)="navigateTo('/artists')" aria-label="Ver catálogo de artistas"
                         class="px-6 py-3 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
                         Ver Artistas
                     </button>
@@ -479,14 +479,14 @@
                         Videos <span
                             class="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">Musicales</span>
                     </h2>
-                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
-                        Disfruta de los <strong class="text-white">videos oficiales</strong> de tus canciones favoritas.
-                        Clips musicales en alta calidad directamente desde YouTube.
+                    <p class="text-zinc-300 text-base leading-relaxed mb-6">
+                        Disfruta de tus canciones favoritas en formato corto. Videos verticales tipo Reels para
+                        descubrir música nueva de forma rápida y divertida.
                     </p>
                     <ul class="space-y-3 mb-6">
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor"
-                                viewBox="0 0 24 24">
+                                aria-hidden="true" viewBox="0 0 24 24">
                                 <path
                                     d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M9.999 13.587 7.7 11.292l-1.412 1.416 3.713 3.705 6.706-6.706-1.414-1.414z" />
                             </svg>
@@ -509,7 +509,7 @@
                             <span class="text-zinc-300 text-sm">Reproductor integrado sin salir de la app</span>
                         </li>
                     </ul>
-                    <button (click)="navigateTo('/videos')"
+                    <button (click)="navigateTo('/videos')" aria-label="Ver videos musicales"
                         class="px-6 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-lg transition-all transform active:scale-95">
                         Ver Videos
                     </button>
@@ -534,7 +534,7 @@
                             class="bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">Sin
                             Copyright</span>
                     </h2>
-                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                    <p class="text-zinc-300 text-base leading-relaxed mb-6">
                         Miles de tracks <strong class="text-white">100% libres de derechos</strong>. Perfectos para tus
                         videos de YouTube, streams de Twitch, TikToks y proyectos comerciales sin preocuparte por
                         copyright strikes.
@@ -566,6 +566,7 @@
                         </li>
                     </ul>
                     <button (click)="navigateTo('/sin-copyright')"
+                        aria-label="Descargar música libre de derechos gratis"
                         class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg transition-all transform active:scale-95">
                         Descargar Gratis
                     </button>
