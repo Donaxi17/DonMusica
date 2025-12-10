@@ -1,4 +1,4 @@
-import { Component, OnInit, isDevMode } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Title, Meta } from '@angular/platform-browser';
@@ -20,27 +20,17 @@ export class ConverterComponent implements OnInit {
     error: string = '';
 
     // Resultados
-    videoTitle: string = '';
-    videoThumb: string = '';
     downloadUrl: string = '';
-    audioFormat: string = 'MP3'; // Por defecto MP3
+    fileName: string = '';
 
-    // Instancias para probar directamente desde el cliente (bypass Vercel)
-    // Nota: Muchas fallarán por CORS, pero vale la pena intentar.
-    // 'api.cobalt.web.gl' suele tener CORS habilitado.
-    readonly CLIENT_INSTANCES = [
-        'https://api.cobalt.web.gl',
-        'https://api.cobalt.tools',
-        'https://api.server.cobalt.tools',
-        'https://cobalt.mashedpotat.uno',
-        'https://dl.khub.ky',
-        'https://cobalt.xy24.eu.org',
+    // Instancias de Piped (Más amigables con CORS y permiten stream directo)
+    readonly PIPED_INSTANCES = [
+        'https://pipedapi.kavin.rocks',
+        'https://pipedapi.tokhmi.xyz',
+        'https://piped-api.lunar.icu',
+        'https://api.piped.privacydev.net',
+        'https://pipedapi.rivo.lol'
     ];
-
-    // Alias para el HTML que espera 'downloadLink'
-    get downloadLink(): string {
-        return this.downloadUrl;
-    }
 
     constructor(
         private http: HttpClient,
@@ -50,30 +40,29 @@ export class ConverterComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        // --- 1. SEO OPTIMIZATION ---
-        this.titleService.setTitle('Convertidor YouTube a MP3 Seguro - DonMusica');
-
-        // Meta Tags básicos
-        this.metaService.updateTag({ name: 'description', content: 'Convierte videos de YouTube a MP3 o M4A gratis en DonMusica. Rápido, seguro y compatible con iPhone y Android.' });
-        this.metaService.updateTag({ name: 'keywords', content: 'youtube mp3, convertidor youtube, descargar musica, donmusica, youtube a m4a' });
-        this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
-
-        // Open Graph & Canonical
-        this.metaService.updateTag({ property: 'og:url', content: 'https://donmusica.online/converter' });
-        this.metaService.updateTag({ property: 'og:title', content: 'Descarga Música de YouTube Gratis - DonMusica' });
-        this.metaService.updateTag({ property: 'og:description', content: 'Convertidor rápido y seguro. Pega tu link y baja tu canción en alta calidad.' });
-        this.metaService.updateTag({ property: 'og:image', content: 'https://donmusica.online/assets/icons/icon-512x512.png' });
-        this.metaService.updateTag({ property: 'og:type', content: 'website' });
-    }
-
-    onUrlChange() {
-        this.showResult = false;
-        this.error = '';
+        this.titleService.setTitle('Convertidor de Música - DonMusica');
     }
 
     convert() {
-        if (!this.youtubeUrl) {
-            this.toastService.error('Por favor ingresa una URL');
+        if (!this.youtubeUrl.trim()) return;
+
+        // Extraer ID de video
+        let videoId = '';
+        try {
+            if (this.youtubeUrl.includes('v=')) {
+                videoId = this.youtubeUrl.split('v=')[1].split('&')[0];
+            } else if (this.youtubeUrl.includes('youtu.be/')) {
+                videoId = this.youtubeUrl.split('youtu.be/')[1].split('?')[0];
+            } else if (this.youtubeUrl.includes('shorts/')) {
+                videoId = this.youtubeUrl.split('shorts/')[1].split('?')[0];
+            }
+        } catch (e) {
+            this.toastService.error('Enlace inválido');
+            return;
+        }
+
+        if (!videoId || videoId.length !== 11) {
+            this.toastService.error('No se pudo encontrar el ID del video');
             return;
         }
 
@@ -81,200 +70,65 @@ export class ConverterComponent implements OnInit {
         this.error = '';
         this.showResult = false;
 
-        // Estrategia: 
-        // 1. Intentar desde el Cliente (Navegador) -> Evita bloqueo de Vercel
-        // 2. Si falla todo, intentar desde el Backend (Vercel/Local) -> Fallback
-
-        this.tryClientSideConversion(0);
+        // Iniciar búsqueda en cascada
+        this.tryPiped(0, videoId);
     }
 
-    tryClientSideConversion(index: number) {
-        if (index >= this.CLIENT_INSTANCES.length) {
-            // Si Cobalt cliente falla, probamos Piped cliente (Plan C)
-            console.log('Falló Cobalt cliente, intentando Piped cliente...');
-            this.tryPipedFallback(0);
-            return;
-        }
-
-        const host = this.CLIENT_INSTANCES[index];
-        const payload = {
-            url: this.youtubeUrl,
-            downloadMode: 'audio',
-            audioFormat: 'mp3'
-        };
-
-        const headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        };
-
-        this.http.post<any>(`${host}/api/json`, payload, { headers }).subscribe({
-            next: (res) => {
-                // Éxito directo desde el cliente!
-                this.handleSuccess(res);
-            },
-            error: (err) => {
-                console.warn(`Fallo ${host}, probando siguiente...`, err);
-                this.tryClientSideConversion(index + 1);
-            }
-        });
-    }
-
-    // Instancias Piped para fallback cliente (Plan C)
-    readonly PIPED_INSTANCES = [
-        'https://pipedapi.kavin.rocks',
-        'https://pipedapi.tokhmi.xyz',
-        'https://piped-api.lunar.icu',
-        'https://pipedapi.rivo.lol',
-        'https://api.piped.privacydev.net'
-    ];
-
-    tryPipedFallback(index: number) {
+    tryPiped(index: number, videoId: string) {
         if (index >= this.PIPED_INSTANCES.length) {
-            // Si todo falla en cliente, vamos al backend
-            console.log('Falló todo en cliente, usando backend...');
-            this.executeBackendConversion();
+            this.isLoading = false;
+            this.error = 'No se pudo conectar con los servidores. Es posible que el navegador esté bloqueando la conexión (CORS) en modo local.';
             return;
         }
 
-        const host = this.PIPED_INSTANCES[index];
-        // Extraer ID
-        let videoId = '';
-        if (this.youtubeUrl.includes('v=')) {
-            videoId = this.youtubeUrl.split('v=')[1].split('&')[0];
-        } else if (this.youtubeUrl.includes('youtu.be/')) {
-            videoId = this.youtubeUrl.split('youtu.be/')[1].split('?')[0];
-        }
+        const instance = this.PIPED_INSTANCES[index];
+        console.log(`Conectando a ${instance}...`);
 
-        if (!videoId) {
-            this.executeBackendConversion();
-            return;
-        }
-
-        this.http.get<any>(`${host}/streams/${videoId}`).subscribe({
+        this.http.get<any>(`${instance}/streams/${videoId}`).subscribe({
             next: (res) => {
+                // Filtrar solo audios
                 const audioStreams = res.audioStreams || [];
-                // Buscar m4a/mp4
-                let bestAudio = audioStreams.find((s: any) => s.mimeType === 'audio/mp4' || s.format === 'M4A');
-                if (!bestAudio && audioStreams.length > 0) bestAudio = audioStreams[0];
+
+                // Buscar el mejor audio (M4A es el estándar de Piped, similar a MP3)
+                // Buscamos 'audio/mp4' que es m4a de alta calidad
+                let bestAudio = audioStreams.find((s: any) => s.mimeType === 'audio/mp4');
+
+                if (!bestAudio && audioStreams.length > 0) {
+                    bestAudio = audioStreams[0]; // Fallback al primero disponible
+                }
 
                 if (bestAudio) {
-                    this.handleSuccess({
-                        success: true,
-                        status: 'stream',
-                        url: bestAudio.url,
-                        filename: res.title,
-                        title: res.title,
-                        thumbnail: res.thumbnailUrl,
-                        format: 'M4A' // Piped suele ser M4A
-                    });
+                    this.handleSuccess(res.title, bestAudio.url);
                 } else {
-                    this.tryPipedFallback(index + 1);
+                    this.tryPiped(index + 1, videoId);
                 }
             },
-            error: () => {
-                console.warn(`Fallo Piped ${host}`);
-                this.tryPipedFallback(index + 1);
-            }
-        });
-    }
-
-    executeBackendConversion() {
-        // Fallback: Estrategia original (Vercel Proxy o Local Server)
-        const apiUrl = isDevMode()
-            ? 'http://localhost:5000/api/convert'
-            : '/api/convert';
-
-        this.http.post<any>(apiUrl, { url: this.youtubeUrl }).subscribe({
-            next: (res) => this.handleSuccess(res),
             error: (err) => {
-                this.isLoading = false;
-                console.error('Error total:', err);
-
-                if (err.error && err.error.error) {
-                    this.error = err.error.error;
-                } else if (err.status === 503 || err.status === 504) {
-                    this.error = 'Servidores ocupados o bloqueados.';
-                } else {
-                    this.error = 'Error de conexión. Intenta más tarde.';
-                }
-
-                this.toastService.error(this.error);
+                console.warn(`Falló ${instance}`, err);
+                this.tryPiped(index + 1, videoId);
             }
         });
     }
 
-    handleSuccess(res: any) {
+    handleSuccess(title: string, url: string) {
         this.isLoading = false;
-
-        if (res.status === 'stream' || res.status === 'redirect' || res.url || res.downloadUrl || res.success) {
-            this.showResult = true;
-            this.videoTitle = res.filename || res.title || 'Audio Listo';
-            this.videoThumb = res.thumbnail || '';
-            this.audioFormat = 'MP3';
-
-            // Unificar url de descarga
-            const rawUrl = res.url || res.downloadUrl;
-
-            // Si estamos en local y la respuesta vino del backend local, usar proxy
-            if (isDevMode() && res.originalUrl) {
-                const encodedUrl = encodeURIComponent(res.originalUrl);
-                this.downloadUrl = `http://localhost:5000/api/download?url=${encodedUrl}`;
-            } else {
-                this.downloadUrl = rawUrl;
-            }
-
-            this.toastService.success(`¡Convertido a ${this.audioFormat}!`);
-        } else {
-            this.error = 'Respuesta inesperada del servidor.';
-            this.toastService.error(this.error);
-        }
+        this.showResult = true;
+        this.downloadUrl = url;
+        // Limpiamos el título para evitar problemas con caracteres especiales
+        const cleanTitle = title.replace(/[^a-zA-Z0-9 ]/g, '');
+        this.fileName = `${cleanTitle}.m4a`;
+        this.toastService.success('¡Audio listo!');
     }
 
-    isDownloading: boolean = false;
-
-    downloadFile() {
+    download() {
         if (!this.downloadUrl) return;
-
-        // Feedback inmediato: Preparando
-        this.toastService.info('⏳ Preparando archivo, un momento...');
-        this.isDownloading = true;
-
-        // Descargamos el archivo como Blob para asegurar que existe antes de confirmar
-        this.http.get(this.downloadUrl, { responseType: 'blob' }).subscribe({
-            next: (blob: Blob) => {
-                this.isDownloading = false;
-
-                // Crear URL temporal para el Blob
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                // Usar el título del video para el nombre del archivo
-                const cleanTitle = (this.videoTitle || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                link.download = `${cleanTitle}.${this.audioFormat === 'MP3' ? 'mp3' : 'm4a'}`;
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Liberar memoria
-                setTimeout(() => window.URL.revokeObjectURL(url), 100);
-
-                // Mensaje verde confirmando que el navegador tomó el control
-                this.toastService.success(`⬇️ Tu descarga ha comenzado`);
-            },
-            error: (err) => {
-                this.isDownloading = false;
-                console.error(err);
-                this.toastService.error('❌ Error al descargar. Intenta de nuevo.');
-            }
-        });
+        window.open(this.downloadUrl, '_blank');
     }
 
     clearForm() {
         this.youtubeUrl = '';
         this.showResult = false;
-        this.downloadUrl = '';
         this.error = '';
+        this.downloadUrl = '';
     }
 }

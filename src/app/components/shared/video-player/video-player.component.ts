@@ -25,10 +25,15 @@ export class VideoPlayerComponent {
   // Auto-advance system
   private checkInterval: any = null;
   private hasAutoAdvanced = false;
+  private hasShownWarning = false; // Para notificar 10s antes
   private actualPlayingTime = 0; // milliseconds of actual playback
   private lastCheckTime = 0;
   private isCurrentlyPlaying = false;
   private playerState = -1; // -1 = unstarted, 0 = ended, 1 = playing, 2 = paused
+
+  // YouTube video info
+  private videoDuration = 240; // Default 4 minutes in seconds
+  private currentTime = 0; // Current playback position in seconds
 
   // Drag and Drop
   isDragging = false;
@@ -44,6 +49,7 @@ export class VideoPlayerComponent {
       if (url) {
         // Reset state
         this.hasAutoAdvanced = false;
+        this.hasShownWarning = false;
         this.actualPlayingTime = 0;
         this.lastCheckTime = Date.now();
         this.isCurrentlyPlaying = true; // Assume playing since autoplay=1
@@ -63,8 +69,6 @@ export class VideoPlayerComponent {
         this.checkInterval = setInterval(() => {
           this.checkPlaybackProgress();
         }, 10000); // Check every 10 seconds
-
-        console.log('🎬 Video loaded - Auto-advance system active (checks every 10s)');
       } else {
         // Video closed, clear interval
         if (this.checkInterval) {
@@ -93,10 +97,25 @@ export class VideoPlayerComponent {
 
       const minutes = Math.floor(this.actualPlayingTime / 60000);
       const seconds = Math.floor((this.actualPlayingTime % 60000) / 1000);
-      console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
+
+      // Only log every 30 seconds to reduce console noise
+      if (seconds % 30 === 0 || seconds < 10) {
+        console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
+      }
     }
 
     this.lastCheckTime = now;
+
+    // Warning 10 seconds before auto-advance (3m 50s)
+    if (this.actualPlayingTime > 230000 && !this.hasShownWarning) {
+      this.hasShownWarning = true;
+      const nextVideo = this.videos()[this.currentVideoIndex() + 1];
+      if (nextVideo) {
+        console.log(`⏰ Próximo video en 10 segundos: "${nextVideo.title}" - ${nextVideo.artist}`);
+      } else {
+        console.log(`⏰ Último video de la lista, avanzará en 10 segundos`);
+      }
+    }
 
     // Auto-advance after 4 minutes of ACTUAL playing time
     if (this.actualPlayingTime > 240000 && !this.hasAutoAdvanced) {
@@ -119,9 +138,8 @@ export class VideoPlayerComponent {
           'id': 1,
           'channel': 'widget'
         }), '*');
-        console.log('📡 YouTube event listening enabled');
       } catch (e) {
-        console.warn('⚠️ Could not enable YouTube listening (expected on localhost)');
+        // Silently fail - expected on localhost
       }
     }
   }
@@ -153,31 +171,40 @@ export class VideoPlayerComponent {
 
         // State 0 = Video ended
         if (state === 0) {
-          console.log('✅ YouTube event: Video ended, advancing to next...');
+          console.log('✅ Video ended, advancing to next...');
           this.isCurrentlyPlaying = false;
           this.handleVideoEnd();
         }
         // State 1 = Playing
         else if (state === 1) {
-          console.log('▶️ YouTube event: Video playing');
           this.isCurrentlyPlaying = true;
           this.lastCheckTime = Date.now(); // Reset timer when resuming
         }
         // State 2 = Paused
         else if (state === 2) {
-          console.log('⏸️ YouTube event: Video paused');
           this.isCurrentlyPlaying = false;
         }
       }
 
-      // Also check infoDelivery events
+      // Capture video info (duration, current time)
       if (data.event === 'infoDelivery' && data.info) {
+        // Get duration
+        if (data.info.duration !== undefined) {
+          this.videoDuration = data.info.duration;
+        }
+
+        // Get current time
+        if (data.info.currentTime !== undefined) {
+          this.currentTime = data.info.currentTime;
+        }
+
+        // Check player state
         if (data.info.playerState !== undefined) {
           const state = data.info.playerState;
           this.playerState = state;
 
           if (state === 0) {
-            console.log('✅ YouTube infoDelivery: Video ended, advancing to next...');
+            console.log('✅ Video ended, advancing to next...');
             this.isCurrentlyPlaying = false;
             this.handleVideoEnd();
           } else if (state === 1) {
@@ -294,6 +321,48 @@ export class VideoPlayerComponent {
     event.stopPropagation();
     // Solo maximizar si fue un click sin movimiento
     if (this.isMinimized() && !this.hasMoved) {
+      this.videoService.maximizeVideo();
+    }
+  }
+
+  getCurrentVideoTitle(): string {
+    const index = this.currentVideoIndex();
+    const videoList = this.videos();
+    if (index >= 0 && index < videoList.length) {
+      return videoList[index].title;
+    }
+    return '';
+  }
+
+  getCurrentVideoArtist(): string {
+    const index = this.currentVideoIndex();
+    const videoList = this.videos();
+    if (index >= 0 && index < videoList.length) {
+      return videoList[index].artist;
+    }
+    return '';
+  }
+
+  getProgressPercentage(): number {
+    // Try to use real YouTube time first (works in production)
+    if (this.currentTime > 0 && this.videoDuration > 0) {
+      const percentage = (this.currentTime / this.videoDuration) * 100;
+      return Math.min(percentage, 100);
+    }
+
+    // Fallback to internal counter (localhost)
+    const maxTime = 240000; // 4 minutes in milliseconds
+    const percentage = (this.actualPlayingTime / maxTime) * 100;
+    return Math.min(percentage, 100);
+  }
+
+  maximizeFromOverlay(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    // Solo maximizar si NO se estaba arrastrando
+    if (!this.hasMoved) {
       this.videoService.maximizeVideo();
     }
   }

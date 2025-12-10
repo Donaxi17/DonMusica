@@ -1,7 +1,7 @@
 <div
     class="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black py-8 px-4 relative overflow-hidden flex items-center justify-center">
 
-    <!-- Efectos de Fondo (Optimizados para móvil reduciendo blur excesivo) -->
+    <!-- Efectos de Fondo -->
     <div
         class="absolute top-0 left-0 w-64 h-64 bg-red-600/10 rounded-full blur-[80px] animate-pulse-slow pointer-events-none">
     </div>
@@ -9,145 +9,97 @@
         style="animation-delay: 2s;"></div>
 
     <div class="w-full max-w-2xl relative z-10">
-        <!-- Header Compacto y Responsive -->
-        <div class="text-center mb-6 md:mb-8 animate-fade-in">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-fade-in">
             <div
-                class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl mb-4 shadow-xl shadow-red-600/20 transform transition-transform hover:scale-110 duration-500">
-                <app-svg-icon name="youtube" class="text-white drop-shadow-md" width="32" height="32"
-                    [class]="'w-8 h-8 md:w-10 md:h-10'"></app-svg-icon>
+                class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl mb-4 shadow-xl shadow-red-600/20">
+                <app-svg-icon name="youtube" class="text-white w-10 h-10"></app-svg-icon>
             </div>
             <h1
-                class="text-3xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
-                MP3 Download
+                class="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
+                Convertidor MP3
             </h1>
-            <p class="text-gray-400 text-sm md:text-lg max-w-md mx-auto leading-relaxed">
-                Pega tu enlace y obtén música en segundos.
+            <p class="text-gray-400 text-lg max-w-md mx-auto">
+                Convierte videos de YouTube a MP3 directamente
             </p>
         </div>
 
-        <!-- Tarjeta Principal (Glassmorphism Pulido) -->
-        <div
-            class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-5 md:p-8 shadow-2xl mb-6 ring-1 ring-white/5">
+        <!-- Tarjeta Principal -->
+        <div class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl mb-6">
 
-            <!-- Input con mejor UX móvil (tamaño texto 16px para evitar zoom automático en iOS) -->
-            <form (submit)="$event.preventDefault(); convert()" autocomplete="off" class="mb-5 md:mb-6">
-                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block ml-1">
-                    🔗 Enlace del Video
+            <!-- Input URL -->
+            <form (submit)="$event.preventDefault(); convert()" class="mb-6">
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                    🔗 URL del Video
                 </label>
-                <div class="relative group">
-                    <input type="text" [(ngModel)]="youtubeUrl" (ngModelChange)="onUrlChange()" [disabled]="isLoading"
-                        placeholder="https://youtu.be/..." name="url_input_safe" id="url_input_safe" autocomplete="off"
-                        autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"
-                        data-form-type="other"
-                        class="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-base md:text-lg text-white placeholder-gray-600 focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 outline-none transition-all duration-300 shadow-inner">
+                <div class="relative">
+                    <input type="text" [(ngModel)]="youtubeUrl" name="youtube_url"
+                        placeholder="https://youtube.com/watch?v=..." [disabled]="isLoading"
+                        class="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-lg text-white placeholder-gray-600 focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50">
 
-                    <!-- Botón borrar (X) -->
                     <button *ngIf="youtubeUrl && !isLoading" (click)="clearForm(); $event.preventDefault()"
                         type="button"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
-                        <app-svg-icon name="x" width="20" height="20"></app-svg-icon>
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-2 rounded-full hover:bg-white/10">
+                        <app-svg-icon name="x" class="w-5 h-5"></app-svg-icon>
                     </button>
                 </div>
             </form>
 
-            <!-- Botón Convertir (Grande y Táctil) -->
-            <button *ngIf="!showResult" (click)="convert()" [disabled]="isLoading || !youtubeUrl"
-                class="w-full relative overflow-hidden bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation">
-                <span *ngIf="!isLoading" class="flex items-center justify-center gap-2 text-lg">
-                    <app-svg-icon name="cloud-download" width="24" height="24"></app-svg-icon>
-                    Convertir Ahora
-                </span>
-                <!-- Loading State -->
-                <div *ngIf="isLoading" class="flex items-center justify-center gap-3">
+            <!-- Botón Convertir -->
+            <button *ngIf="!showResult" (click)="convert()" [disabled]="!youtubeUrl || isLoading"
+                class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-4 rounded-2xl transition-all transform active:scale-[0.98] shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                <ng-container *ngIf="!isLoading">
+                    <app-svg-icon name="cloud-download" class="w-6 h-6"></app-svg-icon>
+                    Convertir a MP3
+                </ng-container>
+                <ng-container *ngIf="isLoading">
                     <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span class="animate-pulse">Procesando...</span>
-                </div>
+                    Procesando...
+                </ng-container>
             </button>
 
             <!-- Error -->
             <div *ngIf="error"
-                class="mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-center text-sm flex items-center justify-center gap-2 animate-shake">
-                <app-svg-icon name="info-circle" width="20" height="20"></app-svg-icon>
+                class="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-center text-sm">
                 {{ error }}
             </div>
 
-            <!-- RESULTADO FINAL (Tarjeta Premium) -->
-            <div *ngIf="showResult"
-                class="mt-6 bg-black/40 border border-white/5 rounded-2xl p-5 md:p-6 animate-fade-in-up">
-
-                <div class="flex flex-col md:flex-row gap-5 items-center">
-                    <!-- Thumbnail -->
-                    <div
-                        class="w-full md:w-40 aspect-video rounded-xl overflow-hidden shadow-lg border border-white/10 relative group">
-                        <img [src]="videoThumb"
-                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div
-                            class="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-mono">
-                            HD</div>
+            <!-- Resultado -->
+            <div *ngIf="showResult" class="mt-6 animate-fade-in-up">
+                <div class="bg-black/40 border border-green-500/20 rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <app-svg-icon name="check" class="text-green-500 w-8 h-8"></app-svg-icon>
                     </div>
+                    <h3 class="text-white font-bold text-lg mb-2">{{ fileName }}</h3>
+                    <p class="text-green-400 text-sm mb-6">¡Tu archivo está listo!</p>
 
-                    <!-- Info y Botón -->
-                    <div class="flex-1 text-center md:text-left w-full">
-                        <h3 class="text-white font-bold text-lg leading-tight mb-1 line-clamp-2 md:line-clamp-1">{{
-                            videoTitle }}</h3>
-                        <p
-                            class="text-green-400 text-xs font-medium mb-4 flex items-center justify-center md:justify-start gap-1">
-                            <app-svg-icon name="check-circle" width="16" height="16"></app-svg-icon> Listo para
-                            descargar
-                            ({{ audioFormat }})
-                        </p>
+                    <button (click)="download()"
+                        class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <app-svg-icon name="download" class="w-5 h-5"></app-svg-icon>
+                        Descargar Ahora
+                    </button>
 
-                        <a [href]="downloadLink" (click)="!isDownloading && downloadFile(); $event.preventDefault()"
-                            [class.opacity-50]="isDownloading" [class.cursor-not-allowed]="isDownloading"
-                            class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer touch-manipulation decoration-0 no-underline">
-
-                            <!-- Estado Normal -->
-                            <ng-container *ngIf="!isDownloading">
-                                <app-svg-icon name="download" width="20" height="20"
-                                    class="animate-bounce-slow"></app-svg-icon>
-                                DESCARGAR {{ audioFormat }}
-                            </ng-container>
-
-                            <!-- Estado Descargando (Spinner) -->
-                            <ng-container *ngIf="isDownloading">
-                                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin">
-                                </div>
-                                Descargando...
-                            </ng-container>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-white/5 text-center">
-                    <button (click)="clearForm()"
-                        class="text-gray-500 text-sm hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto py-2">
-                        <app-svg-icon name="refresh" width="16" height="16"></app-svg-icon> Convertir otro video
+                    <button (click)="clearForm()" class="mt-4 text-gray-500 hover:text-white text-sm">
+                        Convertir otro video
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Features (Grid limpio) -->
-        <div class="grid grid-cols-3 gap-3 md:gap-4 opacity-70 hover:opacity-100 transition-opacity duration-500">
-            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-3 text-center border border-white/5">
-                <app-svg-icon name="shield" class="text-green-500 mb-1 mx-auto" width="24" height="24"></app-svg-icon>
-                <p class="text-[10px] md:text-xs text-gray-300 uppercase tracking-wide">Seguro</p>
+        <!-- Features -->
+        <div class="grid grid-cols-3 gap-4 opacity-70">
+            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-4 text-center border border-white/5">
+                <app-svg-icon name="shield" class="text-green-500 mb-2 mx-auto w-6 h-6"></app-svg-icon>
+                <p class="text-xs text-gray-300 uppercase tracking-wide">Sin Publicidad</p>
             </div>
-            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-3 text-center border border-white/5">
-                <app-svg-icon name="time" class="text-blue-500 mb-1 mx-auto" width="24" height="24"></app-svg-icon>
-                <p class="text-[10px] md:text-xs text-gray-300 uppercase tracking-wide">Rápido</p>
+            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-4 text-center border border-white/5">
+                <app-svg-icon name="zap" class="text-yellow-500 mb-2 mx-auto w-6 h-6"></app-svg-icon>
+                <p class="text-xs text-gray-300 uppercase tracking-wide">Rápido</p>
             </div>
-            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-3 text-center border border-white/5">
-                <app-svg-icon name="star" class="text-purple-500 mb-1 mx-auto" width="24" height="24"></app-svg-icon>
-                <p class="text-[10px] md:text-xs text-gray-300 uppercase tracking-wide">Gratis</p>
+            <div class="bg-zinc-900/30 backdrop-blur rounded-xl p-4 text-center border border-white/5">
+                <app-svg-icon name="star" class="text-purple-500 mb-2 mx-auto w-6 h-6"></app-svg-icon>
+                <p class="text-xs text-gray-300 uppercase tracking-wide">Gratis</p>
             </div>
-        </div>
-
-        <!-- SEO Footer Text (Invisible visualmente pero ayuda al bot) -->
-        <div class="sr-only">
-            DonMusica Converter es la mejor herramienta online para convertir videos de YouTube a MP3 de alta calidad.
-            Compatible con todos los dispositivos, iPhone, Android. Sin programas.
         </div>
     </div>
 </div>

@@ -22,6 +22,7 @@ export class VideosComponent {
 
   searchQuery = signal<string>('Karol G');
   isLoading = signal<boolean>(false);
+  private searchDebounceTimer: any = null;
 
   // Binding to Service State for List Highlighting
   currentVideoIndex = this.videoPlayerService.currentVideoIndex;
@@ -38,36 +39,69 @@ export class VideosComponent {
     'https://pipedapi.smnz.de'
   ];
 
-  videos = signal<Video[]>([
+  videos = signal<Video[]>([]);
+
+  // Trending videos precargados para mostrar inmediatamente
+  private readonly TRENDING_VIDEOS: Video[] = [
     {
-      id: '1',
-      title: 'LUNA',
-      artist: 'Feid & ATL Jacob',
-      thumbnail: 'https://is1-ssl.mzstatic.com/image/thumb/Video116/v4/9c/32/32/9c323260-243e-3b6d-3663-752109f78a0d/Job249c5306-695f-40c2-902e-36043234033c-159648939-PreviewImage_preview_image_nonvideo_sdr-Time1701363715625.png/600x600bb.jpg',
-      views: 'Popular'
-    },
-    {
-      id: '2',
-      title: 'PERRO NEGRO',
-      artist: 'Bad Bunny & Feid',
-      thumbnail: 'https://is1-ssl.mzstatic.com/image/thumb/Video126/v4/64/0e/0e/640e0e0e-0e0e-0e0e-0e0e-0e0e0e0e0e0e/Job249c5306-695f-40c2-902e-36043234033c-159648939-PreviewImage_preview_image_nonvideo_sdr-Time1701363715625.png/600x600bb.jpg',
-      views: 'Tendencia'
-    },
-    {
-      id: '3',
+      id: 'iNu4Qp6d-3Q',
       title: 'QLONA',
       artist: 'Karol G & Peso Pluma',
-      thumbnail: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/12/34/56/12345678-1234-1234-1234-1234567890ab/cover.jpg/600x600bb.jpg',
-      views: 'Top 10'
+      thumbnail: 'https://i.ytimg.com/vi/iNu4Qp6d-3Q/hqdefault.jpg',
+      views: '🔥 Tendencia'
+    },
+    {
+      id: 'kLp_Hh6DKWc',
+      title: 'S91',
+      artist: 'Karol G',
+      thumbnail: 'https://i.ytimg.com/vi/kLp_Hh6DKWc/hqdefault.jpg',
+      views: '⭐ Popular'
+    },
+    {
+      id: 'saGYMhApaH8',
+      title: 'LUNA',
+      artist: 'Feid & ATL Jacob',
+      thumbnail: 'https://i.ytimg.com/vi/saGYMhApaH8/hqdefault.jpg',
+      views: '🎵 Top'
+    },
+    {
+      id: 'VQjdPI3XPAs',
+      title: 'PERRO NEGRO',
+      artist: 'Bad Bunny & Feid',
+      thumbnail: 'https://i.ytimg.com/vi/VQjdPI3XPAs/hqdefault.jpg',
+      views: '🔥 Viral'
+    },
+    {
+      id: 'sDKnKzYyx5c',
+      title: 'Si Antes Te Hubiera Conocido',
+      artist: 'Karol G',
+      thumbnail: 'https://i.ytimg.com/vi/sDKnKzYyx5c/hqdefault.jpg',
+      views: '💚 Hit'
+    },
+    {
+      id: 'OSUxrSe5GbI',
+      title: 'Gata Only',
+      artist: 'FloyyMenor & Cris Mj',
+      thumbnail: 'https://i.ytimg.com/vi/OSUxrSe5GbI/hqdefault.jpg',
+      views: '🎶 Éxito'
     }
-  ]);
+  ];
 
   constructor() {
     this.seoService.setSeoData(
       'Videos Musicales - DonMusica',
       'Disfruta de los videoclips oficiales de tus artistas favoritos. Calidad HD y sin interrupciones.'
     );
-    this.search();
+
+    // Cargar videos populares inmediatamente
+    this.loadTrendingVideos();
+
+    // Hacer búsqueda en background después de 500ms
+    setTimeout(() => this.search(), 500);
+  }
+
+  loadTrendingVideos() {
+    this.videos.set(this.TRENDING_VIDEOS);
   }
 
   // Delegate Playback to Service
@@ -102,26 +136,34 @@ export class VideosComponent {
           id: item.trackId.toString(),
           title: item.trackName,
           artist: item.artistName,
-          thumbnail: item.artworkUrl100.replace('100x100', '600x600'),
-          views: 'iTunes'
+          // Use highest quality artwork available
+          thumbnail: item.artworkUrl100.replace('100x100', '1200x1200'),
+          views: '🎵 iTunes'
         }));
         combinedVideos = [...combinedVideos, ...itunesVideos];
       }
 
       this.videos.set(combinedVideos);
       this.isLoading.set(false);
-    }).catch(error => {
-      console.error('Error in combined search:', error);
+    }).catch(() => {
+      // Silently handle errors - keep existing videos or show empty state
       this.isLoading.set(false);
     });
   }
 
   async searchPiped(query: string): Promise<Video[] | null> {
-    for (const instance of this.PIPED_INSTANCES) {
+    // Create promises for all instances simultaneously
+    const searchPromises = this.PIPED_INSTANCES.map(async (instance) => {
       try {
-        const response: any = await lastValueFrom(this.http.get(`${instance}/search`, {
-          params: { q: query, filter: 'all' }
-        }));
+        const response: any = await Promise.race([
+          lastValueFrom(this.http.get(`${instance}/search`, {
+            params: { q: query, filter: 'all' }
+          })),
+          // Timeout after 3 seconds
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 3000)
+          )
+        ]);
 
         if (response && response.items) {
           const videos = response.items
@@ -130,22 +172,51 @@ export class VideosComponent {
               id: item.url.split('v=')[1],
               title: item.title,
               artist: item.uploaderName,
-              thumbnail: item.thumbnail,
+              // Use hqdefault for better reliability (maxresdefault not always available)
+              thumbnail: `https://i.ytimg.com/vi/${item.url.split('v=')[1]}/hqdefault.jpg`,
               views: this.formatViews(item.views)
             }));
 
-          if (videos.length > 0) return videos;
+          if (videos.length > 0) {
+            return videos;
+          }
         }
+        return null;
       } catch (error) {
-        continue;
+        return null;
       }
+    });
+
+    // Race all instances - use the first one that succeeds
+    try {
+      const results = await Promise.race(
+        searchPromises.map(p => p.then(result => {
+          if (result && result.length > 0) return result;
+          throw new Error('No results');
+        }))
+      );
+      return results;
+    } catch {
+      // Silently fail - iTunes will provide results
+      return [];
     }
-    return [];
   }
 
   updateQuery(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
+
+    // Clear existing timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+
+    // Wait 500ms after user stops typing before searching
+    this.searchDebounceTimer = setTimeout(() => {
+      if (input.value.trim()) {
+        this.search();
+      }
+    }, 500);
   }
 
   onKeydown(event: KeyboardEvent) {

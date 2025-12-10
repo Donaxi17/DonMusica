@@ -51,8 +51,8 @@ export class VideoPlayerService {
             this.currentVideoIndex.set(index !== -1 ? index : -1);
         }
 
-        // 3. Reset UI State
-        this.isMinimized.set(false);
+        // 3. Reset UI State (but keep minimized state)
+        // Don't reset isMinimized - keep current state
         this.showYoutubeFallback.set(false);
         this.isLoading.set(true);
 
@@ -78,8 +78,6 @@ export class VideoPlayerService {
     }
 
     private async setPlayer(videoId: string) {
-        console.log(`🎬 Loading video: ${videoId}`);
-
         // Use YouTube iframe directly (simple and reliable)
         const origin = window.location.origin;
         this.currentVideoUrl.set(
@@ -97,8 +95,6 @@ export class VideoPlayerService {
         this.watchOnYoutubeUrl.set(`https://www.youtube.com/watch?v=${videoId}`);
         this.showYoutubeFallback.set(false);
         this.isLoading.set(false);
-
-        console.log('✅ YouTube iframe loaded with event API enabled');
     }
 
     private async getPipedStream(videoId: string): Promise<string | null> {

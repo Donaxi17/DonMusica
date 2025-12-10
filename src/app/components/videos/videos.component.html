@@ -46,6 +46,57 @@
 
     <!-- Video Feed -->
     <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+
+        <!-- Skeleton Loaders (mientras carga) -->
+        @if (isLoading()) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+            @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="animate-pulse rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800">
+                <!-- Skeleton Thumbnail -->
+                <div class="aspect-video bg-zinc-800 relative">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 animate-shimmer">
+                    </div>
+                </div>
+
+                <!-- Skeleton Info -->
+                <div class="p-4 md:p-5 space-y-3">
+                    <!-- Title -->
+                    <div class="h-4 bg-zinc-800 rounded w-3/4 relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 animate-shimmer">
+                        </div>
+                    </div>
+                    <!-- Artist -->
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-zinc-800"></div>
+                        <div class="h-3 bg-zinc-800 rounded w-1/2 relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 animate-shimmer">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-3 border-t border-zinc-800">
+                        <div class="h-3 bg-zinc-800 rounded w-20 relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 animate-shimmer">
+                            </div>
+                        </div>
+                        <div class="h-3 bg-zinc-800 rounded w-16 relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 animate-shimmer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Video Grid (cuando NO está cargando) -->
+        @if (!isLoading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
             @for (video of videos(); track video.id; let i = $index) {
             <div (click)="playVideo(video)"
@@ -111,6 +162,7 @@
             </div>
             }
         </div>
+        }
 
         <!-- Empty State -->
         @if (videos().length === 0 && !isLoading()) {
