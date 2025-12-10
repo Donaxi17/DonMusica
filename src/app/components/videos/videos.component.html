@@ -28,9 +28,9 @@
                     <input type="text"
                         class="flex-1 bg-transparent border-none outline-none text-white placeholder-zinc-500 text-sm md:text-base px-2"
                         placeholder="Buscar videos..." [value]="searchQuery()" (input)="updateQuery($event)"
-                        (keydown)="onKeydown($event)">
+                        (keydown)="onKeydown($event)" aria-label="Buscar videos musicales">
 
-                    <button (click)="search()" [disabled]="isLoading()"
+                    <button (click)="search()" [disabled]="isLoading()" aria-label="Buscar"
                         class="bg-red-600 hover:bg-red-500 text-white w-9 h-9 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-red-900/20 shrink-0">
                         @if (isLoading()) {
                         <app-svg-icon name="loader" class="text-white animate-spin" width="20"
@@ -99,8 +99,9 @@
         @if (!isLoading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
             @for (video of videos(); track video.id; let i = $index) {
-            <div (click)="playVideo(video)"
-                class="group rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99] animate-fade-in-up flex flex-col"
+            <div (click)="playVideo(video)" (keydown.enter)="playVideo(video)" (keydown.space)="playVideo(video)"
+                role="button" tabindex="0" [attr.aria-label]="'Reproducir video ' + video.title"
+                class="group rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99] animate-fade-in-up flex flex-col focus:outline-none focus:ring-4 focus:ring-red-500/50"
                 [ngClass]="currentVideoIndex() === i ? 'bg-emerald-900/50 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.4)]' : 'bg-zinc-900 border-zinc-800 hover:border-emerald-500/30 hover:shadow-emerald-900/10'"
                 [style.animation-delay]="i * 50 + 'ms'">
 

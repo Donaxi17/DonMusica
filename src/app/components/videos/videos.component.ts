@@ -31,15 +31,16 @@ export class VideosComponent {
 
   // Keep instances for Search logic
   private readonly PIPED_INSTANCES = [
-    'https://pipedapi.kavin.rocks',
     'https://api.piped.private.coffee',
-    'https://pipedapi.drgns.space',
-    'https://api.piped.projectsegfau.lt',
-    'https://pipedapi.moomoo.me',
-    'https://pipedapi.smnz.de'
+    'https://pipedapi.kavin.rocks',
+    // 'https://pipedapi.drgns.space', // CORS Issues
+    // 'https://api.piped.projectsegfau.lt', // CORS Issues
+    // 'https://pipedapi.moomoo.me', // CORS Issues
+    // 'https://pipedapi.smnz.de'
   ];
 
   videos = signal<Video[]>([]);
+
 
   // Trending videos precargados para mostrar inmediatamente
   private readonly TRENDING_VIDEOS: Video[] = [
@@ -137,7 +138,7 @@ export class VideosComponent {
           title: item.trackName,
           artist: item.artistName,
           // Use highest quality artwork available
-          thumbnail: item.artworkUrl100.replace('100x100', '1200x1200'),
+          thumbnail: item.artworkUrl100.replace('100x100', '600x600'),
           views: '🎵 iTunes'
         }));
         combinedVideos = [...combinedVideos, ...itunesVideos];

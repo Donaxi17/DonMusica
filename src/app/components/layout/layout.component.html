@@ -48,6 +48,14 @@
                             d="M18 7c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-3.333L22 17V7l-4 3.333V7z" />
                     </svg> Videos
                 </button>
+                <button (click)="navigateTo('/dj-zone')" [class.text-purple-400]="isActive('/dj-zone')"
+                    [class.text-zinc-400]="!isActive('/dj-zone')"
+                    class="hidden lg:flex px-4 py-2 rounded-full hover:bg-white/5 transition-colors text-sm font-medium hover:text-white items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg> DJ Zone
+                </button>
 
                 <!-- History Button (Desktop) -->
                 <button (click)="toggleHistory()" [class.text-emerald-400]="showHistory"
@@ -87,13 +95,7 @@
                             Sin Copyright
                         </button>
                         <div class="h-px bg-zinc-800 mx-4"></div>
-                        <button (click)="navigateTo('/converter'); closeMoreMenu()"
-                            class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-zinc-300 hover:text-white">
-                            <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M18.948 11.112C18.511 7.67 15.563 5 12.004 5c-2.756 0-5.15 1.611-6.243 4.15-2.148.642-3.757 2.67-3.757 4.85 0 2.757 2.243 5 5 5h1v-2h-1c-1.654 0-3-1.346-3-3 0-1.404 1.199-2.757 2.673-3.016l.581-.102.192-.558C8.153 8.273 9.898 7 12.004 7c2.757 0 5 2.243 5 5v1h1.5c1.378 0 2.5 1.122 2.5 2.5S19.882 18 18.504 18h-1.5v2h1.5c2.481 0 4.5-2.019 4.5-4.5 0-2.178-1.555-4.038-3.556-4.388zM13.004 14v-4h-2v4h-3l4 5 4-5z" />
-                            </svg> Convertidor
-                        </button>
+
                         <button (click)="navigateTo('/playlists'); closeMoreMenu()"
                             class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-zinc-300 hover:text-white">
                             <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -327,21 +329,17 @@
                     </svg>
                 </button>
 
-                <button (click)="navigateTo('/converter'); closeMobileMoreMenu()" class="menu-item-mobile group">
-                    <div
-                        class="icon-box bg-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M18.948 11.112C18.511 7.67 15.563 5 12.004 5c-2.756 0-5.15 1.611-6.243 4.15-2.148.642-3.757 2.67-3.757 4.85 0 2.757 2.243 5 5 5h1v-2h-1c-1.654 0-3-1.346-3-3 0-1.404 1.199-2.757 2.673-3.016l.581-.102.192-.558C8.153 8.273 9.898 7 12.004 7c2.757 0 5 2.243 5 5v1h1.5c1.378 0 2.5 1.122 2.5 2.5S19.882 18 18.504 18h-1.5v2h1.5c2.481 0 4.5-2.019 4.5-4.5 0-2.178-1.555-4.038-3.556-4.388zM13.004 14v-4h-2v4h-3l4 5 4-5z" />
-                        </svg>
-                    </div>
-                    <div class="flex-1 font-medium">Descargar MP3</div>
-                    <svg class="w-4 h-4 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
-                    </svg>
-                </button>
+
 
                 <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button (click)="navigateTo('/dj-zone'); closeMobileMoreMenu()"
+                        class="bg-zinc-800 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-zinc-700 transition-colors">
+                        <svg class="w-12 h-12 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                        </svg>
+                        <span class="text-sm font-medium">DJ Zone</span>
+                    </button>
                     <button (click)="navigateTo('/radio'); closeMobileMoreMenu()"
                         class="bg-zinc-800 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-zinc-700 transition-colors">
                         <svg class="w-12 h-12 text-blue-400" fill="currentColor" viewBox="0 0 24 24">

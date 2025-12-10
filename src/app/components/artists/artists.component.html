@@ -73,7 +73,7 @@
                 <div class="flex flex-nowrap gap-3 min-w-max px-1">
                     @for (genre of genres; track genre.id) {
                     <button (click)="onGenreChange(genre.id)"
-                        class="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden"
+                        class="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden select-none cursor-pointer"
                         [ngClass]="{
                             'bg-gradient-to-r from-emerald-500 to-green-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'all',
                             'bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'reggaeton',
@@ -173,7 +173,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Videos Button (Red) -->
                         <a routerLink="/videos"
-                            class="group relative overflow-hidden bg-gradient-to-br from-red-500 to-rose-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-red-500/50 transition-all transform hover:scale-105 active:scale-95">
+                            class="group relative overflow-hidden bg-gradient-to-br from-red-500 to-rose-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-red-500/50 transition-all transform hover:scale-105 active:scale-95 select-none cursor-pointer">
                             <div
                                 class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
                             </div>
@@ -185,7 +185,7 @@
 
                         <!-- Radio Button (Blue) -->
                         <a routerLink="/radio"
-                            class="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-blue-500/50 transition-all transform hover:scale-105 active:scale-95">
+                            class="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-blue-500/50 transition-all transform hover:scale-105 active:scale-95 select-none cursor-pointer">
                             <div
                                 class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
                             </div>
@@ -196,8 +196,8 @@
                         </a>
 
                         <!-- Free Music Button (Emerald) -->
-                        <a routerLink="/free-music"
-                            class="group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-emerald-500/50 transition-all transform hover:scale-105 active:scale-95">
+                        <a routerLink="/sin-copyright"
+                            class="group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-emerald-500/50 transition-all transform hover:scale-105 active:scale-95 select-none cursor-pointer">
                             <div
                                 class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
                             </div>

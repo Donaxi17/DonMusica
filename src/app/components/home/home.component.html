@@ -9,7 +9,7 @@
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10"></div>
 
             <!-- Hero Image -->
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop"
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1080&auto=format&fit=crop"
                 alt="Fondo de concierto de música urbana" loading="eager" fetchpriority="high" decoding="async"
                 class="w-full h-full object-cover object-center animate-fade-in blur-sm scale-105">
         </div>
@@ -79,7 +79,8 @@
                         class="bg-emerald-500 text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-400">
                         Instalar
                     </button>
-                    <button (click)="showInstallBanner = false" class="text-zinc-500 hover:text-white p-1">
+                    <button (click)="showInstallBanner = false" class="text-zinc-500 hover:text-white p-1"
+                        aria-label="Cerrar banner de instalación">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
@@ -109,9 +110,9 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-white font-bold text-sm md:text-base lg:text-lg mb-0.5">DonMusica Pro <span
+                        <h2 class="text-white font-bold text-sm md:text-base lg:text-lg mb-0.5">DonMusica Pro <span
                                 class="text-amber-500 text-[10px] md:text-xs ml-1 uppercase border border-amber-500/30 px-1 rounded">Beta</span>
-                        </h3>
+                        </h2>
                         <p class="text-zinc-400 text-xs md:text-sm leading-relaxed">Disfruta de más funciones, música
                             sin anuncios y beneficios exclusivos. ¡Próximamente!</p>
                     </div>
@@ -136,9 +137,9 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-white font-bold text-sm md:text-base lg:text-lg mb-0.5">DonMusica Ads <span
+                        <h2 class="text-white font-bold text-sm md:text-base lg:text-lg mb-0.5">DonMusica Ads <span
                                 class="text-purple-400 text-[10px] md:text-xs ml-1 uppercase border border-purple-500/30 px-1 rounded">Beta</span>
-                        </h3>
+                        </h2>
                         <p class="text-zinc-400 text-xs md:text-sm leading-relaxed">Promociona tu música con anuncios
                             personalizados. Ideal para artistas que quieren llegar a más oyentes. ¡Próximamente!</p>
                     </div>
@@ -154,8 +155,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
 
                 <!-- Card 1: Explorar -->
-                <div (click)="navigateTo('/browse')"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98]">
+                <div (click)="navigateTo('/browse')" (keydown.enter)="navigateTo('/browse')" tabindex="0" role="button"
+                    aria-label="Explorar tendencias y música nueva"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -176,8 +178,9 @@
                 </div>
 
                 <!-- Card 2: Charts -->
-                <div (click)="navigateTo('/browse/charts')"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-yellow-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98]">
+                <div (click)="navigateTo('/browse/charts')" (keydown.enter)="navigateTo('/browse/charts')" tabindex="0"
+                    role="button" aria-label="Ver Top Charts y Rankings"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-yellow-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-yellow-500">
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
@@ -199,8 +202,9 @@
                 </div>
 
                 <!-- Card 3: Artistas -->
-                <div (click)="navigateTo('/artists')"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-purple-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98]">
+                <div (click)="navigateTo('/artists')" (keydown.enter)="navigateTo('/artists')" tabindex="0"
+                    role="button" aria-label="Buscar Artistas"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-purple-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-500">
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
@@ -222,8 +226,9 @@
                 </div>
 
                 <!-- Card 4: Sin Copyright -->
-                <div (click)="navigateTo('/sin-copyright')"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-emerald-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98]">
+                <div (click)="navigateTo('/sin-copyright')" (keydown.enter)="navigateTo('/sin-copyright')" tabindex="0"
+                    role="button" aria-label="Ir a Música Sin Copyright"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-emerald-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <div class="flex justify-between items-start mb-4">
                         <div
                             class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">

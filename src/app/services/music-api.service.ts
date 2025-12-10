@@ -416,9 +416,8 @@ export class MusicApiService {
         // Usar Piped API para obtener el stream de audio directo (m4a)
         // Alternar entre instancias si una falla (simple fallback manual por ahora)
         const pipedInstances = [
-            'https://pipedapi.kavin.rocks',
-            'https://api.piped.io',
-            'https://pipedapi.drgns.space'
+            'https://api.piped.private.coffee',
+            'https://pipedapi.kavin.rocks'
         ];
 
         // Intentar con la primera instancia (se podría mejorar con recursividad/retry)
@@ -443,9 +442,8 @@ export class MusicApiService {
     getBestAudioStream(title: string, artist: string): Observable<string | null> {
         const query = `${artist} - ${title} audio`;
         const pipedInstances = [
-            'https://pipedapi.kavin.rocks',
-            'https://api.piped.io',
-            'https://pipedapi.drgns.space'
+            'https://api.piped.private.coffee',
+            'https://pipedapi.kavin.rocks'
         ];
         const baseUrl = pipedInstances[0];
 

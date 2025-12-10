@@ -39,7 +39,8 @@ export const routes: Routes = [
                 loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent),
                 canActivate: [adminGuard]
             },
-            { path: 'converter', loadComponent: () => import('./components/converter/converter.component').then(m => m.ConverterComponent) },
+
+            { path: 'dj-zone', loadComponent: () => import('./components/dj-pad/dj-pad.component').then(m => m.DjPadComponent) },
             { path: 'offline-music', loadComponent: () => import('./components/offline-music/offline-music.component').then(m => m.OfflineMusicComponent) },
             { path: 'upload-music', loadComponent: () => import('./components/upload-music/upload-music.component').then(m => m.UploadMusicComponent) }
         ]

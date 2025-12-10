@@ -29,63 +29,83 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.isBrowser) {
-      this.loadDesktopScript(); // Ensure global script is loaded
-      this.renderMobileAd();    // Render local mobile ad
+      this.renderResponsiveAd();
     }
   }
 
-  private loadDesktopScript() {
-    // SPA FIX: Remove existing script if present to force re-execution
-    const existingScript = document.getElementById('adsterra-native-script');
-    if (existingScript) {
-      existingScript.remove();
-    }
-
-    // Always create and append the script anew to find the new container
-    const script = document.createElement('script');
-    script.id = 'adsterra-native-script';
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src = '//pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js';
-    document.body.appendChild(script);
-  }
-
-  private renderMobileAd() {
+  private renderResponsiveAd() {
     setTimeout(() => {
+      // Usamos el ID del móvil como contenedor genérico (o desktopContainerId si prefieres separar, pero simplificaremos)
+      // En el HTML, asegurémonos de tener un contenedor limpio.
+      // Por simplicidad, usaremos 'mobileContainerId' como el target dinámico para ambos casos, 
+      // ya que el HTML tiene un div genérico.
+
       const container = document.getElementById(this.mobileContainerId);
       if (container && !container.hasChildNodes()) {
+        const width = window.innerWidth;
+        const isDesktop = width >= 768;
+
         const iframe = document.createElement('iframe');
-        iframe.style.width = '300px';
-        iframe.style.height = '250px';
+        iframe.title = 'Anuncio publicitario';
         iframe.style.border = 'none';
         iframe.style.overflow = 'hidden';
         iframe.scrolling = 'no';
+
+        let adContent = '';
+
+        if (isDesktop) {
+          // PC: 728x90
+          iframe.style.width = '728px';
+          iframe.style.height = '90px';
+          adContent = `
+                <!DOCTYPE html>
+                <html>
+                <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+                    <script type="text/javascript">
+                        atOptions = {
+                            'key' : '384fd7d27e0b8060c76b6c30dcffa0bf',
+                            'format' : 'iframe',
+                            'height' : 90,
+                            'width' : 728,
+                            'params' : {}
+                        };
+                    </script>
+                    <script type="text/javascript" src="//www.highperformanceformat.com/384fd7d27e0b8060c76b6c30dcffa0bf/invoke.js"></script>
+                </body>
+                </html>
+            `;
+        } else {
+          // MOBILE: 320x50
+          iframe.style.width = '320px';
+          iframe.style.height = '50px';
+          adContent = `
+                <!DOCTYPE html>
+                <html>
+                <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+                    <script type="text/javascript">
+                        atOptions = {
+                            'key' : '1f663241402f759e860c199f9a9fc0c3',
+                            'format' : 'iframe',
+                            'height' : 50,
+                            'width' : 320,
+                            'params' : {}
+                        };
+                    </script>
+                    <script type="text/javascript" src="//www.highperformanceformat.com/1f663241402f759e860c199f9a9fc0c3/invoke.js"></script>
+                </body>
+                </html>
+            `;
+        }
 
         container.appendChild(iframe);
 
         const doc = iframe.contentWindow?.document || iframe.contentDocument;
         if (doc) {
           doc.open();
-          doc.write(`
-            <!DOCTYPE html>
-            <html>
-            <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
-                <script type="text/javascript">
-                    atOptions = {
-                        'key' : '86a458b43e1e497bc27895c8fcc41c3a',
-                        'format' : 'iframe',
-                        'height' : 250,
-                        'width' : 300,
-                        'params' : {}
-                    };
-                </script>
-                <script type="text/javascript" src="//www.highperformanceformat.com/86a458b43e1e497bc27895c8fcc41c3a/invoke.js"></script>
-            </body>
-            </html>
-          `);
+          doc.write(adContent);
           doc.close();
         }
       }
-    }, 1000 + (this.index * 500)); // Stagger loading if multiple ads
+    }, 1000 + (this.index * 500));
   }
 }

@@ -5,10 +5,12 @@ import { SeoService } from '../../services/seo.service';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 
+import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent],
+  imports: [CommonModule, FormsModule, SvgIconComponent, RouterModule],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })

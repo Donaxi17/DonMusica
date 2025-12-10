@@ -1,17 +1,8 @@
-<!-- ADSTERRA ADS CONTAINER -->
-<div class="w-full my-6 animate-fade-in flex flex-col items-center" role="complementary"
-    aria-label="Anuncio publicitario">
+<!-- ADSTERRA RESPONSIVE CONTAINER (Desktop 728x90 | Mobile 320x50) -->
+<div class="w-full my-6 flex justify-center items-center opacity-0 animate-fade-in" role="complementary"
+    aria-label="Anuncio publicitario" style="animation-fill-mode: forwards;">
 
-    <!-- Desktop: Native Banner 4:1 (Hidden on Mobile, or if forced iframe) -->
-    <div class="hidden md:block w-full" *ngIf="!forceIframe" aria-label="Anuncio de escritorio">
-        <!-- Fixed ID required by Adsterra -->
-        <div id="container-e4e25c107fdc96e794b513ea7c8e2e97"></div>
-    </div>
-
-    <!-- Mobile/Iframe: Banner 300x250 (Hidden on Desktop unless forced) -->
-    <div class="w-full flex justify-center" [class.md:hidden]="!forceIframe" aria-label="Anuncio móvil">
-        <!-- Dynamic ID for Mobile Iframe -->
-        <div [id]="mobileContainerId"></div>
-    </div>
+    <!-- Dynamic Helper Container -->
+    <div [id]="mobileContainerId"></div>
 
 </div>
