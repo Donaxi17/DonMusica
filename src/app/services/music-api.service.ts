@@ -413,7 +413,56 @@ export class MusicApiService {
     }
 
     getStreamUrl(videoId: string): Observable<string | null> {
-        return of(null);
+        // Usar Piped API para obtener el stream de audio directo (m4a)
+        // Alternar entre instancias si una falla (simple fallback manual por ahora)
+        const pipedInstances = [
+            'https://pipedapi.kavin.rocks',
+            'https://api.piped.io',
+            'https://pipedapi.drgns.space'
+        ];
+
+        // Intentar con la primera instancia (se podría mejorar con recursividad/retry)
+        const baseUrl = pipedInstances[0];
+
+        return this.http.get<any>(`${baseUrl}/streams/${videoId}`).pipe(
+            map(res => {
+                if (res.audioStreams && res.audioStreams.length > 0) {
+                    // Preferir m4a (mejor compatibilidad)
+                    const m4aStream = res.audioStreams.find((s: any) => s.format === 'M4A');
+                    return m4aStream ? m4aStream.url : res.audioStreams[0].url;
+                }
+                return null;
+            }),
+            catchError(err => {
+                console.error('Error fetching audio stream from Piped:', err);
+                return of(null);
+            })
+        );
+    }
+
+    getBestAudioStream(title: string, artist: string): Observable<string | null> {
+        const query = `${artist} - ${title} audio`;
+        const pipedInstances = [
+            'https://pipedapi.kavin.rocks',
+            'https://api.piped.io',
+            'https://pipedapi.drgns.space'
+        ];
+        const baseUrl = pipedInstances[0];
+
+        return this.http.get<any>(`${baseUrl}/search?q=${encodeURIComponent(query)}&filter=music_songs`).pipe(
+            switchMap(res => {
+                if (res.items && res.items.length > 0) {
+                    // Tomar el primer resultado (el más relevante)
+                    const videoId = res.items[0].url.split('/watch?v=')[1];
+                    return this.getStreamUrl(videoId);
+                }
+                return of(null);
+            }),
+            catchError(err => {
+                console.error('Error finding Piped video:', err);
+                return of(null);
+            })
+        );
     }
 
     /**

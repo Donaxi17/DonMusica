@@ -1,4 +1,22 @@
-/* Necessary Keyframes not in Tailwind */
+/* Animación de gradiente en el hero */
+@keyframes gradient {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 15s ease infinite;
+}
+
+/* Fade in up animation */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -11,6 +29,11 @@
     }
 }
 
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Fade in animation */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -21,10 +44,60 @@
     }
 }
 
-.animate-fade-in-up {
-    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
 }
 
-.animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Smooth scroll */
+.overflow-x-auto {
+    scroll-behavior: smooth;
+}
+
+/* Pulse animation for active genre */
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hover effects for artist cards */
+.group:hover .filter {
+    filter: brightness(1.1);
+}
+
+/* Loading skeleton pulse */
+@keyframes skeleton-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

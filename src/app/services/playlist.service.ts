@@ -12,6 +12,7 @@ export interface Song {
   genre?: string; // Opcional: género musical
   license?: string;
   isStreamUrlFetched?: boolean;
+  thumbnail?: string;
 }
 
 export interface Playlist {

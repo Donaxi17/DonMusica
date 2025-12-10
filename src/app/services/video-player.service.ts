@@ -79,7 +79,7 @@ export class VideoPlayerService {
 
     private setPlayer(videoId: string) {
         const origin = window.location.origin;
-        this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&origin=${origin}`);
+        this.currentVideoUrl.set(`https://www.youtube.com/embed/${videoId}?autoplay=1&origin=${origin}&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`);
         this.watchOnYoutubeUrl.set(`https://www.youtube.com/watch?v=${videoId}`);
         this.showYoutubeFallback.set(false);
         this.isLoading.set(false);

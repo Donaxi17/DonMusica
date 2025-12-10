@@ -24,6 +24,7 @@ export class LayoutComponent implements OnInit {
   showMoreMenu = false;
   showMobileMoreMenu = false;
   showHistory = false;
+  progress = 0;
   private previousRoute: string = '/';
 
   constructor(
@@ -50,6 +51,10 @@ export class LayoutComponent implements OnInit {
       this.isFavoritesPlaying = isFav;
     });
 
+    this.playerService.progress$.subscribe(prog => {
+      this.progress = prog;
+    });
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -59,6 +64,15 @@ export class LayoutComponent implements OnInit {
       this.showMobileMoreMenu = false;
       this.showMoreMenu = false;
     });
+  }
+
+  seekTo(event: MouseEvent): void {
+    event.stopPropagation(); // Prevent opening player
+    const progressBar = event.currentTarget as HTMLElement;
+    const clickPosition = event.offsetX;
+    const barWidth = progressBar.offsetWidth;
+    const percentage = (clickPosition / barWidth) * 100;
+    this.playerService.seekTo(percentage);
   }
 
   @HostListener('document:click', ['$event'])

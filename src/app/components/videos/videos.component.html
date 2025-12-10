@@ -50,7 +50,7 @@
             @for (video of videos(); track video.id; let i = $index) {
             <div (click)="playVideo(video)"
                 class="group rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99] animate-fade-in-up flex flex-col"
-                [ngClass]="currentVideoIndex() === i ? 'bg-emerald-950/30 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-zinc-900 border-zinc-800 hover:border-red-500/30 hover:shadow-red-900/10'"
+                [ngClass]="currentVideoIndex() === i ? 'bg-emerald-900/50 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.4)]' : 'bg-zinc-900 border-zinc-800 hover:border-emerald-500/30 hover:shadow-emerald-900/10'"
                 [style.animation-delay]="i * 50 + 'ms'">
 
                 <!-- Thumbnail -->
@@ -61,8 +61,8 @@
                     <!-- Play Button (Centered & Pulsing) -->
                     <div
                         class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div
-                            class="w-16 h-16 bg-red-600/90 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                        <div [ngClass]="currentVideoIndex() === i ? 'bg-emerald-600/90' : 'bg-red-600/90'"
+                            class="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
                             <app-svg-icon name="play" class="text-white ml-1" width="32" height="32"></app-svg-icon>
                         </div>
                     </div>

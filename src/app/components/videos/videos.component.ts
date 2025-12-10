@@ -20,7 +20,7 @@ export class VideosComponent {
   private seoService = inject(SeoService);
   private videoPlayerService = inject(VideoPlayerService);
 
-  searchQuery = signal<string>('Bad Bunny');
+  searchQuery = signal<string>('Karol G');
   isLoading = signal<boolean>(false);
 
   // Binding to Service State for List Highlighting

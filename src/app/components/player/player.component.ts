@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
@@ -28,6 +28,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
   isShuffle = false;
   repeatMode: 'off' | 'all' | 'one' = 'off';
   isFavoritesPlaying = false;
+  showTimerMenu = false;
+  sleepTimer: any = null;
+  timerMinutes = 0;
 
   private subscriptions: Subscription[] = [];
 
@@ -173,5 +176,42 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   formatTime(seconds: number): string {
     return this.playerService.formatTime(seconds);
+  }
+
+  toggleTimerMenu(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showTimerMenu = !this.showTimerMenu;
+  }
+
+  @HostListener('document:click')
+  closeTimerMenu(): void {
+    if (this.showTimerMenu) {
+      this.showTimerMenu = false;
+    }
+  }
+
+  setSleepTimer(minutes: number): void {
+    this.cancelTimer();
+    this.timerMinutes = minutes;
+    this.showTimerMenu = false;
+
+    if (minutes > 0) {
+      this.sleepTimer = setTimeout(() => {
+        this.playerService.pause();
+        this.timerMinutes = 0;
+        this.sleepTimer = null;
+      }, minutes * 60 * 1000);
+    }
+  }
+
+  cancelTimer(): void {
+    if (this.sleepTimer) {
+      clearTimeout(this.sleepTimer);
+      this.sleepTimer = null;
+    }
+    this.timerMinutes = 0;
+    this.showTimerMenu = false;
   }
 }

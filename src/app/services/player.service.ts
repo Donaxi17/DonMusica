@@ -123,24 +123,14 @@ export class PlayerService {
       this.currentSongSubject.next(song);
       this.updateMediaSessionMetadata(song);
 
+      // Reproducir directamente (iTunes previews)
       if (song.url) {
         this.audio.src = song.url;
         this.audio.load();
         this.play();
       } else {
-        // Fetch stream URL if missing (Piped)
-        this.musicApi.getStreamUrl(song.id as string).subscribe(url => {
-          if (url) {
-            song.url = url;
-            song.isStreamUrlFetched = true;
-            this.audio.src = url;
-            this.audio.load();
-            this.play();
-          } else {
-            console.error('No se pudo obtener el audio para:', song.title);
-            this.toastService.error('No se pudo reproducir esta canción');
-          }
-        });
+        this.toastService.error(`No se pudo cargar "${song.title}"`);
+        setTimeout(() => this.nextTrack(), 500);
       }
     }
   }
@@ -189,8 +179,12 @@ export class PlayerService {
     const currentIndex = playlist.findIndex(s => s.id === currentSong.id);
 
     if (this.isShuffleSubject.value) {
-      const randomIndex = Math.floor(Math.random() * playlist.length);
-      this.playSong(playlist[randomIndex]);
+      let nextIndex;
+      do {
+        nextIndex = Math.floor(Math.random() * playlist.length);
+      } while (nextIndex === currentIndex && playlist.length > 1);
+
+      this.playSong(playlist[nextIndex]);
     } else if (currentIndex < playlist.length - 1) {
       this.playSong(playlist[currentIndex + 1]);
     } else if (this.repeatModeSubject.value === 'all') {
@@ -233,8 +227,6 @@ export class PlayerService {
     const current = this.repeatModeSubject.value;
     if (current === 'off') {
       this.repeatModeSubject.next('all');
-    } else if (current === 'all') {
-      this.repeatModeSubject.next('one');
     } else {
       this.repeatModeSubject.next('off');
     }

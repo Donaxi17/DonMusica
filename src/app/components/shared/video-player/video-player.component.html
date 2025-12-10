@@ -3,9 +3,10 @@
     [ngClass]="isMinimized() ? 'bg-transparent pointer-events-none block' : 'bg-black flex flex-col items-center justify-center pointer-events-auto'">
 
     <!-- Main Content Wrapper -->
-    <div (click)="handlePlayerClick($event)"
+    <div (click)="handlePlayerClick($event)" (mousedown)="onDragStart($event)" (touchstart)="onDragStart($event)"
+        [ngStyle]="getVideoStyle()"
         class="transition-all duration-500 ease-in-out relative shadow-2xl pointer-events-auto" [ngClass]="isMinimized() ? 
-                'fixed -bottom-14 right-2 md:-bottom-16 md:right-2 z-[5001] w-[160px] md:w-[320px] cursor-pointer rounded-lg overflow-hidden ring-1 ring-white/10 bg-black' : 
+                'fixed -bottom-14 right-2 md:-bottom-16 md:right-2 z-[5001] w-[200px] md:w-[320px] cursor-move rounded-lg overflow-hidden ring-2 ring-emerald-500/50 bg-black' : 
                 'w-full max-w-5xl flex items-center justify-center gap-4 md:gap-12 animate-scale-in'">
 
         <!-- Previous Button (PC) - Hidden when minimized -->
@@ -47,6 +48,7 @@
                 @if (isMinimized()) {
                 <div class="absolute inset-0 z-50 bg-transparent"></div>
                 }
+
                 <iframe [src]="currentVideoUrl()! | safe" class="w-full h-full" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
