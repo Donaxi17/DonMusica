@@ -55,7 +55,11 @@ export class FreeMusicComponent implements OnInit {
   isProcessingDownload = signal(false);
 
   // Smartlink configuration
-  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
+  // Active Monetag Smartlink
+  private readonly SMARTLINK_URL = 'https://otieu.com/4/10301736';
+
+  // Backup Adsterra Smartlink (Future use)
+  // private readonly BACKUP_LINK = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
   // Estado de reproducción reactivo
   playingSongId = signal<string | number | undefined>(undefined);
@@ -143,13 +147,15 @@ export class FreeMusicComponent implements OnInit {
 
 
   // Sistema de descarga con anuncios - OPTIMIZADO
-  // Sistema de descarga con anuncios - OPTIMIZADO
 
   openDownloadModal(song: Song) {
     this.selectedDownloadSong.set(song);
     this.showDownloadModal.set(true);
-    this.canDownload.set(true); // Puede descargar inmediatamente
-    this.downloadCountdown.set(0); // Sin countdown
+
+    // Sin delay en Free Music (Inmediato)
+    this.canDownload.set(true);
+    this.downloadCountdown.set(0);
+
     this.isProcessingDownload.set(false);
 
     // Scroll al modal
@@ -177,7 +183,15 @@ export class FreeMusicComponent implements OnInit {
   }
 
   private startCountdown() {
-    // Ya no se usa
+    const interval = setInterval(() => {
+      const current = this.downloadCountdown();
+      if (current > 0) {
+        this.downloadCountdown.set(current - 1);
+      } else {
+        this.canDownload.set(true);
+        clearInterval(interval);
+      }
+    }, 1000);
   }
 
   // Manejar error de imagen con fallback
@@ -215,50 +229,46 @@ export class FreeMusicComponent implements OnInit {
     const song = this.selectedDownloadSong();
     if (!song || !this.canDownload()) return;
 
+    // 1. Abrir Smartlink inmediatamente (Prioridad Monetización)
+    this.openSmartlinkIfAllowed();
+
     this.isProcessingDownload.set(true);
     this.toastService.info('⏳ Iniciando descarga...');
 
-    // Intentamos descargar como blob para evitar abrir nueva pestaña
-    this.http.get(song.url, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        // Limpiamos el nombre del archivo
-        const safeTitle = (song.title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        link.download = `${safeTitle}.mp3`;
+    // 2. Esperar 1 segundo para procesar la descarga
+    setTimeout(() => {
+      // Intentamos descargar como blob para evitar abrir nueva pestaña
+      this.http.get(song.url, { responseType: 'blob' }).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          // Limpiamos el nombre del archivo
+          const safeTitle = (song.title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+          link.download = `${safeTitle}.mp3`;
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
 
-        // Limpieza
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+          // Limpieza
+          setTimeout(() => window.URL.revokeObjectURL(url), 100);
 
-        this.isProcessingDownload.set(false);
-        this.closeDownloadModal();
-        this.toastService.success('✅ Descarga completada');
+          this.isProcessingDownload.set(false);
+          this.closeDownloadModal();
+          this.toastService.success('✅ Descarga completada');
+        },
+        error: (error) => {
+          console.warn('Error en descarga directa (posible CORS), usando fallback', error);
 
-        // Abrir Smartlink 1 segundo después del éxito
-        setTimeout(() => {
-          this.openSmartlinkIfAllowed();
-        }, 1000);
-      },
-      error: (error) => {
-        console.warn('Error en descarga directa (posible CORS), usando fallback', error);
+          // Fallback: Si falla (CORS), abrimos en nueva pestaña
+          window.open(song.url, '_blank');
 
-        // Fallback: Si falla (CORS), abrimos en nueva pestaña
-        window.open(song.url, '_blank');
-
-        this.isProcessingDownload.set(false);
-        this.closeDownloadModal();
-
-        // También abrir Smartlink en caso de fallback
-        setTimeout(() => {
-          this.openSmartlinkIfAllowed();
-        }, 1000);
-      }
-    });
+          this.isProcessingDownload.set(false);
+          this.closeDownloadModal();
+        }
+      });
+    }, 1000);
   }
 
   // Métodos para descarga offline

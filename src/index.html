@@ -45,10 +45,29 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8359193264058620"
     crossorigin="anonymous"></script>
 
-  <!-- Monetag (Vignette Banner) -->
-  <!-- <meta name="monetag" content="0c86489b59b34bc6a0dda0724103d9ad"> -->
-  <!-- <script>(function(s){s.dataset.zone='10279642',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  <script>(function(s){s.dataset.zone='10279646',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script> -->
+  <!-- Monetag (Vignette Banner & OnClick) - Delayed 10s -->
+  <meta name="monetag" content="0c86489b59b34bc6a0dda0724103d9ad">
+  <script>
+    // Retrasar carga de anuncios 10 segundos para mejorar UX inicial
+    setTimeout(function () {
+      var target = [document.documentElement, document.body].filter(Boolean).pop();
+
+      // Zona 1: Vignette Banner (10279642)
+      var s1 = document.createElement('script');
+      s1.dataset.zone = '10279642';
+      s1.src = 'https://gizokraijaw.net/vignette.min.js';
+      target.appendChild(s1);
+
+      // Zona 2: In-Page Push (10279646)
+      var s2 = document.createElement('script');
+      s2.dataset.zone = '10279646';
+      s2.src = 'https://nap5k.com/tag.min.js';
+      target.appendChild(s2);
+
+      console.log('Ads loaded after 10s');
+    }, 10000);
+  </script>
+
 
   <!-- Preconnect to external domains -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

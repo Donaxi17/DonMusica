@@ -19,7 +19,11 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private intervalId: any;
 
   // Smartlink configuration
-  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c'; // CAMBIA ESTO
+  // Active Monetag Smartlink
+  private readonly SMARTLINK_URL = 'https://otieu.com/4/10301736';
+
+  // Backup Adsterra Smartlink (Future use)
+  // private readonly BACKUP_LINK = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
   constructor(
     private router: Router,
@@ -37,7 +41,18 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // No countdown needed
+    this.countdown = 3;
+    this.startCountdown();
+  }
+
+  private startCountdown() {
+    this.intervalId = setInterval(() => {
+      if (this.countdown > 0) {
+        this.countdown--;
+      } else {
+        clearInterval(this.intervalId);
+      }
+    }, 1000);
   }
 
   ngAfterViewInit(): void {
@@ -61,20 +76,12 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  /**
-   * Opens Smartlink on EVERY download (Mobile + PC)
-   */
-  private openSmartlinkIfAllowed(): void {
-    console.log('🔗 Abriendo Smartlink:', this.SMARTLINK_URL);
-    window.open(this.SMARTLINK_URL, '_blank');
-  }
-
   startDownload(): void {
     if (this.downloadUrl) {
-      // 1. First, open Smartlink (if allowed)
-      this.openSmartlinkIfAllowed();
+      // Open Monetag Smartlink
+      window.open(this.SMARTLINK_URL, '_blank');
 
-      // 2. Wait 1 second, then start download
+      // Wait 1 second, then start download
       setTimeout(() => {
         const link = document.createElement('a');
         link.href = this.downloadUrl;
