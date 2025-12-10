@@ -1,7 +1,7 @@
-import { Component, inject, HostListener, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, HostListener, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SvgIconComponent } from '../svg-icon/svg-icon.component'; // Adjust path if needed
-import { SafePipe } from '../../../pipes/safe.pipe'; // Adjust path
+import { SvgIconComponent } from '../svg-icon/svg-icon.component';
+import { SafePipe } from '../../../pipes/safe.pipe';
 import { VideoPlayerService } from '../../../services/video-player.service';
 
 @Component({
@@ -14,7 +14,7 @@ import { VideoPlayerService } from '../../../services/video-player.service';
 export class VideoPlayerComponent {
   videoService = inject(VideoPlayerService);
 
-  // Expose signals helper
+  // Expose signals
   currentVideoUrl = this.videoService.currentVideoUrl;
   isMinimized = this.videoService.isMinimized;
   watchOnYoutubeUrl = this.videoService.watchOnYoutubeUrl;
@@ -22,8 +22,9 @@ export class VideoPlayerComponent {
   currentVideoIndex = this.videoService.currentVideoIndex;
   videos = this.videoService.currentVideoList;
 
-  // Player State: 1 = Playing, 2 = Paused, 0 = Ended
-  playerState = signal<number>(-1);
+  // Auto-advance timer (fallback for localhost)
+  private autoAdvanceTimer: any = null;
+  private hasAutoAdvanced = false;
 
   // Drag and Drop
   isDragging = false;
@@ -31,6 +32,126 @@ export class VideoPlayerComponent {
   dragStartX = 0;
   dragStartY = 0;
   videoPosition = { x: 0, y: 0 };
+
+  constructor() {
+    // Watch for video URL changes
+    effect(() => {
+      const url = this.currentVideoUrl();
+      if (url) {
+        // Reset state
+        this.hasAutoAdvanced = false;
+
+        // Clear any existing timer
+        if (this.autoAdvanceTimer) {
+          clearTimeout(this.autoAdvanceTimer);
+        }
+
+        // Enable YouTube event listening (works in production)
+        setTimeout(() => {
+          this.enableYouTubeListening();
+        }, 1000);
+
+        // Fallback timeout for localhost (4 minutes)
+        // In production, the onStateChange event will trigger first
+        this.autoAdvanceTimer = setTimeout(() => {
+          if (!this.hasAutoAdvanced) {
+            console.log('⏭️ [Fallback] Auto-advancing after 4 minutes (localhost mode)');
+            this.handleVideoEnd();
+          }
+        }, 240000); // 4 minutes
+
+        console.log('🎬 Video loaded - YouTube events enabled + 4min fallback timer');
+      } else {
+        // Video closed, clear timer
+        if (this.autoAdvanceTimer) {
+          clearTimeout(this.autoAdvanceTimer);
+          this.autoAdvanceTimer = null;
+        }
+      }
+    });
+  }
+
+  /**
+   * Enable YouTube iframe API event listening
+   * This works in production but is blocked by CORS on localhost
+   */
+  private enableYouTubeListening() {
+    const iframe = document.querySelector('app-video-player iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      try {
+        // Tell YouTube iframe to send us events
+        iframe.contentWindow.postMessage(JSON.stringify({
+          'event': 'listening',
+          'id': 1,
+          'channel': 'widget'
+        }), '*');
+        console.log('📡 YouTube event listening enabled');
+      } catch (e) {
+        console.warn('⚠️ Could not enable YouTube listening (expected on localhost)');
+      }
+    }
+  }
+
+  /**
+   * Listen for YouTube iframe messages
+   * State 0 = ended, 1 = playing, 2 = paused
+   */
+  @HostListener('window:message', ['$event'])
+  onYouTubeMessage(event: MessageEvent) {
+    if (!this.currentVideoUrl() || !event.data) return;
+
+    try {
+      let data = event.data;
+
+      // Parse if string
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+
+      // Check for state change event
+      if (data.event === 'onStateChange') {
+        const state = data.info;
+
+        // State 0 = Video ended
+        if (state === 0) {
+          console.log('✅ YouTube event: Video ended, advancing to next...');
+          this.handleVideoEnd();
+        }
+      }
+
+      // Also check infoDelivery events
+      if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
+        console.log('✅ YouTube infoDelivery: Video ended, advancing to next...');
+        this.handleVideoEnd();
+      }
+    } catch (e) {
+      // Silently ignore parsing errors
+    }
+  }
+
+  private handleVideoEnd() {
+    // Prevent multiple calls
+    if (this.hasAutoAdvanced) {
+      return;
+    }
+
+    this.hasAutoAdvanced = true;
+
+    // Clear the fallback timer
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+      this.autoAdvanceTimer = null;
+    }
+
+    // Advance to next video
+    setTimeout(() => {
+      this.nextVideo();
+    }, 500);
+  }
 
   onDragStart(event: MouseEvent | TouchEvent) {
     if (!this.isMinimized()) return;
@@ -93,17 +214,20 @@ export class VideoPlayerComponent {
 
   closeVideo() {
     this.videoService.closeVideo();
-    this.playerState.set(-1);
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+      this.autoAdvanceTimer = null;
+    }
   }
 
   nextVideo() {
+    this.hasAutoAdvanced = true;
     this.videoService.nextVideo();
-    this.playerState.set(-1);
   }
 
   prevVideo() {
+    this.hasAutoAdvanced = true;
     this.videoService.prevVideo();
-    this.playerState.set(-1);
   }
 
   handlePlayerClick(event: Event) {
@@ -111,49 +235,6 @@ export class VideoPlayerComponent {
     // Solo maximizar si fue un click sin movimiento
     if (this.isMinimized() && !this.hasMoved) {
       this.videoService.maximizeVideo();
-    }
-  }
-
-  @HostListener('window:message', ['$event'])
-  onMessage(event: MessageEvent) {
-    if (this.currentVideoUrl() && event.data) {
-      try {
-        let data = event.data;
-        if (typeof data === 'string') {
-          data = JSON.parse(data);
-        }
-
-        if (data.event === 'onStateChange') {
-          this.playerState.set(data.info);
-
-          if (data.info === 0) {
-            this.nextVideo();
-          }
-        }
-      } catch (e) { }
-    }
-  }
-
-  togglePause() {
-    const iframe = document.querySelector('app-video-player iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      const command = this.playerState() === 1 ? 'pauseVideo' : 'playVideo';
-      iframe.contentWindow.postMessage(JSON.stringify({
-        'event': 'command',
-        'func': command,
-        'args': ''
-      }), '*');
-    }
-  }
-
-  resumeVideo() {
-    const iframe = document.querySelector('app-video-player iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(JSON.stringify({
-        'event': 'command',
-        'func': 'playVideo',
-        'args': ''
-      }), '*');
     }
   }
 }

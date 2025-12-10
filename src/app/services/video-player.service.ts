@@ -77,12 +77,68 @@ export class VideoPlayerService {
         }
     }
 
-    private setPlayer(videoId: string) {
+    private async setPlayer(videoId: string) {
+        console.log(`🎬 Loading video: ${videoId}`);
+
+        // Use YouTube iframe directly (simple and reliable)
         const origin = window.location.origin;
-        this.currentVideoUrl.set(`https://www.youtube.com/embed/${videoId}?autoplay=1&origin=${origin}&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`);
+        this.currentVideoUrl.set(
+            `https://www.youtube-nocookie.com/embed/${videoId}?` +
+            `autoplay=1&` +
+            `enablejsapi=1&` +
+            `origin=${encodeURIComponent(origin)}&` +
+            `widget_referrer=${encodeURIComponent(origin)}&` +
+            `rel=0&` +
+            `modestbranding=1&` +
+            `iv_load_policy=3&` +
+            `playsinline=1&` +
+            `loop=0`
+        );
         this.watchOnYoutubeUrl.set(`https://www.youtube.com/watch?v=${videoId}`);
         this.showYoutubeFallback.set(false);
         this.isLoading.set(false);
+
+        console.log('✅ YouTube iframe loaded with event API enabled');
+    }
+
+    private async getPipedStream(videoId: string): Promise<string | null> {
+        // Only try the 2 fastest/most reliable instances
+        const fastInstances = [
+            'https://pipedapi.kavin.rocks',
+            'https://pipedapi.moomoo.me'
+        ];
+
+        for (const instance of fastInstances) {
+            try {
+                console.log(`🔍 Trying Piped: ${instance.split('//')[1]}`);
+
+                // Race between fetch and timeout (3 seconds max per instance)
+                const response: any = await Promise.race([
+                    lastValueFrom(
+                        this.http.get(`${instance}/streams/${videoId}`, {
+                            headers: { 'Accept': 'application/json' }
+                        })
+                    ),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Timeout')), 3000)
+                    )
+                ]);
+
+                if (response && response.videoStreams && response.videoStreams.length > 0) {
+                    // Get the best quality stream
+                    const stream = response.videoStreams[0];
+                    console.log(`✅ Piped OK: ${stream.quality}`);
+                    return stream.url;
+                }
+            } catch (error: any) {
+                const errorMsg = error.message === 'Timeout' ? 'timeout' : 'failed';
+                console.warn(`❌ Piped ${errorMsg}`);
+                continue;
+            }
+        }
+
+        console.log('⚠️ Piped unavailable, using YouTube iframe');
+        return null;
     }
 
     closeVideo() {
