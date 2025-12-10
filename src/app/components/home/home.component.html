@@ -9,7 +9,11 @@
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10"></div>
 
             <!-- Hero Image -->
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1080&auto=format&fit=crop"
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop"
+                srcset="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=640&auto=format&fit=crop 640w,
+                        https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1080&auto=format&fit=crop 1080w,
+                        https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop 1920w"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
                 alt="Fondo de concierto de música urbana" loading="eager" fetchpriority="high" decoding="async"
                 class="w-full h-full object-cover object-center animate-fade-in blur-sm scale-105">
         </div>
@@ -44,7 +48,7 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up w-full px-4"
                 style="animation-delay: 300ms;">
 
-                <button (click)="openAdAndStart()" aria-label="Comenzar a explorar música urbana gratis"
+                <button (click)="openAdAndStart()" aria-label="Comenzar a escuchar música gratis"
                     class="w-full sm:w-auto h-12 md:h-14 px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-full text-base md:text-lg transition-all transform active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M7 6v12l10-6z" />
@@ -53,7 +57,7 @@
                 </button>
 
                 <!-- Install Button (Conditional) -->
-                <button *ngIf="canInstall" (click)="installPwa()"
+                <button *ngIf="canInstall" (click)="installPwa()" aria-label="Instalar aplicación en el dispositivo"
                     class="w-full sm:w-auto h-12 md:h-14 px-8 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-full text-base md:text-lg transition-all transform active:scale-95 border border-zinc-700 flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
@@ -171,7 +175,7 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Explorar</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                    <p class="text-zinc-300 text-xs leading-relaxed mb-3">
                         Tendencias globales, rankings actualizados y estrenos. Todo lo que suena ahora mismo.
                     </p>
                     <span class="text-blue-500 text-xs font-bold uppercase tracking-wide">Ver Novedades</span>
@@ -195,7 +199,7 @@
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg mb-2">Top Charts</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
+                    <p class="text-zinc-300 text-xs leading-relaxed mb-3">
                         Rankings en tiempo real por país. Descubre qué está sonando en Colombia, USA, España y más.
                     </p>
                     <span class="text-yellow-500 text-xs font-bold uppercase tracking-wide">Ver Ranking</span>
@@ -270,7 +274,7 @@
                         Explora lo <span
                             class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Último</span>
                     </h2>
-                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                    <p class="text-zinc-300 text-base leading-relaxed mb-6">
                         Mantente al día con las <strong class="text-white">tendencias globales</strong>, descubre los
                         <strong class="text-white">nuevos lanzamientos</strong> y explora rankings actualizados
                         diariamente. Todo lo que está sonando ahora mismo en un solo lugar.
@@ -345,7 +349,7 @@
                             class="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">Charts</span>
                         Globales
                     </h2>
-                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                    <p class="text-zinc-300 text-base leading-relaxed mb-6">
                         Descubre qué está sonando en <strong class="text-white">cada país</strong>. Rankings
                         actualizados en tiempo real de Colombia, Estados Unidos, España, México y más de 50 países.
                     </p>
@@ -400,7 +404,7 @@
                             class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Artistas</span>
                         Favoritos
                     </h2>
-                    <p class="text-zinc-400 text-base leading-relaxed mb-6">
+                    <p class="text-zinc-300 text-base leading-relaxed mb-6">
                         Accede al catálogo completo de <strong class="text-white">artistas urbanos</strong>.
                         Discografías, álbumes, sencillos y toda su música organizada en un solo lugar. Desde Bad Bunny
                         hasta artistas emergentes.
