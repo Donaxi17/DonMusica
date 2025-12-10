@@ -8,11 +8,12 @@ import { filter } from 'rxjs/operators';
 import { FooterComponent } from '../shared/footer/footer.component';
 import { RecentlyPlayedComponent } from '../shared/recently-played/recently-played.component';
 import { RedesSocialesComponent } from '../redes-sociales/redes-sociales.component';
+import { VideoPlayerComponent } from '../shared/video-player/video-player.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FooterComponent, RecentlyPlayedComponent, RedesSocialesComponent],
+  imports: [CommonModule, RouterModule, FooterComponent, RecentlyPlayedComponent, RedesSocialesComponent, VideoPlayerComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })

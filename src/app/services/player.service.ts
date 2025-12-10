@@ -1,8 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Song } from './playlist.service';
 import { MusicApiService } from './music-api.service';
 import { ToastService } from './toast.service';
+import { VideoPlayerService } from './video-player.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,12 @@ import { ToastService } from './toast.service';
 export class PlayerService {
   private audio = new Audio();
   private toastService = inject(ToastService);
+  private injector = inject(Injector);
+
+  // Lazy getter to avoid circular dependency
+  private get videoPlayerService() {
+    return this.injector.get(VideoPlayerService);
+  }
 
   // Estado del reproductor (observables para que los componentes se suscriban)
   private currentSongSubject = new BehaviorSubject<Song | null>(null);
@@ -37,6 +44,7 @@ export class PlayerService {
 
   constructor(private musicApi: MusicApiService) {
     this.initializeAudioListeners();
+    this.setupMediaSession();
   }
 
   private initializeAudioListeners(): void {
@@ -64,9 +72,43 @@ export class PlayerService {
     this.audio.volume = this.volumeSubject.value / 100;
   }
 
+  // ========== MEDIA SESSION API (Lock Screen Controls) ==========
+  private setupMediaSession() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => this.resume());
+      navigator.mediaSession.setActionHandler('pause', () => this.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => this.previousTrack());
+      navigator.mediaSession.setActionHandler('nexttrack', () => this.nextTrack());
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime && this.audio.duration) {
+          this.audio.currentTime = details.seekTime;
+        }
+      });
+    }
+  }
+
+  private updateMediaSessionMetadata(song: Song) {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist,
+        artwork: [
+          { src: song.img || (song as any).thumbnail || '', sizes: '512x512', type: 'image/jpeg' }
+        ]
+      });
+    }
+  }
+
   // ========== PLAYBACK CONTROLS ==========
 
   playSong(song: Song): void {
+    // 1. One King Rule: Close Video if open
+    try {
+      this.videoPlayerService.closeVideo();
+    } catch (e) {
+      // Ignore if service not ready
+    }
+
     const currentSong = this.currentSongSubject.value;
 
     if (currentSong?.id === song.id) {
@@ -79,7 +121,7 @@ export class PlayerService {
     } else {
       // Reproducir nueva canción
       this.currentSongSubject.next(song);
-      // this.toastService.success(`🎵 ${song.title} - ${song.artist}`);
+      this.updateMediaSessionMetadata(song);
 
       if (song.url) {
         this.audio.src = song.url;
@@ -97,7 +139,6 @@ export class PlayerService {
           } else {
             console.error('No se pudo obtener el audio para:', song.title);
             this.toastService.error('No se pudo reproducir esta canción');
-            // Try next track or show error
           }
         });
       }
@@ -106,13 +147,17 @@ export class PlayerService {
 
   play(): void {
     this.audio.play()
-      .then(() => this.isPlayingSubject.next(true))
+      .then(() => {
+        this.isPlayingSubject.next(true);
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+      })
       .catch(error => console.error('Error al reproducir:', error));
   }
 
   pause(): void {
     this.audio.pause();
     this.isPlayingSubject.next(false);
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
   }
 
   stop(): void {
@@ -120,6 +165,10 @@ export class PlayerService {
     this.audio.currentTime = 0;
     this.isPlayingSubject.next(false);
     this.currentSongSubject.next(null);
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+      navigator.mediaSession.metadata = null;
+    }
   }
 
   setPlaylist(songs: Song[], isFavorites: boolean = false): void {

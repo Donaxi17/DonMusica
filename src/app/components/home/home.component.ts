@@ -25,12 +25,19 @@ export class HomeComponent implements OnInit {
 
   trendingSongs: Song[] = [];
 
+  deferredPrompt: any;
+  canInstall = false;    // For the Hero button
+  showInstallBanner = false; // For the bottom banner
+
   ngOnInit() {
     // Enhanced SEO with rich meta tags
     this.seoService.setSeoData(
       'DonMusica - Música Urbana Gratis | Descargar MP3, Letras y Videos',
       'Escucha y descarga música urbana gratis en DonMusica. Reggaeton, trap, rap y más. Rankings actualizados, letras de canciones, videos musicales y música sin copyright para tus proyectos. Artistas como Bad Bunny, Karol G, Feid y más en donmusica.online'
     );
+
+    // Initial check for PWA install capability
+    this.listenForInstallPrompt();
 
     // Load trending songs from the same source as the Trends page
     this.musicApi.getTrending('CO').subscribe({
@@ -44,13 +51,43 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  listenForInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+
+      // Enable both button and banner
+      this.canInstall = true;
+      this.showInstallBanner = true;
+    });
+  }
+
+  async installPwa() {
+    if (!this.deferredPrompt) {
+      alert('Para instalar la App: Presiona "Añadir a pantalla de inicio" en las opciones de tu navegador o "Instalar Aplicación" en la barra de búsqueda.');
+      return;
+    }
+
+    // Show the install prompt
+    this.deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await this.deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+
+    // We've used the prompt, and can't use it again, throw it away
+    this.deferredPrompt = null;
+    this.canInstall = false;
+    this.showInstallBanner = false;
+  }
+
   navigateToArtists(): void {
     this.router.navigate(['/artists']);
   }
 
   openAdAndStart(): void {
-    // 1. Open Adsterra link in new tab
-    const adUrl = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
+    // 1. Open Monetag link in new tab
+    const adUrl = 'https://otieu.com/4/10301736';
     window.open(adUrl, '_blank');
 
     // 2. Navigate to the app functionality (Artists)
