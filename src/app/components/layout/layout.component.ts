@@ -24,6 +24,8 @@ export class LayoutComponent implements OnInit {
   showMoreMenu = false;
   showMobileMoreMenu = false;
   showHistory = false;
+  showLanguageMenu = false;
+  currentLanguage: 'ES' | 'EN' = 'EN';
   progress = 0;
   private previousRoute: string = '/';
 
@@ -33,6 +35,14 @@ export class LayoutComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Load saved language from localStorage
+    if (typeof localStorage !== 'undefined') {
+      const savedLanguage = localStorage.getItem('appLanguage') as 'ES' | 'EN';
+      if (savedLanguage) {
+        this.currentLanguage = savedLanguage;
+      }
+    }
+
     if (typeof document !== 'undefined') {
       document.addEventListener('closeHistory', () => {
         this.showHistory = false;
@@ -63,6 +73,7 @@ export class LayoutComponent implements OnInit {
       }
       this.showMobileMoreMenu = false;
       this.showMoreMenu = false;
+      this.showLanguageMenu = false;
     });
   }
 
@@ -83,6 +94,11 @@ export class LayoutComponent implements OnInit {
       // Asumiendo que el botón y el menú tienen ids o clases específicas, o simplemente cerramos
       // si el clic no fue procesado por el botón de toggle (que usa stopPropagation)
       this.showMoreMenu = false;
+    }
+
+    // Cerrar menú de idioma si se hace clic fuera
+    if (this.showLanguageMenu) {
+      this.showLanguageMenu = false;
     }
 
     // Cerrar menú móvil si se hace clic fuera
@@ -159,5 +175,23 @@ export class LayoutComponent implements OnInit {
 
   openPlayer(): void {
     this.router.navigate(['/player']);
+  }
+
+  toggleLanguageMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.showLanguageMenu = !this.showLanguageMenu;
+  }
+
+  changeLanguage(language: 'ES' | 'EN') {
+    this.currentLanguage = language;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('appLanguage', language);
+    }
+    // Aquí puedes agregar lógica adicional para cambiar el idioma de la app
+    // Por ejemplo, usando un servicio de traducción
+  }
+
+  closeLanguageMenu() {
+    this.showLanguageMenu = false;
   }
 }

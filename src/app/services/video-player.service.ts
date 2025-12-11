@@ -52,28 +52,22 @@ export class VideoPlayerService {
         }
 
         // 3. Reset UI State (but keep minimized state)
-        // Don't reset isMinimized - keep current state
         this.showYoutubeFallback.set(false);
         this.isLoading.set(true);
 
-        // 4. Resolve Video URL
+        // 4. Play video immediately using YouTube iframe
+        // If it's a YouTube ID (contains letters), use it directly
         if (!/^\d+$/.test(video.id)) {
+            // Direct YouTube video ID
             this.setPlayer(video.id);
         } else {
-            const query = `${video.title} ${video.artist}`;
-            this.findVideoId(query).then(videoId => {
-                if (videoId) {
-                    this.setPlayer(videoId);
-                } else {
-                    // Video ID not found, use search embed
-                    const origin = window.location.origin;
-                    const searchQ = encodeURIComponent(`${query} video`);
-                    this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed?listType=search&list=${searchQ}&autoplay=1&origin=${origin}`);
-                    this.watchOnYoutubeUrl.set(`https://www.youtube.com/results?search_query=${searchQ}`);
-                    this.showYoutubeFallback.set(true);
-                    this.isLoading.set(false);
-                }
-            });
+            // iTunes ID - open YouTube search directly (no Piped delay)
+            const origin = window.location.origin;
+            const searchQ = encodeURIComponent(`${video.title} ${video.artist} official video`);
+            this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed?listType=search&list=${searchQ}&autoplay=1&origin=${origin}`);
+            this.watchOnYoutubeUrl.set(`https://www.youtube.com/results?search_query=${searchQ}`);
+            this.showYoutubeFallback.set(true);
+            this.isLoading.set(false);
         }
     }
 
