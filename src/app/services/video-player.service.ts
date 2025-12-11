@@ -55,13 +55,15 @@ export class VideoPlayerService {
         this.showYoutubeFallback.set(false);
         this.isLoading.set(true);
 
-        // 4. Play video immediately using YouTube iframe
-        // If it's a YouTube ID (contains letters), use it directly
-        if (!/^\d+$/.test(video.id)) {
-            // Direct YouTube video ID
+        // 4. Play video directly using YouTube iframe
+        // Check if it's a YouTube ID (alphanumeric) or iTunes ID (numeric only)
+        const isYouTubeId = !/^\d+$/.test(video.id);
+
+        if (isYouTubeId) {
+            // Direct YouTube video - play immediately
             this.setPlayer(video.id);
         } else {
-            // iTunes ID - open YouTube search directly (no Piped delay)
+            // iTunes ID - show message that video needs to be opened in YouTube
             const origin = window.location.origin;
             const searchQ = encodeURIComponent(`${video.title} ${video.artist} official video`);
             this.currentVideoUrl.set(`https://www.youtube-nocookie.com/embed?listType=search&list=${searchQ}&autoplay=1&origin=${origin}`);

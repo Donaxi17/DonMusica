@@ -10,5 +10,8 @@ export const environment = {
     jamendo: {
         // Tu Client ID de Jamendo
         clientId: '22cf1948'
+    },
+    youtube: {
+        apiKey: 'AIzaSyBOVqgCBS239UOk7Mj-5OF2HrpcbWpXP-w'
     }
 };

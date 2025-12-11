@@ -20,7 +20,7 @@ export class VideosComponent {
   private seoService = inject(SeoService);
   private videoPlayerService = inject(VideoPlayerService);
 
-  searchQuery = signal<string>('Karol G');
+  searchQuery = signal<string>('');
   isLoading = signal<boolean>(false);
   private searchDebounceTimer: any = null;
 
@@ -45,10 +45,10 @@ export class VideosComponent {
   // Trending videos precargados para mostrar inmediatamente
   private readonly TRENDING_VIDEOS: Video[] = [
     {
-      id: 'iNu4Qp6d-3Q',
+      id: 'SHq2qrFUlGY',
       title: 'QLONA',
       artist: 'Karol G & Peso Pluma',
-      thumbnail: 'https://i.ytimg.com/vi/iNu4Qp6d-3Q/hqdefault.jpg',
+      thumbnail: 'https://i.ytimg.com/vi/SHq2qrFUlGY/hqdefault.jpg',
       views: '🔥 Tendencia'
     },
     {
@@ -66,10 +66,10 @@ export class VideosComponent {
       views: '🎵 Top'
     },
     {
-      id: 'VQjdPI3XPAs',
+      id: 'QhBnZ6NPOY0',
       title: 'PERRO NEGRO',
       artist: 'Bad Bunny & Feid',
-      thumbnail: 'https://i.ytimg.com/vi/VQjdPI3XPAs/hqdefault.jpg',
+      thumbnail: 'https://i.ytimg.com/vi/QhBnZ6NPOY0/hqdefault.jpg',
       views: '🔥 Viral'
     },
     {
@@ -97,8 +97,8 @@ export class VideosComponent {
     // Cargar videos populares inmediatamente
     this.loadTrendingVideos();
 
-    // Hacer búsqueda en background después de 500ms
-    setTimeout(() => this.search(), 500);
+    // Búsqueda automática desactivada - los usuarios pueden buscar manualmente
+    // setTimeout(() => this.search(), 500);
   }
 
   loadTrendingVideos() {
@@ -153,53 +153,40 @@ export class VideosComponent {
   }
 
   async searchPiped(query: string): Promise<Video[] | null> {
-    // Create promises for all instances simultaneously
-    const searchPromises = this.PIPED_INSTANCES.map(async (instance) => {
-      try {
-        const response: any = await Promise.race([
-          lastValueFrom(this.http.get(`${instance}/search`, {
-            params: { q: query, filter: 'all' }
-          })),
-          // Timeout after 3 seconds
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('timeout')), 3000)
-          )
-        ]);
+    // Use official YouTube Data API v3 (most stable and reliable)
+    const API_KEY = 'AIzaSyBOVqgCBS239UOk7Mj-5OF2HrpcbWpXP-w';
+    const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 
-        if (response && response.items) {
-          const videos = response.items
-            .filter((item: any) => item.type === 'stream' && !item.isShort)
-            .map((item: any) => ({
-              id: item.url.split('v=')[1],
-              title: item.title,
-              artist: item.uploaderName,
-              // Use hqdefault for better reliability (maxresdefault not always available)
-              thumbnail: `https://i.ytimg.com/vi/${item.url.split('v=')[1]}/hqdefault.jpg`,
-              views: this.formatViews(item.views)
-            }));
-
-          if (videos.length > 0) {
-            return videos;
-          }
-        }
-        return null;
-      } catch (error) {
-        return null;
-      }
-    });
-
-    // Race all instances - use the first one that succeeds
     try {
-      const results = await Promise.race(
-        searchPromises.map(p => p.then(result => {
-          if (result && result.length > 0) return result;
-          throw new Error('No results');
-        }))
+      const response: any = await lastValueFrom(
+        this.http.get(YOUTUBE_API_URL, {
+          params: {
+            part: 'snippet',
+            q: query + ' official video',
+            type: 'video',
+            videoCategoryId: '10', // Music category
+            maxResults: '20',
+            key: API_KEY
+          }
+        })
       );
-      return results;
-    } catch {
-      // Silently fail - iTunes will provide results
-      return [];
+
+      if (response && response.items && response.items.length > 0) {
+        const videos = response.items.map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          artist: item.snippet.channelTitle,
+          thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+          views: '🎵 YouTube'
+        }));
+
+        return videos;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('YouTube API error:', error);
+      return null;
     }
   }
 
