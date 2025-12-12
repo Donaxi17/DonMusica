@@ -99,6 +99,8 @@
         @if (!isLoading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
             @for (video of videos(); track video.id; let i = $index) {
+
+            <!-- Video Card -->
             <div (click)="playVideo(video)" (keydown.enter)="playVideo(video)" (keydown.space)="playVideo(video)"
                 role="button" tabindex="0" [attr.aria-label]="'Reproducir video ' + video.title"
                 class="group rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99] animate-fade-in-up flex flex-col focus:outline-none focus:ring-4 focus:ring-red-500/50"
@@ -161,7 +163,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 📍 ANUNCIO: Cada 9 videos -->
+            @if ((i + 1) % 9 === 0) {
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 my-6">
+                <!-- Pasamos 'i' como índice para generar IDs únicos -->
+                <app-ads-container [index]="i"></app-ads-container>
+            </div>
             }
+
+            }
+        </div>
+
+        <!-- 📍 ANUNCIO FINAL: Después de todos los videos -->
+        <div class="mt-12 mb-8">
+            <app-ads-container [index]="999"></app-ads-container>
         </div>
         }
 

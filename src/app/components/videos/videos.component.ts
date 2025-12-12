@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { SeoService } from '../../services/seo.service';
 import { lastValueFrom } from 'rxjs';
 import { VideoPlayerService, Video } from '../../services/video-player.service';
@@ -11,7 +12,7 @@ import { VideoPlayerService, Video } from '../../services/video-player.service';
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent],
+  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.css']
 })
@@ -42,35 +43,14 @@ export class VideosComponent {
   videos = signal<Video[]>([]);
 
 
-  // Trending videos precargados para mostrar inmediatamente
-  private readonly TRENDING_VIDEOS: Video[] = [
-    {
-      id: 'SHq2qrFUlGY',
-      title: 'QLONA',
-      artist: 'Karol G & Peso Pluma',
-      thumbnail: 'https://i.ytimg.com/vi/SHq2qrFUlGY/hqdefault.jpg',
-      views: '🔥 Tendencia'
-    },
+  // Trending videos precargados como fallback
+  private readonly FALLBACK_VIDEOS: Video[] = [
     {
       id: 'kLp_Hh6DKWc',
       title: 'S91',
       artist: 'Karol G',
       thumbnail: 'https://i.ytimg.com/vi/kLp_Hh6DKWc/hqdefault.jpg',
-      views: '⭐ Popular'
-    },
-    {
-      id: 'saGYMhApaH8',
-      title: 'LUNA',
-      artist: 'Feid & ATL Jacob',
-      thumbnail: 'https://i.ytimg.com/vi/saGYMhApaH8/hqdefault.jpg',
-      views: '🎵 Top'
-    },
-    {
-      id: 'QhBnZ6NPOY0',
-      title: 'PERRO NEGRO',
-      artist: 'Bad Bunny & Feid',
-      thumbnail: 'https://i.ytimg.com/vi/QhBnZ6NPOY0/hqdefault.jpg',
-      views: '🔥 Viral'
+      views: '🔥 Tendencia'
     },
     {
       id: 'sDKnKzYyx5c',
@@ -80,11 +60,32 @@ export class VideosComponent {
       views: '💚 Hit'
     },
     {
+      id: 'QhBnZ6NPOY0',
+      title: 'PERRO NEGRO',
+      artist: 'Bad Bunny & Feid',
+      thumbnail: 'https://i.ytimg.com/vi/QhBnZ6NPOY0/hqdefault.jpg',
+      views: '🔥 Viral'
+    },
+    {
       id: 'OSUxrSe5GbI',
       title: 'Gata Only',
       artist: 'FloyyMenor & Cris Mj',
       thumbnail: 'https://i.ytimg.com/vi/OSUxrSe5GbI/hqdefault.jpg',
       views: '🎶 Éxito'
+    },
+    {
+      id: 'saGYMhApaH8',
+      title: 'LUNA',
+      artist: 'Feid & ATL Jacob',
+      thumbnail: 'https://i.ytimg.com/vi/saGYMhApaH8/hqdefault.jpg',
+      views: '🎵 Top'
+    },
+    {
+      id: 'BQ5ax8im3Ow',
+      title: 'LA FALDA',
+      artist: 'Myke Towers',
+      thumbnail: 'https://i.ytimg.com/vi/BQ5ax8im3Ow/hqdefault.jpg',
+      views: '⭐ Popular'
     }
   ];
 
@@ -94,15 +95,48 @@ export class VideosComponent {
       'Disfruta de los videoclips oficiales de tus artistas favoritos. Calidad HD y sin interrupciones.'
     );
 
-    // Cargar videos populares inmediatamente
+    // Cargar videos trending desde YouTube API
     this.loadTrendingVideos();
-
-    // Búsqueda automática desactivada - los usuarios pueden buscar manualmente
-    // setTimeout(() => this.search(), 500);
   }
 
-  loadTrendingVideos() {
-    this.videos.set(this.TRENDING_VIDEOS);
+  async loadTrendingVideos() {
+    try {
+      // Usar YouTube Data API para obtener videos trending de música
+      const API_KEY = 'AIzaSyBOVqgCBS239UOk7Mj-5OF2HrpcbWpXP-w';
+      const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/videos';
+
+      const response: any = await lastValueFrom(
+        this.http.get(YOUTUBE_API_URL, {
+          params: {
+            part: 'snippet,statistics',
+            chart: 'mostPopular',
+            videoCategoryId: '10', // Music category
+            regionCode: 'CO', // Colombia
+            maxResults: '6',
+            key: API_KEY
+          }
+        })
+      );
+
+      if (response && response.items && response.items.length > 0) {
+        const trendingVideos = response.items.map((item: any) => ({
+          id: item.id,
+          title: item.snippet.title,
+          artist: item.snippet.channelTitle,
+          thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+          views: this.formatViews(parseInt(item.statistics.viewCount || 0))
+        }));
+
+        this.videos.set(trendingVideos);
+      } else {
+        // Si falla, usar videos de fallback
+        this.videos.set(this.FALLBACK_VIDEOS);
+      }
+    } catch (error) {
+      console.error('Error loading trending videos:', error);
+      // Si falla, usar videos de fallback
+      this.videos.set(this.FALLBACK_VIDEOS);
+    }
   }
 
   // Delegate Playback to Service

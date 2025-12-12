@@ -41,6 +41,18 @@ export const routes: Routes = [
             },
 
             { path: 'dj-zone', loadComponent: () => import('./components/dj-pad/dj-pad.component').then(m => m.DjPadComponent) },
+            {
+                path: 'tools',
+                children: [
+                    { path: '', loadComponent: () => import('./components/tools/tools.component').then(m => m.ToolsComponent) },
+                    { path: 'bass-test', loadComponent: () => import('./components/tools/bass-test/bass-test.component').then(m => m.BassTestComponent) },
+                    { path: 'tuner', loadComponent: () => import('./components/tools/tuner/tuner.component').then(m => m.TunerComponent) },
+                    { path: 'vocal-fx', loadComponent: () => import('./components/tools/vocal-fx/vocal-fx.component').then(m => m.VocalFxComponent) },
+                    { path: 'sleep-timer', loadComponent: () => import('./components/tools/sleep-timer/sleep-timer.component').then(m => m.SleepTimerComponent) },
+                    { path: 'zen-mode', loadComponent: () => import('./components/tools/zen-mode/zen-mode.component').then(m => m.ZenModeComponent) },
+                    { path: 'piano', loadComponent: () => import('./components/tools/piano/piano.component').then(m => m.PianoComponent) }
+                ]
+            },
             { path: 'offline-music', loadComponent: () => import('./components/offline-music/offline-music.component').then(m => m.OfflineMusicComponent) },
             { path: 'upload-music', loadComponent: () => import('./components/upload-music/upload-music.component').then(m => m.UploadMusicComponent) }
         ]
