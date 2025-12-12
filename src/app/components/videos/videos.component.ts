@@ -149,33 +149,11 @@ export class VideosComponent {
     if (!query.trim()) return;
     this.isLoading.set(true);
 
-    const pipedSearch = this.searchPiped(query);
-    const itunesSearch = lastValueFrom(this.http.get<any>(this.API_URL, {
-      params: {
-        term: query,
-        media: 'music',
-        entity: 'musicVideo',
-        limit: '49'
-      }
-    })).catch(err => ({ results: [] }));
-
-    Promise.all([pipedSearch, itunesSearch]).then(([youtubeResults, itunesResponse]) => {
+    this.searchPiped(query).then((youtubeResults) => {
       let combinedVideos: Video[] = [];
 
       if (youtubeResults && youtubeResults.length > 0) {
         combinedVideos = [...youtubeResults];
-      }
-
-      if (itunesResponse && itunesResponse.results) {
-        const itunesVideos: Video[] = itunesResponse.results.map((item: any) => ({
-          id: item.trackId.toString(),
-          title: item.trackName,
-          artist: item.artistName,
-          // Use highest quality artwork available
-          thumbnail: item.artworkUrl100.replace('100x100', '600x600'),
-          views: '🎵 iTunes'
-        }));
-        combinedVideos = [...combinedVideos, ...itunesVideos];
       }
 
       this.videos.set(combinedVideos);
@@ -187,37 +165,65 @@ export class VideosComponent {
   }
 
   async searchPiped(query: string): Promise<Video[] | null> {
-    // Use official YouTube Data API v3 (most stable and reliable)
     const API_KEY = 'AIzaSyBOVqgCBS239UOk7Mj-5OF2HrpcbWpXP-w';
-    const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
+    const YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
+    const YOUTUBE_VIDEOS_URL = 'https://www.googleapis.com/youtube/v3/videos';
 
     try {
-      const response: any = await lastValueFrom(
-        this.http.get(YOUTUBE_API_URL, {
+      // 1. Busqueda inicial para obtener IDs
+      const searchResponse: any = await lastValueFrom(
+        this.http.get(YOUTUBE_SEARCH_URL, {
           params: {
             part: 'snippet',
             q: query + ' official video',
             type: 'video',
             videoCategoryId: '10', // Music category
-            maxResults: '20',
+            maxResults: '50',
             key: API_KEY
           }
         })
       );
 
-      if (response && response.items && response.items.length > 0) {
-        const videos = response.items.map((item: any) => ({
-          id: item.id.videoId,
+      if (!searchResponse || !searchResponse.items || searchResponse.items.length === 0) {
+        return null;
+      }
+
+      // 2. Obtener IDs para consultar estadísticas
+      const videoIds = searchResponse.items.map((item: any) => item.id.videoId).join(',');
+
+      // 3. Consultar estadísticas (viewCount)
+      const statsResponse: any = await lastValueFrom(
+        this.http.get(YOUTUBE_VIDEOS_URL, {
+          params: {
+            part: 'statistics',
+            id: videoIds,
+            key: API_KEY
+          }
+        })
+      );
+
+      // Crear mapa de vistas
+      const statsMap = new Map<string, string>();
+      if (statsResponse && statsResponse.items) {
+        statsResponse.items.forEach((item: any) => {
+          statsMap.set(item.id, item.statistics.viewCount);
+        });
+      }
+
+      // 4. Mapear resultados con vistas reales
+      const videos = searchResponse.items.map((item: any) => {
+        const videoId = item.id.videoId;
+        const viewCount = statsMap.get(videoId);
+        return {
+          id: videoId,
           title: item.snippet.title,
           artist: item.snippet.channelTitle,
           thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
-          views: '🎵 YouTube'
-        }));
+          views: viewCount ? this.formatViews(parseInt(viewCount)) : 'YouTube'
+        };
+      });
 
-        return videos;
-      }
-
-      return null;
+      return videos;
     } catch (error) {
       console.error('YouTube API error:', error);
       return null;

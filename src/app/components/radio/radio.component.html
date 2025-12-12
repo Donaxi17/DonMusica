@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-zinc-950 pb-20 md:pb-24 animate-fade-in relative z-10">
+<div class="min-h-screen bg-zinc-950 animate-fade-in relative z-10">
     <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
 
         <!-- Header Centrado (PC & Móvil) -->
@@ -61,6 +61,18 @@
         <div class="mb-6">
             <h3 class="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 ml-1">Estilos</h3>
             <div class="flex overflow-x-auto pb-2 gap-2 scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
+                <button (click)="setGenre('favorites')" [class.bg-red-600]="genre === 'favorites'"
+                    [class.text-white]="genre === 'favorites'" [class.bg-zinc-900]="genre !== 'favorites'"
+                    [class.text-zinc-400]="genre !== 'favorites'" [class.border-red-500]="genre === 'favorites'"
+                    [class.border-zinc-800]="genre !== 'favorites'"
+                    class="flex-shrink-0 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-medium border transition-all flex items-center gap-1.5 active:scale-95 hover:bg-zinc-800">
+                    <svg class="w-4 h-4" [class.text-white]="genre === 'favorites'"
+                        [class.text-red-500]="genre !== 'favorites'" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    Favoritos
+                </button>
                 <button (click)="setGenre('reggaeton')" [class.bg-blue-600]="genre === 'reggaeton'"
                     [class.text-white]="genre === 'reggaeton'" [class.bg-zinc-900]="genre !== 'reggaeton'"
                     [class.text-zinc-400]="genre !== 'reggaeton'" [class.border-blue-500]="genre === 'reggaeton'"
@@ -157,6 +169,20 @@
 
                 <!-- Play Button Visible -->
                 <div class="flex items-center gap-1 md:gap-2">
+                    <!-- Like Button -->
+                    <button (click)="toggleFavorite(station, $event)"
+                        class="w-8 h-8 md:w-9 md:h-9 flex-shrink-0 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+                        [ngClass]="{
+                            'text-red-500 bg-red-500/10': isFavorite(station),
+                            'text-zinc-600 bg-zinc-800': !isFavorite(station)
+                        }">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" [attr.fill]="isFavorite(station) ? 'currentColor' : 'none'"
+                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                    </button>
+
                     <button
                         class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-zinc-800 text-blue-400 hover:text-white hover:bg-blue-500 flex items-center justify-center transition-all shadow-sm border border-white/5 md:hover:scale-110"
                         [class.bg-blue-600]="currentStation === station && isPlaying"
@@ -172,6 +198,11 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Publicidad al final de la lista -->
+        <div class="mt-8" *ngIf="!isLoading">
+            <app-ads-container [index]="998"></app-ads-container>
         </div>
     </div>
 

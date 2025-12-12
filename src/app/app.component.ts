@@ -16,5 +16,22 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     inject();
+    this.loadAdsterraSocialBar();
+  }
+
+  private loadAdsterraSocialBar() {
+    // Delay 20 seconds for everyone on entry
+    setTimeout(() => {
+      try {
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = '//pl28232772.effectivegatecpm.com/bf/3b/e2/bf3be2c66537a0c5cca838fe602a1be1.js';
+        script.defer = true;
+        document.head.appendChild(script);
+        console.log('✅ Adsterra Social Bar loaded after 20s delay');
+      } catch (e) {
+        console.error('Error loading Adsterra script', e);
+      }
+    }, 20000); // 20 seconds
   }
 }

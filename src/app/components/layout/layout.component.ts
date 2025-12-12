@@ -115,6 +115,9 @@ export class LayoutComponent implements OnInit {
   toggleMoreMenu(event?: Event) {
     if (event) event.stopPropagation();
     this.showMoreMenu = !this.showMoreMenu;
+    if (this.showMoreMenu) {
+      this.showLanguageMenu = false;
+    }
   }
 
   closeMoreMenu() {
@@ -180,6 +183,9 @@ export class LayoutComponent implements OnInit {
   toggleLanguageMenu(event?: Event) {
     if (event) event.stopPropagation();
     this.showLanguageMenu = !this.showLanguageMenu;
+    if (this.showLanguageMenu) {
+      this.showMoreMenu = false;
+    }
   }
 
   changeLanguage(language: 'ES' | 'EN') {

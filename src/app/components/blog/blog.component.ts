@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BlogService, BlogPost } from '../../services/blog.service';
-import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { SeoService } from '../../services/seo.service';
 
 interface EvergreenArticle {
@@ -17,7 +17,7 @@ interface EvergreenArticle {
 @Component({
     selector: 'app-blog',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, AdsContainerComponent],
     templateUrl: './blog.component.html'
 })
 export class BlogComponent implements OnInit {

@@ -12,11 +12,12 @@ import { OfflineService } from '../../services/offline.service';
 import { ToastService } from '../../services/toast.service';
 import { ShareService } from '../../services/share.service';
 import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent],
+  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
@@ -55,11 +56,20 @@ export class FreeMusicComponent implements OnInit {
   isProcessingDownload = signal(false);
 
   // Smartlink configuration
+  // Smartlink configuration
   // Active Monetag Smartlink
-  private readonly SMARTLINK_URL = 'https://otieu.com/4/10301736';
+  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
-  // Backup Adsterra Smartlink (Future use)
-  // private readonly BACKUP_LINK = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
+  // Custom Download Notification
+  showDownloadNotification = signal(false);
+  downloadingSong = signal<Song | null>(null);
+  downloadSuccess = signal(false);
+
+  closeDownloadNotification() {
+    this.showDownloadNotification.set(false);
+    this.downloadingSong.set(null);
+    this.downloadSuccess.set(false);
+  }
 
   // Estado de reproducción reactivo
   playingSongId = signal<string | number | undefined>(undefined);
@@ -143,10 +153,6 @@ export class FreeMusicComponent implements OnInit {
       }
     });
   }
-
-
-
-  // Sistema de descarga con anuncios - OPTIMIZADO
 
   openDownloadModal(song: Song) {
     this.selectedDownloadSong.set(song);
@@ -232,10 +238,15 @@ export class FreeMusicComponent implements OnInit {
     // 1. Abrir Smartlink inmediatamente (Prioridad Monetización)
     this.openSmartlinkIfAllowed();
 
-    this.isProcessingDownload.set(true);
-    this.toastService.info('⏳ Iniciando descarga...');
+    // 2. Mostrar notificación visual persistente
+    this.downloadingSong.set(song);
+    this.showDownloadNotification.set(true);
+    this.downloadSuccess.set(false);
 
-    // 2. Esperar 1 segundo para procesar la descarga
+    this.isProcessingDownload.set(true);
+    // this.toastService.info('⏳ Iniciando descarga...'); // Comentado para no duplicar mensajes
+
+    // 3. Esperar 1 segundo para procesar la descarga
     setTimeout(() => {
       // Intentamos descargar como blob para evitar abrir nueva pestaña
       this.http.get(song.url, { responseType: 'blob' }).subscribe({
@@ -255,8 +266,10 @@ export class FreeMusicComponent implements OnInit {
           setTimeout(() => window.URL.revokeObjectURL(url), 100);
 
           this.isProcessingDownload.set(false);
-          this.closeDownloadModal();
-          this.toastService.success('✅ Descarga completada');
+          // this.closeDownloadModal(); // Mantenemos abierto para mostrar éxito
+          this.downloadSuccess.set(true); // ✅ Marcar como éxito
+          this.downloadingSong.set(null); // Limpiamos la canción en descarga para notificación
+          this.showDownloadNotification.set(false); // Ocultamos la notificación flotante si existiera
         },
         error: (error) => {
           console.warn('Error en descarga directa (posible CORS), usando fallback', error);
@@ -265,7 +278,10 @@ export class FreeMusicComponent implements OnInit {
           window.open(song.url, '_blank');
 
           this.isProcessingDownload.set(false);
-          this.closeDownloadModal();
+          // this.closeDownloadModal(); // Mantenemos abierto para mostrar éxito
+          this.downloadSuccess.set(true);
+          this.downloadingSong.set(null);
+          this.showDownloadNotification.set(false);
         }
       });
     }, 1000);

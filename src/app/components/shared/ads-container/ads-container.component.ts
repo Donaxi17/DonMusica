@@ -106,6 +106,6 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
           doc.close();
         }
       }
-    }, 1000 + (this.index * 500));
+    }, Math.min(500 + (Math.abs(this.index) * 100), 2000));
   }
 }

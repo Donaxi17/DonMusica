@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { ToastService } from '../../services/toast.service';
+import { StorageService } from '../../services/storage.service';
 
 interface MusicFile {
   id: string;
@@ -30,12 +33,14 @@ interface Folder {
 @Component({
   selector: 'app-upload-music',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdsContainerComponent],
   templateUrl: './upload-music.component.html',
   styleUrl: './upload-music.component.css'
 })
 export class UploadMusicComponent {
   private playerService = inject(PlayerService);
+  private toastService = inject(ToastService);
+  private storageService = inject(StorageService);
 
   readonly FREE_STORAGE_LIMIT = 1024;
   readonly PRO_STORAGE_LIMIT = 20480;
@@ -108,11 +113,9 @@ export class UploadMusicComponent {
   }
 
   showToastNotification(message: string) {
-    this.toastMessage = message;
-    this.showToast = true;
-    setTimeout(() => {
-      this.showToast = false;
-    }, 3000);
+    // Legacy support wrapper, redirecting to new ToastService
+    // Some existing calls pass emoji, we can keep them or clean them up later
+    this.toastService.info(message);
   }
 
   upgradeToPro() {
@@ -180,28 +183,74 @@ export class UploadMusicComponent {
     this.saveToLocalStorage();
   }
 
-  addFile(file: File, folderId: string): Promise<void> {
+  // Helper using a temporary Audio element to get duration
+  private getAudioDuration(file: File): Promise<string> {
     return new Promise((resolve) => {
-      this.updateFolderCount(folderId, 1);
+      const audio = new Audio();
+      const objectUrl = URL.createObjectURL(file);
+      audio.src = objectUrl;
 
-      const newFile: MusicFile = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: file.name.replace(/\.[^/.]+$/, ""),
-        artist: 'Desconocido',
-        url: URL.createObjectURL(file),
-        coverUrl: '',
-        size: this.formatSize(file.size),
-        sizeRaw: file.size,
-        dateAdded: new Date(),
-        folderId: folderId,
-        file: file,
-        isFavorite: false
+      audio.onloadedmetadata = () => {
+        URL.revokeObjectURL(objectUrl);
+        const duration = audio.duration;
+        if (!isFinite(duration)) {
+          resolve('0:00');
+          return;
+        }
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        resolve(`${minutes}:${seconds.toString().padStart(2, '0')}`);
       };
 
-      this.uploadedMusicFiles.unshift(newFile);
-      this.calculateStorage();
-      resolve();
+      audio.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve('0:00');
+      };
     });
+  }
+
+  async addFile(file: File, folderId: string): Promise<void> {
+    const fileId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+
+    // Calculate duration before saving
+    let duration = '0:00';
+    try {
+      duration = await this.getAudioDuration(file);
+    } catch (e) {
+      console.error('Error getting duration', e);
+    }
+
+    // Store actual file in IndexedDB
+    try {
+      await this.storageService.saveFile({
+        id: fileId,
+        file: file
+      });
+    } catch (error) {
+      console.error('Error saving to IndexedDB', error);
+      this.toastService.warning('Error guardando archivo persistente');
+    }
+
+    this.updateFolderCount(folderId, 1);
+
+    const newFile: MusicFile = {
+      id: fileId,
+      name: file.name.replace(/\.[^/.]+$/, ""),
+      artist: 'Desconocido',
+      url: URL.createObjectURL(file), // Valid for current session
+      coverUrl: '',
+      size: this.formatSize(file.size),
+      sizeRaw: file.size,
+      dateAdded: new Date(),
+      folderId: folderId,
+      file: file, // Keep ref for current session
+      isFavorite: false
+      
+    };
+
+    this.uploadedMusicFiles.unshift(newFile);
+    this.calculateStorage();
+    this.saveToLocalStorage();
   }
 
   updateFolderCount(folderId: string, change: number) {
@@ -251,10 +300,11 @@ export class UploadMusicComponent {
     if (folder.isSystem) return;
 
     if (folder.fileCount > 0) {
-      if (!confirm(`¿Eliminar "${folder.name}" y sus archivos?`)) return;
+      // Direct delete without confirm, as requested for smooth UX
       this.uploadedMusicFiles = this.uploadedMusicFiles.filter(file => file.folderId !== folder.id);
     }
     this.folders = this.folders.filter(f => f.id !== folder.id);
+    this.toastService.success(`Carpeta "${folder.name}" eliminada`);
 
     if (this.selectedFolder?.id === folder.id) {
       this.selectedFolder = this.folders[0];
@@ -264,25 +314,55 @@ export class UploadMusicComponent {
     this.saveToLocalStorage();
   }
 
-  playFile(file: MusicFile) {
-    if ((!file.url || file.url === '') && !file.file) {
-      this.showToastNotification('❌ Recarga perdida');
-      return;
-    }
-    if (!file.url && file.file) file.url = URL.createObjectURL(file.file);
+  async playFile(file: MusicFile) {
+    this.toastService.info('📂 Cargando carpeta para reproducción...');
 
-    const song: Song = {
-      id: file.id,
-      artistId: 0,
-      img: 'assets/images/default-music-note.svg',
-      title: file.name,
-      artist: file.artist,
-      duration: '0:00',
-      url: file.url,
-      album: 'Uploads'
-    };
-    this.playerService.playSong(song);
-    this.showToastNotification(`▶️ ${file.name}`);
+    try {
+      // 1. Fetch all stored files from IndexedDB to ensure playlist continuity
+      const storedData = await this.storageService.getAllFiles();
+
+      // 2. Prepare the playlist context
+      // We iterate over the CURRENT VIEW (filteredMusicFiles) to maintain order and filters
+      const playlistSongs: Song[] = this.filteredMusicFiles.map(f => {
+        // Find the actual file blob in DB if we don't have it in memory/URL
+        if (!f.url || f.url === '') {
+          const found = storedData.find(dbFile => dbFile.id === f.id);
+          if (found && found.file) {
+            f.file = found.file;
+            f.url = URL.createObjectURL(found.file);
+          }
+        }
+
+        // Return the song object for the player
+        return {
+          id: f.id,
+          artistId: 0,
+          img: '',
+          title: f.name,
+          artist: 'Desconocido',
+          duration: '0:00',
+          url: f.url || '', // Should be valid now if file exists
+          album: 'Uploads'
+        };
+      });
+
+      // 3. Set Playlist in Player
+      this.playerService.setPlaylist(playlistSongs, false);
+
+      // 4. Play the specific song the user clicked
+      const songToPlay = playlistSongs.find(s => s.id === file.id);
+      if (songToPlay && songToPlay.url) {
+        this.playerService.playSong(songToPlay);
+        this.showToastNotification(`▶️ ${file.name}`);
+      } else {
+        this.toastService.error('⚠️ El archivo no se pudo cargar.');
+        this.deleteFile(file); // Clean up if missing
+      }
+
+    } catch (error) {
+      console.error('Error loading playlist', error);
+      this.toastService.error('Error al cargar la carpeta');
+    }
   }
 
   toggleFavorite(file: MusicFile, event?: Event) {
@@ -328,16 +408,20 @@ export class UploadMusicComponent {
       return;
     }
 
-    if (!confirm(`¿Eliminar permanentemente "${file.name}"?`)) return;
+    // if (!confirm(`¿Eliminar permanentemente "${file.name}"?`)) return;
 
     this.updateFolderCount(file.folderId, -1);
     if (file.isFavorite) {
       this.updateFolderCount('2', -1);
     }
 
+    // Remove from IndexedDB
+    this.storageService.deleteFile(file.id).catch(err => console.error('Error deleting from DB', err));
+
     this.uploadedMusicFiles = this.uploadedMusicFiles.filter(f => f.id !== file.id);
     this.calculateStorage();
     this.saveToLocalStorage();
+    this.toastService.success('Archivo eliminado');
   }
 
   calculateStorage() {

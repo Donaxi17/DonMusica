@@ -278,8 +278,14 @@
                flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up cursor-pointer"
         (click)="openPlayer()">
 
-        <div class="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 shadow-lg">
-            <img [src]="currentSong.img" class="w-full h-full object-cover">
+        <div
+            class="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 shadow-lg flex items-center justify-center">
+            <img *ngIf="currentSong.img" [src]="currentSong.img" class="w-full h-full object-cover">
+            <div *ngIf="!currentSong.img" class="w-6 h-6 text-zinc-600">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+            </div>
             <div *ngIf="isPlaying && !isFavoritesPlaying"
                 class="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <div class="flex gap-0.5 items-end h-3">

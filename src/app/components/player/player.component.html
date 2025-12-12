@@ -13,8 +13,16 @@
     <section class="mb-6 md:mb-8" *ngIf="currentSong">
         <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-start mb-4 md:mb-6">
             <!-- Album Art - Smaller on mobile, centered -->
-            <div class="w-40 h-40 md:w-64 md:h-64 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 shadow-2xl">
-                <img [src]="currentSong.img" alt="Album Art" class="w-full h-full object-cover">
+            <!-- Album Art - Smaller on mobile, centered -->
+            <div
+                class="w-40 h-40 md:w-64 md:h-64 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 shadow-2xl flex items-center justify-center">
+                <img *ngIf="currentSong.img" [src]="currentSong.img" alt="Album Art" class="w-full h-full object-cover">
+                <div *ngIf="!currentSong.img" class="w-20 h-20 md:w-32 md:h-32 text-zinc-600">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg>
+                </div>
             </div>
 
             <!-- Song Info -->
@@ -195,7 +203,7 @@
         </div>
 
         <div class="space-y-1">
-            @for(song of playlist; track song.id) {
+            @for(song of playlist; track song.id; let i = $index) {
             <div (click)="playSong(song)"
                 class="group flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer"
                 [class.bg-zinc-900]="currentSong?.id === song.id" [class.border-l-2]="currentSong?.id === song.id"
@@ -206,7 +214,7 @@
                 <div class="w-6 md:w-8 flex items-center justify-center flex-shrink-0">
                     <span class="text-xs md:text-sm text-zinc-500 group-hover:hidden"
                         [class.hidden]="currentSong?.id === song.id">
-                        {{song.id}}
+                        {{i + 1}}
                     </span>
                     <button (click)="$event.stopPropagation(); playSong(song)"
                         class="hover:scale-110 transition-transform"
@@ -236,7 +244,7 @@
 
                 <div class="flex items-center gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     [class.opacity-100]="currentSong?.id === song.id">
-                    <button (click)="$event.stopPropagation(); toggleFavorite(song)"
+                    <button *ngIf="song.album !== 'Uploads'" (click)="$event.stopPropagation(); toggleFavorite(song)"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Favorito">
                         <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"
                             *ngIf="!isFavorite(song.id)">

@@ -8,10 +8,10 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
   standalone: true,
   imports: [CommonModule, SvgIconComponent],
   template: `
-    <div class="fixed top-4 right-4 z-[999999] flex flex-col gap-2 pointer-events-none">
+    <div class="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:w-auto z-[999999] flex flex-col gap-2 pointer-events-none">
       @for (toast of toastService.toasts(); track toast.id) {
         <div 
-          class="pointer-events-auto animate-slide-in-right bg-zinc-900 border rounded-xl shadow-2xl overflow-hidden min-w-[280px] max-w-md"
+          class="pointer-events-auto animate-slide-in-right bg-zinc-900 border rounded-xl shadow-2xl overflow-hidden w-full md:w-96 md:min-w-[320px] mx-auto"
           [class.border-emerald-500]="toast.type === 'success'"
           [class.border-red-500]="toast.type === 'error'"
           [class.border-blue-500]="toast.type === 'info'"
