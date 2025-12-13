@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Song } from './playlist.service';
+import { DonMusicaProService } from './don-musica-pro.service';
 
 export interface OfflineSong extends Song {
     downloadedAt: number;
@@ -17,6 +18,7 @@ export class OfflineService {
     private readonly DB_VERSION = 1;
     private readonly STORE_NAME = 'offlineSongs';
     private db: IDBDatabase | null = null;
+    private proService = inject(DonMusicaProService);
 
     offlineSongs = signal<OfflineSong[]>([]);
     downloadProgress = signal<{ [songId: string]: number }>({});
@@ -48,6 +50,12 @@ export class OfflineService {
     }
 
     async downloadSong(song: Song): Promise<boolean> {
+        // Check Pro Limits
+        if (!this.proService.canDownloadSong(this.offlineSongs().length)) {
+            alert('¡Límite de descargas alcanzado! Actualiza a DonMusica PRO para descargas ilimitadas.');
+            return false;
+        }
+
         if (!this.db) {
             await this.initDB();
         }

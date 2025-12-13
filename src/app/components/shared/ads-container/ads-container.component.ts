@@ -1,12 +1,13 @@
-import { Component, Input, OnInit, ElementRef, ViewChild, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { DonMusicaProService } from '../../../services/don-musica-pro.service';
 
 @Component({
   selector: 'app-ads-container',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './ads-container.component.html',
-  styleUrl: './ads-container.component.css' // We will add the CSS rule here later
+  styleUrl: './ads-container.component.css'
 })
 export class AdsContainerComponent implements OnInit, AfterViewInit {
   @Input() index: number = 0; // To generate unique IDs if multiple ads on page
@@ -16,7 +17,10 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
   mobileContainerId: string = '';
   desktopContainerId: string = '';
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) platformId: Object,
+    private proService: DonMusicaProService
+  ) {
     this.isBrowser = isPlatformBrowser(platformId);
     const uniqueId = Math.random().toString(36).substr(2, 9);
     this.mobileContainerId = `mobile-ad-${uniqueId}`;
@@ -29,17 +33,15 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.isBrowser) {
-      this.renderResponsiveAd();
+      if (this.proService.shouldShowAds()) {
+        this.renderResponsiveAd();
+      }
     }
   }
 
   private renderResponsiveAd() {
     setTimeout(() => {
-      // Usamos el ID del móvil como contenedor genérico (o desktopContainerId si prefieres separar, pero simplificaremos)
-      // En el HTML, asegurémonos de tener un contenedor limpio.
-      // Por simplicidad, usaremos 'mobileContainerId' como el target dinámico para ambos casos, 
-      // ya que el HTML tiene un div genérico.
-
+      // Usamos el ID del móvil como contenedor genérico
       const container = document.getElementById(this.mobileContainerId);
       if (container && !container.hasChildNodes()) {
         const width = window.innerWidth;

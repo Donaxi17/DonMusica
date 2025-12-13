@@ -36,16 +36,60 @@
             </div>
 
             <!-- Description -->
-            <p class="text-zinc-400 text-sm max-w-md mx-auto">
+            <p class="text-zinc-400 text-sm max-w-md mx-auto mb-6">
                 Tu colección personal de letras de canciones. Lee y canta tus favoritas en cualquier momento.
             </p>
+
+            <!-- Storage Meter -->
+            <div class="max-w-xs mx-auto mb-6 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                <div class="flex justify-between text-xs mb-2">
+                    <span class="text-zinc-400">Almacenamiento ({{limitInfo().isPro ? 'PRO' : 'Gratis'}})</span>
+                    <span class="{{limitInfo().isPro ? 'text-pink-400 font-bold' : 'text-zinc-400'}}">
+                        {{limitInfo().isPro ? 'ILIMITADO' : limitInfo().current + ' / ' + limitInfo().max}}
+                    </span>
+                </div>
+
+                @if (!limitInfo().isPro) {
+                <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-pink-500 to-rose-500 h-full transition-all duration-500"
+                        [style.width.%]="limitInfo().percentUsed"></div>
+                </div>
+                <p class="text-[10px] text-zinc-500 mt-2 text-center"
+                    [class.text-red-400]="limitInfo().remaining === 0">
+                    {{limitInfo().remaining === 0 ? '¡Espacio lleno! Actualiza a PRO' : 'Te quedan ' +
+                    limitInfo().remaining + ' espacios'}}
+                </p>
+                } @else {
+                <div class="text-xs text-pink-400 text-center font-bold tracking-wider mt-1">∞ ESPACIO INFINITO</div>
+                }
+            </div>
+
+            <!-- Dev Toggle (Hidden in prod ideally) -->
+            <button (click)="toggleProMode()" class="text-[10px] text-zinc-600 hover:text-white underline mb-6">
+                [DEV] Cambiar a modo {{limitInfo().isPro ? 'GRATIS' : 'PRO'}}
+            </button>
+
+            <!-- Navigation Tabs Removed as per request -->
+
+            <!-- Import Button -->
+            <div class="flex justify-center mb-10">
+                <label
+                    class="cursor-pointer text-xs font-bold text-pink-500 hover:text-pink-400 border border-pink-500/30 hover:border-pink-500/50 bg-pink-500/10 hover:bg-pink-500/20 px-6 py-3 rounded-full transition-all flex items-center gap-2 hover:scale-105 active:scale-95 shadow-lg shadow-pink-500/10">
+                    <input type="file" class="hidden" accept=".txt,.lrc" (change)="onFileSelected($event)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Importar archivo de letra (.txt, .lrc)
+                </label>
+            </div>
         </div>
 
-        <!-- List -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Single List of All Saved Lyrics -->
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-fade-in-up">
             @for (lyric of savedLyrics(); track lyric.id) {
             <div (click)="viewLyric(lyric)"
-                class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 cursor-pointer hover:bg-zinc-800 hover:border-pink-500/50 transition-all group relative overflow-hidden">
+                class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 cursor-pointer hover:bg-zinc-800 hover:border-pink-500/40 transition-all group relative overflow-hidden active:scale-[0.98]">
 
                 <!-- Gradient Background Effect -->
                 <div
@@ -54,63 +98,49 @@
 
                 <div class="flex justify-between items-start mb-4 relative z-10">
                     <div
-                        class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform relative">
-                        <!-- Play Icon if Offline Available -->
-                        <button *ngIf="isOffline(lyric); else defaultIcon" (click)="playSong(lyric, $event)"
-                            class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-pink-500/40 transition-all">
-                            <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 6v12l10-6z" />
-                            </svg>
-                        </button>
-                        <ng-template #defaultIcon>
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M19.937 8.68c-.011-.032-.02-.063-.033-.094a.997.997 0 0 0-.196-.293l-6-6a.997.997 0 0 0-.293-.196c-.03-.014-.062-.022-.094-.033a.991.991 0 0 0-.259-.051C13.04 2.011 13.021 2 13 2H6c-1.103 0-2 .897-2 2v16c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V9c0-.021-.011-.04-.013-.062a.99.99 0 0 0-.05-.258zM16.586 8H14V5.414L16.586 8zM6 20V4h6v5a1 1 0 0 0 1 1h5l.002 10H6z" />
-                            </svg>
-                        </ng-template>
-                        <div *ngIf="isOffline(lyric)"
-                            class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-zinc-900">
-                        </div>
-                        <div *ngIf="!isOffline(lyric)"
-                            class="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
+                        class="w-12 h-12 rounded-full bg-zinc-800/80 group-hover:bg-gradient-to-br group-hover:from-pink-500/20 group-hover:to-rose-500/20 flex items-center justify-center text-zinc-400 group-hover:text-pink-400 transition-all group-hover:scale-110">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.937 8.68c-.011-.032-.02-.063-.033-.094a.997.997 0 0 0-.196-.293l-6-6a.997.997 0 0 0-.293-.196c-.03-.014-.062-.022-.094-.033a.991.991 0 0 0-.259-.051C13.04 2.011 13.021 2 13 2H6c-1.103 0-2 .897-2 2v16c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V9c0-.021-.011-.04-.013-.062a.99.99 0 0 0-.05-.258zM16.586 8H14V5.414L16.586 8zM6 20V4h6v5a1 1 0 0 0 1 1h5l.002 10H6z" />
+                        </svg>
                     </div>
                     <button (click)="deleteLyric(lyric.id, $event)"
-                        class="text-zinc-500 hover:text-red-500 transition-colors p-2 hover:bg-zinc-700/50 rounded-full">
+                        class="text-zinc-600 hover:text-red-500 transition-colors p-2 hover:bg-zinc-700/50 rounded-full"
+                        title="Eliminar">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z" />
-                            <path d="M9 10h2v8H9zm4 0h2v8h-2z" />
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                         </svg>
                     </button>
                 </div>
 
-                <h3 class="text-xl font-bold text-white mb-1 truncate">{{lyric.title}}</h3>
-                <p class="text-zinc-400 text-sm mb-4 truncate">{{lyric.artist}}</p>
-
-                <div class="text-xs text-zinc-600 font-mono">
-                    Guardado el {{lyric.savedAt | date:'mediumDate'}}
+                <h3 class="text-lg font-bold text-white mb-0.5 truncate">{{lyric.title}}</h3>
+                <p class="text-zinc-400 text-sm mb-3 truncate">{{lyric.artist}}</p>
+                <div class="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                    {{lyric.savedAt | date:'mediumDate'}}
                 </div>
-            </div>
-            } @empty {
-            <div
-                class="col-span-full text-center py-16 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed">
-                <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-2">No tienes letras guardadas</h3>
-                <p class="text-zinc-500 mb-6">Busca canciones y guarda sus letras para verlas aquí.</p>
-                <a routerLink="/browse/search"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-full hover:from-pink-400 hover:to-rose-400 transition-all shadow-lg shadow-pink-500/30">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
-                    </svg>
-                    Buscar Letras
-                </a>
             </div>
             }
+        </div>
+
+        <!-- Global Empty State (Only if BOTH are empty) -->
+        <div *ngIf="savedLyrics().length === 0"
+            class="text-center py-16 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed mt-8 animate-fade-in">
+            <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">No tienes letras guardadas</h3>
+            <p class="text-zinc-500 mb-6">Busca canciones y guarda sus letras para verlas aquí.</p>
+            <a routerLink="/browse/search"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-full hover:from-pink-400 hover:to-rose-400 transition-all shadow-lg shadow-pink-500/30">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
+                </svg>
+                Buscar Letras
+            </a>
         </div>
     </div>
 
@@ -145,25 +175,13 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 relative z-20">
-                    <!-- Play Button in Modal -->
-                    <button *ngIf="selectedLyric() && isOffline(selectedLyric()!)"
-                        (click)="playSong(selectedLyric()!, $event)"
-                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-500 hover:bg-green-400 flex items-center justify-center text-white transition-colors flex-shrink-0 shadow-lg shadow-green-500/30"
-                        title="Reproducir Canción Offline">
-                        <svg class="w-5 h-5 md:w-6 md:h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 6v12l10-6z" />
-                        </svg>
-                    </button>
-
-                    <button (click)="closeLyric()"
-                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0">
-                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
-                        </svg>
-                    </button>
-                </div>
+                <button (click)="closeLyric()"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-colors flex-shrink-0 relative z-20">
+                    <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+                    </svg>
+                </button>
             </div>
 
             <!-- Content -->

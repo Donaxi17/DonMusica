@@ -1,11 +1,14 @@
-﻿import { Component, inject } from '@angular/core';
+﻿import { Component, inject, effect, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { ToastService } from '../../services/toast.service';
 import { StorageService } from '../../services/storage.service';
+import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import * as mm from 'music-metadata-browser';
 import { Buffer } from 'buffer';
 
@@ -39,24 +42,31 @@ interface Folder {
 @Component({
   selector: 'app-upload-music',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, ScrollingModule],
   templateUrl: './upload-music.component.html',
-  styleUrl: './upload-music.component.css'
+  styleUrl: './upload-music.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UploadMusicComponent {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  private cdr = inject(ChangeDetectorRef);
   private playerService = inject(PlayerService);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
-
-  // Storage limits in MB (1GB = 1024MB, 5GB = 5120MB)
-  readonly FREE_STORAGE_LIMIT = 1024; // 1 GB
-  readonly PRO_STORAGE_LIMIT = 5120;  // 5 GB
+  private proService = inject(DonMusicaProService);
 
   maxStorage = 1024; // in MB
   usedStorage = 0;   // in MB
   storagePercentage = 0;
   uploadedFiles = 0;
-  isPro = false;
+
+  get isPro(): boolean {
+    return this.proService.isPro();
+  }
+
+  toggleProDebug() {
+    this.proService.togglePro();
+  }
 
   uploadedMusicFiles: MusicFile[] = [];
 
@@ -96,15 +106,31 @@ export class UploadMusicComponent {
 
   constructor() {
     this.loadFromLocalStorage();
-    this.setStorageLimit();
-    this.calculateStorage();
+
+    // React to Pro status changes automatically
+    effect(() => {
+      this.setStorageLimit();
+      this.maxStorage = this.proService.getStorageLimitMB();
+      this.calculateStorage();
+      this.cdr.markForCheck();
+    });
+
     if (!this.selectedFolder) this.selectedFolder = this.folders[0];
 
     // Attempt to repair files (duration + persistent blobs)
     setTimeout(() => this.repairFiles(), 1000);
   }
 
-  get filteredMusicFiles(): MusicFile[] {
+  // State property for filtered files instead of getter for OnPush performance
+  filteredMusicFiles: MusicFile[] = [];
+
+  // --- Actions ---
+
+
+
+  // --- Filtering & Sorting ---
+
+  filterFiles() {
     let files = this.uploadedMusicFiles;
 
     // 1. Filter by Folder
@@ -116,7 +142,7 @@ export class UploadMusicComponent {
       }
     }
 
-    // 2. Filter by Search Term
+    // 2. Filter by Search
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       files = files.filter(f =>
@@ -125,8 +151,15 @@ export class UploadMusicComponent {
       );
     }
 
-    // 3. Sort
-    return files.sort((a, b) => {
+    this.filteredMusicFiles = files;
+    this.applySort();
+    // Ensure folder counts are correct
+    this.recalculateFolderCounts();
+    this.cdr.markForCheck();
+  }
+
+  applySort() {
+    this.filteredMusicFiles = [...this.filteredMusicFiles].sort((a, b) => {
       let comparison = 0;
       switch (this.sortBy) {
         case 'name':
@@ -144,10 +177,11 @@ export class UploadMusicComponent {
     });
   }
 
-  // Set storage limit based on user type
+  // --- Storage & Limits ---
+
   setStorageLimit() {
-    this.isPro = false;
-    this.maxStorage = this.isPro ? this.PRO_STORAGE_LIMIT : this.FREE_STORAGE_LIMIT;
+    this.maxStorage = this.proService.getStorageLimitMB();
+    this.cdr.markForCheck();
   }
 
   getStorageLimitInfo(): string {
@@ -162,14 +196,12 @@ export class UploadMusicComponent {
     return (this.usedStorage / 1024).toFixed(2);
   }
 
-  // Storage warning level (for visual indicators)
   get storageWarningLevel(): 'safe' | 'warning' | 'danger' {
     if (this.storagePercentage >= 90) return 'danger';
     if (this.storagePercentage >= 75) return 'warning';
     return 'safe';
   }
 
-  // Estimated song capacity (assuming average 4MB per song)
   get estimatedSongsRemaining(): number {
     const avgSongSizeMB = 4;
     const remainingMB = this.maxStorage - this.usedStorage;
@@ -186,101 +218,43 @@ export class UploadMusicComponent {
   }
 
   showToastNotification(message: string) {
-    // Legacy support wrapper, redirecting to new ToastService
-    // Some existing calls pass emoji, we can keep them or clean them up later
-    this.toastService.info(message);
+    this.toastMessage = message;
+    this.showToast = true;
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.showToast = false;
+      this.cdr.markForCheck();
+    }, 3000);
   }
 
   upgradeToPro() {
-    // Create a premium, responsive toast
-    const message = `
-      <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px; border-radius: 12px; position: relative; overflow: hidden;">
-        <!-- Animated gradient overlay -->
-        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24); background-size: 200% 100%; animation: shimmer 2s infinite;"></div>
-        
-        <!-- Crown Icon Header -->
-        <div style="text-align: center; margin-bottom: 12px;">
-          <div style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 10px; border-radius: 50%; box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);">
-            <span style="font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></span>
-          </div>
-        </div>
-        
-        <!-- Title -->
-        <div style="text-align: center; margin-bottom: 16px;">
-          <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; letter-spacing: 0.5px;">
-            PLAN PRO
-          </div>
-          <div style="font-size: 11px; color: #94a3b8; font-weight: 500;">
-            Próximamente disponible
-          </div>
-        </div>
-        
-        <!-- Benefits Section -->
-        <div style="background: rgba(30, 41, 59, 0.5); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(251, 191, 36, 0.1);">
-          <div style="font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 14px;"></span>
-            <span>Beneficios Exclusivos</span>
-          </div>
-          
-          <div style="display: grid; gap: 8px;">
-            <!-- Benefit 1 -->
-            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(16, 185, 129, 0.05); border-radius: 6px; border-left: 3px solid #10b981;">
-              <span style="font-size: 14px; flex-shrink: 0;"></span>
-              <div style="font-size: 12px; line-height: 1.4;">
-                <strong style="color: #10b981;">5 GB</strong> <span style="color: #cbd5e1;">de almacenamiento</span>
-                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">vs 1 GB en plan FREE</div>
-              </div>
-            </div>
-            
-            <!-- Benefit 2 -->
-            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(59, 130, 246, 0.05); border-radius: 6px; border-left: 3px solid #3b82f6;">
-              <span style="font-size: 14px; flex-shrink: 0;"></span>
-              <div style="font-size: 12px; line-height: 1.4;">
-                <strong style="color: #3b82f6;">~1,280 canciones</strong>
-                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">vs ~256 en plan FREE</div>
-              </div>
-            </div>
-            
-            <!-- Benefit 3 -->
-            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(168, 85, 247, 0.05); border-radius: 6px; border-left: 3px solid #a855f7;">
-              <span style="font-size: 14px; flex-shrink: 0;"></span>
-              <div style="font-size: 12px; line-height: 1.4; color: #cbd5e1;">
-                <strong style="color: #a855f7;">Sin anuncios</strong>
-              </div>
-            </div>
-            
-            <!-- Benefit 4 -->
-            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(236, 72, 153, 0.05); border-radius: 6px; border-left: 3px solid #ec4899;">
-              <span style="font-size: 14px; flex-shrink: 0;"></span>
-              <div style="font-size: 12px; line-height: 1.4; color: #cbd5e1;">
-                <strong style="color: #ec4899;">Soporte prioritario</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.1);">
-          <div style="font-size: 10px; color: #64748b; line-height: 1.5;">
-             Te notificaremos cuando esté disponible
-          </div>
-        </div>
-      </div>
-      
-      <style>
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      </style>
-    `;
-
-    this.toastService.showHtml(message, 'info', 15000); // 10 seconds
+    this.proService.showUpgradeModal();
   }
 
-  onFileSelected(event: any) {
-    const files: FileList = event.target.files;
-    if (files) this.processFiles(files);
+  showUpgradeModal() {
+    this.proService.showUpgradeModal();
+  }
+
+  // --- Upload Logic ---
+
+  async onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.isUploading = true;
+      this.uploadProgress = 0;
+      this.cdr.markForCheck();
+
+      try {
+        // Process files
+        await this.processFiles(files);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.isUploading = false;
+        this.cdr.markForCheck();
+        if (this.fileInput) this.fileInput.nativeElement.value = '';
+      }
+    }
   }
 
   onDragOver(event: DragEvent) {
@@ -297,197 +271,108 @@ export class UploadMusicComponent {
     }
   }
 
+  calculateProgress(processed: number, total: number) {
+    if (total > 0) {
+      this.uploadProgress = Math.round((processed / total) * 100);
+      this.cdr.markForCheck();
+    }
+  }
+
+  checkStorageLimit(newFiles: FileList): boolean {
+    const newSizeMB = Array.from(newFiles).reduce((acc, file) => acc + file.size, 0) / (1024 * 1024);
+    return (this.usedStorage + newSizeMB) <= this.maxStorage;
+  }
+
+  // We are rewriting processFiles completely to handle flow better
   async processFiles(files: FileList) {
     if (files.length === 0) return;
 
-    // Calculate total size of files to upload
+    // 1. Pre-Check Limits
     let totalSizeMB = 0;
     const audioFiles: File[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      // Check MIME type or Extension (some devices send audio as application/octet-stream)
-      const isAudioMime = file.type.startsWith('audio/');
-      const hasAudioExtension = /\.(mp3|wav|m4a|aac|ogg|flac|wma|opus)$/i.test(file.name);
+      const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac|wma|opus)$/i.test(file.name);
 
-      if (!isAudioMime && !hasAudioExtension) {
-        this.showToastNotification(`⚠️ "${file.name}" no es un archivo de audio válido.`);
+      if (!isAudio) {
+        if (file.name.endsWith('.lrc') || file.name.endsWith('.txt')) {
+          this.toastService.info(`📝 "${file.name}" es una letra. Usa la sección de Letras.`);
+        } else {
+          this.showToastNotification(`⚠️ "${file.name}" no es audio.`);
+        }
         continue;
       }
+
       audioFiles.push(file);
       totalSizeMB += file.size / (1024 * 1024);
     }
 
     if (audioFiles.length === 0) return;
 
-    // Check if there's enough space BEFORE starting upload
     const spaceNeeded = this.usedStorage + totalSizeMB;
-    const spaceAvailable = this.maxStorage - this.usedStorage;
-
     if (spaceNeeded > this.maxStorage) {
-      const spaceNeededGB = (totalSizeMB / 1024).toFixed(2);
-      const spaceAvailableGB = (spaceAvailable / 1024).toFixed(2);
-
-      if (this.isPro) {
-        this.toastService.error(`⚠️ Espacio insuficiente. Necesitas ${spaceNeededGB} GB pero solo tienes ${spaceAvailableGB} GB disponibles.`);
-      } else {
-        this.toastService.error(`⚠️ Límite alcanzado. Necesitas ${spaceNeededGB} GB pero el plan FREE solo permite 1 GB. Actualiza a PRO para obtener 5 GB.`);
-      }
+      this.showUpgradeModal();
       return;
     }
 
-    // Warn if approaching limit (>80%)
-    const futurePercentage = (spaceNeeded / this.maxStorage) * 100;
-    if (futurePercentage > 80 && futurePercentage <= 100) {
-      const remainingGB = ((this.maxStorage - spaceNeeded) / 1024).toFixed(2);
-      this.toastService.warning(`⚠️ Te quedarán solo ${remainingGB} GB disponibles después de esta subida.`);
-    }
-
+    // 2. Upload
     let targetFolderId = this.selectedFolder?.id || '1';
     if (targetFolderId === '2') targetFolderId = '1';
 
     this.isUploading = true;
     this.uploadProgress = 0;
-    const totalFiles = audioFiles.length;
-    let processedFiles = 0;
+    this.cdr.markForCheck();
+
+    let processedCount = 0;
+    const totalCount = audioFiles.length;
 
     for (const file of audioFiles) {
       this.currentUploadingFile = file.name;
-      const simulationDuration = Math.min(2000, Math.max(500, file.size / 10000));
-      const steps = 10;
+      this.cdr.markForCheck();
 
-      for (let step = 1; step <= steps; step++) {
-        await new Promise(resolve => setTimeout(resolve, simulationDuration / steps));
-        const currentFileProgress = (step / steps);
-        this.uploadProgress = Math.round(((processedFiles + currentFileProgress) / totalFiles) * 100);
+      // Simulation
+      const steps = 5;
+      for (let s = 1; s <= steps; s++) {
+        await new Promise(r => setTimeout(r, 20));
       }
 
-      await this.addFile(file, targetFolderId);
-      processedFiles++;
+      try {
+        await this.addFile(file, targetFolderId);
+        processedCount++;
+        this.calculateProgress(processedCount, totalCount);
+      } catch (e) {
+        console.error('Error adding file', file.name, e);
+      }
     }
 
     this.isUploading = false;
-    this.uploadProgress = 0;
     this.currentUploadingFile = '';
-    this.showToastNotification(`✅ ¡${processedFiles} ${processedFiles === 1 ? 'archivo subido' : 'archivos subidos'}!`);
-    this.saveToLocalStorage();
-  }
-
-  // Helper using a temporary Audio element to get duration
-  private getAudioDuration(file: File): Promise<string> {
-    return new Promise((resolve) => {
-      const audio = new Audio();
-      const objectUrl = URL.createObjectURL(file);
-      audio.src = objectUrl;
-
-      audio.onloadedmetadata = () => {
-        URL.revokeObjectURL(objectUrl);
-        const duration = audio.duration;
-        if (!isFinite(duration)) {
-          resolve('0:00');
-          return;
-        }
-        const minutes = Math.floor(duration / 60);
-        const seconds = Math.floor(duration % 60);
-        resolve(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-      };
-
-      audio.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        resolve('0:00');
-      };
-    });
-  }
-
-  private async repairFiles() {
-    console.log('Verificando integridad de archivos...');
-    const files = this.uploadedMusicFiles;
-
-    for (const file of files) {
-      // 1. Check if we need to restore the file object (for playback/re-extraction)
-      if (!file.file || !file.url || file.url === '') {
-        try {
-          const dbFile = await this.storageService.getFile(file.id);
-          if (dbFile && dbFile.file) {
-            file.file = dbFile.file;
-            file.url = URL.createObjectURL(dbFile.file);
-
-            // 2. Check/Repair Duration
-            if (!file.duration || file.duration === '0:00') {
-              file.duration = await this.getAudioDuration(dbFile.file);
-            }
-
-            // 3. Restore Cover Art (if assuming blob URLs died on reload)
-            if (!file.coverUrl || file.coverUrl.startsWith('blob:')) {
-              const metadata = await this.extractMetadata(dbFile.file);
-              if (metadata.picture) {
-                file.coverUrl = metadata.picture;
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('Error restoring file data', file.id, err);
-        }
-      }
-    }
-
-    this.saveToLocalStorage();
-    console.log('Verificación completada');
-  }
-
-  async extractMetadata(file: File): Promise<{ title?: string, artist?: string, picture?: string }> {
-    try {
-      const metadata = await mm.parseBlob(file);
-      const title = metadata.common.title;
-      const artist = metadata.common.artist;
-      let picture = '';
-
-      if (metadata.common.picture && metadata.common.picture.length > 0) {
-        const pic = metadata.common.picture[0];
-        const blob = new Blob([pic.data as any], { type: pic.format });
-        picture = URL.createObjectURL(blob);
-      }
-
-      return { title, artist, picture };
-    } catch (error) {
-      console.error('Error extracting metadata:', error);
-      return {};
-    }
+    this.showToastNotification(`✅ ${processedCount} archivos subidos`);
+    this.cdr.markForCheck();
   }
 
   async addFile(file: File, folderId: string): Promise<void> {
-    const fileId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-
-    // Calculate duration
+    const fileId = crypto.randomUUID();
     let duration = '0:00';
+    let metadata: any = {};
+
     try {
       duration = await this.getAudioDuration(file);
+      metadata = await this.extractMetadata(file);
     } catch (e) {
-      console.error('Error getting duration', e);
+      console.warn('Metadata error', e);
     }
 
-    // Extract Metadata (ID3)
-    const metadata = await this.extractMetadata(file);
-
-    // Store actual file in IndexedDB
-    try {
-      await this.storageService.saveFile({
-        id: fileId,
-        file: file
-      });
-    } catch (error) {
-      console.error('Error saving to IndexedDB', error);
-      this.toastService.warning('Error guardando archivo persistente');
-    }
-
-    this.updateFolderCount(folderId, 1);
+    // Save actual blob
+    await this.storageService.saveFile({ id: fileId, file: file });
 
     const newFile: MusicFile = {
       id: fileId,
-      name: metadata.title || file.name.replace(/\.[^/.]+$/, ""), // Use ID3 title if available
-      artist: metadata.artist || 'Desconocido', // Use ID3 artist if available
-      url: URL.createObjectURL(file),
-      coverUrl: metadata.picture || '', // Use ID3 picture if available
+      name: metadata.title || file.name.replace(/\.[^/.]+$/, ""),
+      artist: metadata.artist || 'Desconocido',
+      url: URL.createObjectURL(file), // Provide initial URL for immediate playback
+      coverUrl: metadata.picture || '',
       size: this.formatSize(file.size),
       sizeRaw: file.size,
       dateAdded: new Date(),
@@ -497,40 +382,148 @@ export class UploadMusicComponent {
       duration: duration
     };
 
+    // Update state
     this.uploadedMusicFiles.unshift(newFile);
+    this.updateFolderCount(folderId, 1);
     this.calculateStorage();
+    this.filterFiles();
     this.saveToLocalStorage();
   }
 
-  // Options Menu Logic
+  private async getAudioDuration(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      const url = URL.createObjectURL(file);
+      audio.src = url;
+      audio.onloadedmetadata = () => {
+        URL.revokeObjectURL(url); // Clean up
+        const seconds = audio.duration;
+        resolve(this.formatDuration(seconds));
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve('0:00');
+      };
+    });
+  }
+
+  private async extractMetadata(file: File): Promise<any> {
+    try {
+      const m = await mm.parseBlob(file);
+      let picture = '';
+      if (m.common.picture && m.common.picture.length > 0) {
+        const pic = m.common.picture[0];
+        let blob = new Blob([pic.data as any], { type: pic.format });
+
+        // Resize optimization (max 120px)
+        try {
+          blob = await this.resizeImage(blob, 120, 120);
+        } catch (e) { console.warn('Resize failed, using original', e); }
+
+        picture = URL.createObjectURL(blob);
+      }
+      return {
+        title: m.common.title,
+        artist: m.common.artist,
+        picture: picture
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  private resizeImage(blob: Blob, maxWidth: number, maxHeight: number): Promise<Blob> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
+      img.src = url;
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((b) => {
+            resolve(b || blob);
+          }, 'image/jpeg', 0.8);
+        } else {
+          resolve(blob);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(blob);
+      };
+    });
+  }
+
+  private repairFiles() {
+    // Restore URLs if missing (page reload)
+    this.uploadedMusicFiles.forEach(async f => {
+      if (!f.url || f.url === '') {
+        const dbFile = await this.storageService.getFile(f.id);
+        if (dbFile && dbFile.file) {
+          f.file = dbFile.file;
+          f.url = URL.createObjectURL(dbFile.file);
+          this.cdr.markForCheck();
+        }
+      }
+    });
+  }
+
+  // --- UI Helpers ---
+
   openFileOptions(file: MusicFile, event: Event) {
     event.stopPropagation();
     this.fileForOptions = file;
     this.showFileOptionsModal = true;
+    this.cdr.markForCheck();
   }
 
   closeFileOptions() {
     this.showFileOptionsModal = false;
     this.fileForOptions = null;
+    this.cdr.markForCheck();
   }
 
-  // Edit Logic
-  openEditModal(file: MusicFile, event?: Event) {
-    if (event) event.stopPropagation();
-    this.closeFileOptions(); // Close options menu if open
-    this.editData = { id: file.id, name: file.name, artist: file.artist };
+  openEditModal(file: MusicFile) {
+    this.editData = { name: file.name, artist: file.artist, id: file.id };
     this.showEditModal = true;
+    this.closeFileOptions();
+    this.cdr.markForCheck();
   }
 
-  saveEdit() {
-    const fileIndex = this.uploadedMusicFiles.findIndex(f => f.id === this.editData.id);
-    if (fileIndex !== -1) {
-      this.uploadedMusicFiles[fileIndex].name = this.editData.name;
-      this.uploadedMusicFiles[fileIndex].artist = this.editData.artist || 'Desconocido';
-      this.saveToLocalStorage();
-      this.showToastNotification('✅ Cambios guardados');
+  async saveEdit() {
+    const idx = this.uploadedMusicFiles.findIndex(f => f.id === this.editData.id);
+    if (idx !== -1) {
+      const file = this.uploadedMusicFiles[idx];
+      file.name = this.editData.name;
+      file.artist = this.editData.artist || 'Desconocido';
+
+      await this.storageService.updateFile(file);
+      this.showEditModal = false;
+      this.filterFiles();
+      this.showToastNotification('✅ Guardado');
+      this.cdr.markForCheck();
     }
-    this.showEditModal = false;
   }
 
   setSort(sort: 'date' | 'name' | 'size') {
@@ -540,6 +533,8 @@ export class UploadMusicComponent {
       this.sortBy = sort;
       this.sortOrder = 'asc';
     }
+    this.applySort();
+    this.cdr.markForCheck();
   }
 
   updateFolderCount(folderId: string, change: number) {
@@ -564,13 +559,16 @@ export class UploadMusicComponent {
 
   selectFolder(folder: Folder) {
     this.selectedFolder = folder;
+    this.searchTerm = '';
+    this.filterFiles();
+    this.cdr.markForCheck();
   }
 
   createFolder() {
     if (!this.newFolderName.trim()) return;
 
     const newFolder: Folder = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: this.newFolderName.trim(),
       fileCount: 0,
       createdAt: new Date(),
@@ -578,42 +576,46 @@ export class UploadMusicComponent {
       colorClass: 'zinc'
     };
 
-    this.folders.push(newFolder);
+    this.folders = [...this.folders, newFolder];
     this.newFolderName = '';
     this.showCreateFolderModal = false;
     this.saveToLocalStorage();
+    this.showToastNotification('Carpeta creada');
+    this.cdr.markForCheck();
   }
 
-  deleteFolder(folder: Folder, event: Event) {
+  async deleteFolder(folder: Folder, event: Event) {
     event.stopPropagation();
     if (folder.isSystem) return;
 
-    if (folder.fileCount > 0) {
-      // Direct delete without confirm, as requested for smooth UX
-      this.uploadedMusicFiles = this.uploadedMusicFiles.filter(file => file.folderId !== folder.id);
+    // Delete files in DB
+    const filesToDelete = this.uploadedMusicFiles.filter(f => f.folderId === folder.id);
+    for (const f of filesToDelete) {
+      await this.storageService.deleteFile(f.id);
     }
+
+    // Update State
+    this.uploadedMusicFiles = this.uploadedMusicFiles.filter(f => f.folderId !== folder.id);
     this.folders = this.folders.filter(f => f.id !== folder.id);
-    this.toastService.success(`Carpeta "${folder.name}" eliminada`);
 
     if (this.selectedFolder?.id === folder.id) {
-      this.selectedFolder = this.folders[0];
+      this.selectFolder(this.folders[0]);
     }
 
     this.calculateStorage();
+    this.filterFiles();
     this.saveToLocalStorage();
+    this.showToastNotification('Carpeta eliminada');
+    this.cdr.markForCheck();
   }
 
   async playFile(file: MusicFile) {
-    // this.toastService.info('📂 Cargando carpeta para reproducción...');
-
     try {
-      // 1. Fetch all stored files from IndexedDB to ensure playlist continuity
+      // 1. Fetch all stored files for continuity
       const storedData = await this.storageService.getAllFiles();
 
-      // 2. Prepare the playlist context
-      // We iterate over the CURRENT VIEW (filteredMusicFiles) to maintain order and filters
+      // 2. Build playlist from CURRENT FILTERED VIEW
       const playlistSongs: Song[] = this.filteredMusicFiles.map(f => {
-        // Find the actual file blob in DB if we don't have it in memory/URL
         if (!f.url || f.url === '') {
           const found = storedData.find(dbFile => dbFile.id === f.id);
           if (found && found.file) {
@@ -621,8 +623,6 @@ export class UploadMusicComponent {
             f.url = URL.createObjectURL(found.file);
           }
         }
-
-        // Return the song object for the player
         return {
           id: f.id,
           artistId: 0,
@@ -630,27 +630,21 @@ export class UploadMusicComponent {
           title: f.name,
           artist: f.artist,
           duration: f.duration || '0:00',
-          url: f.url || '', // Should be valid now if file exists
+          url: f.url || '',
           album: 'Uploads'
         };
       });
 
-      // 3. Set Playlist in Player
       this.playerService.setPlaylist(playlistSongs, false);
-
-      // 4. Play the specific song the user clicked
       const songToPlay = playlistSongs.find(s => s.id === file.id);
-      if (songToPlay && songToPlay.url) {
+
+      if (songToPlay) {
         this.playerService.playSong(songToPlay);
         this.showToastNotification(`▶️ ${file.name}`);
-      } else {
-        this.toastService.error('⚠️ El archivo no se pudo cargar.');
-        this.deleteFile(file); // Clean up if missing
       }
-
     } catch (error) {
       console.error('Error loading playlist', error);
-      this.toastService.error('Error al cargar la carpeta');
+      this.showToastNotification('Error al reproducir');
     }
   }
 
@@ -658,75 +652,74 @@ export class UploadMusicComponent {
     if (event) event.stopPropagation();
     file.isFavorite = !file.isFavorite;
 
-    const favFolder = this.folders.find(f => f.id === '2');
-    if (favFolder) {
-      favFolder.fileCount += file.isFavorite ? 1 : -1;
-    }
+    // Persist (Update just metadata in DB)
+    this.storageService.updateFile(file);
 
-    this.saveToLocalStorage();
+    // Update UI counts
+    this.recalculateFolderCounts();
+
+    // If we are in Favorites folder, refresh view
+    if (this.selectedFolder?.id === '2') {
+      this.filterFiles();
+    }
+    this.cdr.markForCheck();
   }
 
-  // New Move Logic
   openMoveModal(file: MusicFile) {
     this.fileToMove = file;
     this.showMoveModal = true;
+    this.closeFileOptions();
+    this.cdr.markForCheck();
   }
 
   get availableFoldersToMove(): Folder[] {
-    // Return all folders except 'Favoritas' and current folder
-    return this.folders.filter(f => f.id !== '2' && f.id !== this.fileToMove?.folderId);
+    return this.folders.filter(f => !f.isSystem && f.id !== this.fileToMove?.folderId);
   }
 
-  moveFileToFolder(folder: Folder) {
-    if (!this.fileToMove) return;
+  async moveFileToFolder(folder: Folder) {
+    if (this.fileToMove) {
+      this.fileToMove.folderId = folder.id;
+      await this.storageService.updateFile(this.fileToMove);
 
-    this.updateFolderCount(this.fileToMove.folderId, -1);
-    this.fileToMove.folderId = folder.id;
-    this.updateFolderCount(folder.id, 1);
+      this.recalculateFolderCounts();
+      this.filterFiles();
 
-    this.showToastNotification(`📂 Movido a "${folder.name}"`);
-    this.showMoveModal = false;
-    this.fileToMove = null;
-    this.saveToLocalStorage();
+      this.showMoveModal = false;
+      this.fileToMove = null;
+      this.showToastNotification(`Movido a "${folder.name}"`);
+      this.cdr.markForCheck();
+    }
   }
 
-  deleteFile(file: MusicFile) {
+  async deleteFile(file: MusicFile) {
     this.closeFileOptions();
 
-    // If in favorites view, just toggle favorite off
+    // If in favorites, just toggle
     if (this.selectedFolder?.id === '2') {
       this.toggleFavorite(file);
       return;
     }
 
-    // if (!confirm(`¿Eliminar permanentemente "${file.name}"?`)) return;
+    if (!confirm(`¿Eliminar "${file.name}"?`)) return;
 
-    this.updateFolderCount(file.folderId, -1);
-    if (file.isFavorite) {
-      this.updateFolderCount('2', -1);
-    }
-
-    // Remove from IndexedDB
-    this.storageService.deleteFile(file.id).catch(err => console.error('Error deleting from DB', err));
-
+    await this.storageService.deleteFile(file.id);
     this.uploadedMusicFiles = this.uploadedMusicFiles.filter(f => f.id !== file.id);
+
+    this.recalculateFolderCounts();
     this.calculateStorage();
-    this.saveToLocalStorage();
-    this.toastService.success('Archivo eliminado');
+    this.filterFiles();
+    this.showToastNotification('Archivo eliminado');
+    this.cdr.markForCheck();
   }
 
   calculateStorage() {
-    this.usedStorage = 0;
-    this.uploadedFiles = this.uploadedMusicFiles.length;
-    this.uploadedMusicFiles.forEach(file => {
-      const sizeMB = file.sizeRaw / (1024 * 1024);
-      this.usedStorage += sizeMB;
-    });
-    this.usedStorage = Math.round(this.usedStorage * 100) / 100;
-    this.storagePercentage = Math.round((this.usedStorage / this.maxStorage) * 100);
-    if (this.storagePercentage > 100) this.storagePercentage = 100;
+    const totalBytes = this.uploadedMusicFiles.reduce((acc, f) => acc + (f.sizeRaw || 0), 0);
+    this.usedStorage = totalBytes / (1024 * 1024);
 
-    this.recalculateFolderCounts();
+    if (!this.maxStorage) this.maxStorage = 1024;
+
+    this.storagePercentage = Math.min(100, (this.usedStorage / this.maxStorage) * 100);
+    this.cdr.markForCheck();
   }
 
   formatSize(bytes: number): string {
@@ -737,52 +730,20 @@ export class UploadMusicComponent {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  formatDuration(seconds: number): string {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  // Persist folders structure only (files are in IndexedDB)
   saveToLocalStorage() {
-    const data = {
-      folders: this.folders,
-      files: this.uploadedMusicFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        artist: f.artist,
-        coverUrl: f.coverUrl, // Save cover URL (blob url might expire, need logic to persist blobs ideally, but for now this works for session/memory or if blobs are re-created)
-        size: f.size,
-        sizeRaw: f.sizeRaw,
-        folderId: f.folderId,
-        dateAdded: f.dateAdded,
-        isFavorite: f.isFavorite,
-        duration: f.duration
-      }))
-    };
-    localStorage.setItem('donmusic_uploads_meta', JSON.stringify(data));
+    const foldersToSave = this.folders.filter(f => !f.isSystem);
+    localStorage.setItem('donmusic_folders', JSON.stringify(foldersToSave));
   }
 
   loadFromLocalStorage() {
-    const data = localStorage.getItem('donmusic_uploads_meta');
-    if (data) {
-      try {
-        const parsed = JSON.parse(data);
-        if (parsed.folders) {
-          this.folders = parsed.folders.map((f: Folder) => {
-            if (f.id === '1') return { ...f, isSystem: true, colorClass: 'emerald' };
-            if (f.id === '2') return { ...f, isSystem: true, colorClass: 'red' };
-            return { ...f, isSystem: false, colorClass: 'zinc' };
-          });
-          if (!this.folders.find(f => f.id === '1'))
-            this.folders.unshift({ id: '1', name: 'General', fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'emerald' });
-          if (!this.folders.find(f => f.id === '2'))
-            this.folders.splice(1, 0, { id: '2', name: 'Favoritas', fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'red' });
-        }
-        if (parsed.files) {
-          this.uploadedMusicFiles = parsed.files.map((f: any) => ({
-            ...f,
-            ...f,
-            url: '',
-            coverUrl: f.coverUrl || '',
-            duration: f.duration || '0:00'
-          }));
-        }
-        this.recalculateFolderCounts();
-      } catch (e) { console.error(e); }
-    }
+    // Intentionally left blank, logic moved to constructor
   }
 }

@@ -1,24 +1,49 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { LyricsService, SavedLyric } from '../../services/lyrics.service';
 import { OfflineService } from '../../services/offline.service';
-import { PlayerService } from '../../services/player.service';
+import { DonMusicaProService } from '../../services/don-musica-pro.service';
 
 @Component({
   selector: 'app-saved-lyrics',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './saved-lyrics.component.html'
 })
 export class SavedLyricsComponent implements OnInit {
   private lyricsService = inject(LyricsService);
   private offlineService = inject(OfflineService);
-  private playerService = inject(PlayerService);
+
+  private proService = inject(DonMusicaProService);
+
+  // ... (rest of the file) ...
 
   savedLyrics = signal<SavedLyric[]>([]);
   selectedLyric = signal<SavedLyric | null>(null);
 
+  offlineLyrics = computed(() => {
+    const offlineSongs = this.offlineService.offlineSongs();
+    return this.savedLyrics().filter(lyric =>
+      offlineSongs.some(song =>
+        song.title.toLowerCase().trim() === lyric.title.toLowerCase().trim() &&
+        song.artist.toLowerCase().trim() === lyric.artist.toLowerCase().trim()
+      )
+    );
+  });
+
+  manualLyrics = computed(() => {
+    const offlineSongs = this.offlineService.offlineSongs();
+    return this.savedLyrics().filter(lyric =>
+      !offlineSongs.some(song =>
+        song.title.toLowerCase().trim() === lyric.title.toLowerCase().trim() &&
+        song.artist.toLowerCase().trim() === lyric.artist.toLowerCase().trim()
+      )
+    );
+  });
+
   ngOnInit() {
+    this.offlineService.loadOfflineSongs();
     this.loadLyrics();
   }
 
@@ -36,42 +61,52 @@ export class SavedLyricsComponent implements OnInit {
 
   deleteLyric(id: string, event: Event) {
     event.stopPropagation();
-    if (confirm('¿Estás seguro de eliminar esta letra guardada?')) {
-      this.lyricsService.deleteLyric(id);
-      this.loadLyrics();
+    this.lyricsService.deleteLyric(id);
+    this.loadLyrics();
 
-      if (this.selectedLyric()?.id === id) {
-        this.closeLyric();
+    if (this.selectedLyric()?.id === id) {
+      this.closeLyric();
+    }
+  }
+
+  limitInfo = computed(() => {
+    // Read the signal to track dependencies
+    this.proService.isPro();
+    this.savedLyrics();
+    return this.lyricsService.getLimitInfo();
+  });
+
+  toggleProMode() {
+    this.proService.togglePro();
+    this.loadLyrics(); // Trigger update
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.lrc')) {
+      alert('Por favor selecciona un archivo de texto (.txt) o letra (.lrc)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const content = e.target.result;
+      const title = file.name.replace(/\.[^/.]+$/, "");
+
+      const success = this.lyricsService.saveLyric(title, 'Importado', content);
+
+      if (success) {
+        this.loadLyrics();
+        alert('Letra importada correctamente');
+      } else {
+        alert('¡Límite alcanzado! Elimina letras antiguas o actualiza a PRO para guardar más.');
       }
-    }
-  }
+    };
+    reader.readAsText(file);
 
-  isOffline(lyric: SavedLyric): boolean {
-    const offlineSongs = this.offlineService.offlineSongs();
-    return offlineSongs.some(s =>
-      s.title.toLowerCase() === lyric.title.toLowerCase() &&
-      s.artist.toLowerCase() === lyric.artist.toLowerCase()
-    );
-  }
-
-  playSong(lyric: SavedLyric, event?: Event) {
-    if (event) event.stopPropagation();
-
-    const offlineSongs = this.offlineService.offlineSongs();
-    const song = offlineSongs.find(s =>
-      s.title.toLowerCase() === lyric.title.toLowerCase() &&
-      s.artist.toLowerCase() === lyric.artist.toLowerCase()
-    );
-
-    if (song) {
-      // Construct a playable song object from the offline data
-      const playableSong = {
-        ...song,
-        url: song.audioUrl || song.url,
-        img: song.imageUrl || song.img,
-        id: String(song.id) // Ensure ID string compatibility
-      };
-      this.playerService.playSong(playableSong);
-    }
+    // Reset inputs
+    event.target.value = '';
   }
 }

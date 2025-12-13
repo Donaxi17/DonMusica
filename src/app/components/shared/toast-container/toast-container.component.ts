@@ -49,68 +49,60 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
       }
     </div>
 
-    <!-- Mobile Fullscreen Modal -->
-    <div class="md:hidden">
+    <!-- Mobile Toast (Floating Top) -->
+    <div class="md:hidden fixed top-2 left-0 right-0 z-[999999] pointer-events-none px-3 flex flex-col gap-2 items-center">
       @for (toast of toastService.toasts(); track toast.id) {
-        <div class="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4">
-          <!-- Close Button (Top Right) -->
-          <button 
-            (click)="toastService.remove(toast.id)"
-            class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white bg-zinc-800/80 hover:bg-zinc-700 rounded-full transition-colors z-10">
-            <app-svg-icon name="x" width="24" height="24"></app-svg-icon>
-          </button>
+        <div 
+          class="pointer-events-auto w-full max-w-[400px] animate-slide-in-top bg-zinc-900/95 backdrop-blur-md border rounded-xl shadow-2xl overflow-hidden"
+          [class.border-emerald-500]="toast.type === 'success'"
+          [class.border-red-500]="toast.type === 'error'"
+          [class.border-blue-500]="toast.type === 'info'"
+          [class.border-yellow-500]="toast.type === 'warning'">
+          
+          <div class="flex items-start gap-3 p-3">
+            <!-- Icon -->
+            <div class="flex-shrink-0 w-5 h-5 flex items-center justify-center mt-0.5">
+              @if (toast.type === 'success') {
+                <app-svg-icon name="check-circle" class="text-emerald-500" width="20" height="20"></app-svg-icon>
+              }
+              @if (toast.type === 'error') {
+                <app-svg-icon name="info-circle" class="text-red-500" width="20" height="20"></app-svg-icon>
+              }
+              @if (toast.type === 'info') {
+                <app-svg-icon name="info-circle" class="text-blue-500" width="20" height="20"></app-svg-icon>
+              }
+              @if (toast.type === 'warning') {
+                <app-svg-icon name="info-circle" class="text-yellow-500" width="20" height="20"></app-svg-icon>
+              }
+            </div>
 
-          <!-- Content -->
-          <div class="w-full max-w-md animate-scale-in">
-            <div class="text-white" [innerHTML]="toast.message"></div>
+            <!-- Message -->
+            <div class="flex-1 text-xs text-white font-medium leading-relaxed" [innerHTML]="toast.message"></div>
+
+            <!-- Close Button -->
+            <button 
+              (click)="toastService.remove(toast.id)"
+              class="flex-shrink-0 w-8 h-8 -mr-1 -mt-1 flex items-center justify-center text-zinc-400 hover:text-white transition-colors active:bg-zinc-800 rounded-lg">
+              <app-svg-icon name="x" width="16" height="16"></app-svg-icon>
+            </button>
           </div>
         </div>
       }
     </div>
   `,
   styles: [`
+    @keyframes slide-in-top {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
     @keyframes slide-in-right {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
-    @keyframes fade-in {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes scale-in {
-      from {
-        transform: scale(0.9);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    .animate-slide-in-right {
-      animation: slide-in-right 0.3s ease-out;
-    }
-
-    .animate-fade-in {
-      animation: fade-in 0.2s ease-out;
-    }
-
-    .animate-scale-in {
-      animation: scale-in 0.3s ease-out;
-    }
+    .animate-slide-in-top { animation: slide-in-top 0.3s ease-out; }
+    .animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
   `]
 })
 export class ToastContainerComponent {
