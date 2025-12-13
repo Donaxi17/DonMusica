@@ -74,7 +74,7 @@
                         class="block border-2 border-dashed border-zinc-700/50 group-hover/upload:border-emerald-500/40 rounded-2xl p-6 md:p-10 text-center cursor-pointer relative overflow-hidden bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
                         (dragover)="onDragOver($event)" (drop)="onDrop($event)">
 
-                        <input #fileInput type="file" multiple accept="*/*" class="hidden" [disabled]="isUploading"
+                        <input #fileInput type="file" multiple class="hidden" [disabled]="isUploading"
                             (change)="onFileSelected($event)">
 
                         <!-- Upload Overlay -->
