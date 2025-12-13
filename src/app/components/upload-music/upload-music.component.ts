@@ -274,7 +274,7 @@ export class UploadMusicComponent {
         }
       </style>
     `;
-    
+
     this.toastService.showHtml(message, 'info', 15000); // 10 seconds
   }
 
@@ -306,7 +306,11 @@ export class UploadMusicComponent {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!file.type.startsWith('audio/')) {
+      // Check MIME type or Extension (some devices send audio as application/octet-stream)
+      const isAudioMime = file.type.startsWith('audio/');
+      const hasAudioExtension = /\.(mp3|wav|m4a|aac|ogg|flac|wma|opus)$/i.test(file.name);
+
+      if (!isAudioMime && !hasAudioExtension) {
         this.showToastNotification(`⚠️ "${file.name}" no es un archivo de audio válido.`);
         continue;
       }
