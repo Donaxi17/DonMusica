@@ -27,6 +27,7 @@ export class LayoutComponent implements OnInit {
   showLanguageMenu = false;
   currentLanguage: 'ES' | 'EN' = 'EN';
   progress = 0;
+  imageLoadError = false;
   private previousRoute: string = '/';
 
   constructor(
@@ -51,6 +52,7 @@ export class LayoutComponent implements OnInit {
 
     this.playerService.currentSong$.subscribe(song => {
       this.currentSong = song;
+      this.imageLoadError = false;
     });
 
     this.playerService.isPlaying$.subscribe(playing => {
@@ -199,5 +201,9 @@ export class LayoutComponent implements OnInit {
 
   closeLanguageMenu() {
     this.showLanguageMenu = false;
+  }
+
+  onImageError(event: any) {
+    this.imageLoadError = true;
   }
 }

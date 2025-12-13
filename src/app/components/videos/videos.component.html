@@ -45,9 +45,13 @@
         </div>
     </div>
 
+
     <!-- Video Feed -->
     <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
 
+        @if (!networkService.isOnline()) {
+        <app-no-connection></app-no-connection>
+        } @else {
         <!-- Skeleton Loaders (mientras carga) -->
         @if (isLoading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
@@ -200,6 +204,7 @@
             <p class="text-zinc-500 max-w-xs mx-auto text-sm">Busca tus videos musicales favoritos para empezar a
                 disfrutar.</p>
         </div>
+        }
         }
     </div>
 </div>

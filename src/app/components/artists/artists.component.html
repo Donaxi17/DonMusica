@@ -29,8 +29,12 @@
         </div>
     </div>
 
+
     <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-30 -mt-12 md:-mt-24">
 
+        @if (!networkService.isOnline()) {
+        <app-no-connection></app-no-connection>
+        } @else {
         <!-- Search Bar with Voice -->
         <div class="relative max-w-3xl mx-auto mb-8 md:mb-16 group">
             <div
@@ -52,9 +56,9 @@
                 <button (click)="toggleVoiceSearch()"
                     class="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center transition-all duration-300 transform active:scale-95 shadow-lg mr-1 shrink-0"
                     [ngClass]="{
-                        'bg-red-500 text-white shadow-red-500/50 animate-pulse': isListening,
-                        'bg-gradient-to-br from-emerald-500 to-green-600 text-white hover:shadow-emerald-500/50': !isListening
-                    }">
+                            'bg-red-500 text-white shadow-red-500/50 animate-pulse': isListening,
+                            'bg-gradient-to-br from-emerald-500 to-green-600 text-white hover:shadow-emerald-500/50': !isListening
+                        }">
                     <app-svg-icon name="microphone" width="24" height="24" class="text-white"></app-svg-icon>
                 </button>
             </div>
@@ -75,32 +79,32 @@
                     <button (click)="onGenreChange(genre.id)"
                         class="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden select-none cursor-pointer"
                         [ngClass]="{
-                            'bg-gradient-to-r from-emerald-500 to-green-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'all',
-                            'bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'reggaeton',
-                            'bg-gradient-to-r from-purple-500 to-pink-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'trap',
-                            'bg-gradient-to-r from-pink-500 to-rose-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'pop',
-                            'bg-gradient-to-r from-green-500 to-emerald-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'vallenato',
-                            'bg-gradient-to-r from-red-500 to-rose-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'salsa',
-                            'bg-gradient-to-r from-cyan-500 to-blue-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'champeta',
-                            'bg-gradient-to-r from-indigo-500 to-purple-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'cristiana',
-                            'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== genre.id
-                        }">
+                                'bg-gradient-to-r from-emerald-500 to-green-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'all',
+                                'bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'reggaeton',
+                                'bg-gradient-to-r from-purple-500 to-pink-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'trap',
+                                'bg-gradient-to-r from-pink-500 to-rose-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'pop',
+                                'bg-gradient-to-r from-green-500 to-emerald-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'vallenato',
+                                'bg-gradient-to-r from-red-500 to-rose-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'salsa',
+                                'bg-gradient-to-r from-cyan-500 to-blue-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'champeta',
+                                'bg-gradient-to-r from-indigo-500 to-purple-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'cristiana',
+                                'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedGenre() !== genre.id
+                            }">
 
                         <!-- Animated Background -->
                         <div *ngIf="selectedGenre() === genre.id" class="absolute inset-0 bg-white/20 animate-pulse">
                         </div>
 
                         <app-svg-icon [name]="genre.icon" width="20" height="20" class="relative z-10" [ngClass]="{
-                                'text-white': selectedGenre() === genre.id,
-                                'text-emerald-500 group-hover:text-emerald-400': selectedGenre() !== genre.id && genre.id === 'all',
-                                'text-orange-500 group-hover:text-orange-400': selectedGenre() !== genre.id && genre.id === 'reggaeton',
-                                'text-purple-500 group-hover:text-purple-400': selectedGenre() !== genre.id && genre.id === 'trap',
-                                'text-pink-500 group-hover:text-pink-400': selectedGenre() !== genre.id && genre.id === 'pop',
-                                'text-green-500 group-hover:text-green-400': selectedGenre() !== genre.id && genre.id === 'vallenato',
-                                'text-red-500 group-hover:text-red-400': selectedGenre() !== genre.id && genre.id === 'salsa',
-                                'text-cyan-500 group-hover:text-cyan-400': selectedGenre() !== genre.id && genre.id === 'champeta',
-                                'text-indigo-500 group-hover:text-indigo-400': selectedGenre() !== genre.id && genre.id === 'cristiana'
-                            }">
+                                    'text-white': selectedGenre() === genre.id,
+                                    'text-emerald-500 group-hover:text-emerald-400': selectedGenre() !== genre.id && genre.id === 'all',
+                                    'text-orange-500 group-hover:text-orange-400': selectedGenre() !== genre.id && genre.id === 'reggaeton',
+                                    'text-purple-500 group-hover:text-purple-400': selectedGenre() !== genre.id && genre.id === 'trap',
+                                    'text-pink-500 group-hover:text-pink-400': selectedGenre() !== genre.id && genre.id === 'pop',
+                                    'text-green-500 group-hover:text-green-400': selectedGenre() !== genre.id && genre.id === 'vallenato',
+                                    'text-red-500 group-hover:text-red-400': selectedGenre() !== genre.id && genre.id === 'salsa',
+                                    'text-cyan-500 group-hover:text-cyan-400': selectedGenre() !== genre.id && genre.id === 'champeta',
+                                    'text-indigo-500 group-hover:text-indigo-400': selectedGenre() !== genre.id && genre.id === 'cristiana'
+                                }">
                         </app-svg-icon>
                         <span class="relative z-10">{{ genre.name }}</span>
                     </button>
@@ -210,5 +214,6 @@
                 </div>
             </div>
         </div>
+        }
     </div>
 </div>

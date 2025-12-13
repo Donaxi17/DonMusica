@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../services/player.service';
@@ -6,6 +6,11 @@ import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { ToastService } from '../../services/toast.service';
 import { StorageService } from '../../services/storage.service';
+import * as mm from 'music-metadata-browser';
+import { Buffer } from 'buffer';
+
+// Polyfill Buffer for the browser if needed (often handled by build tools, but good to ensure)
+(window as any).Buffer = Buffer;
 
 interface MusicFile {
   id: string;
@@ -19,6 +24,7 @@ interface MusicFile {
   folderId: string;
   file?: File;
   isFavorite: boolean;
+  duration: string;
 }
 
 interface Folder {
@@ -42,11 +48,12 @@ export class UploadMusicComponent {
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
 
-  readonly FREE_STORAGE_LIMIT = 1024;
-  readonly PRO_STORAGE_LIMIT = 20480;
+  // Storage limits in MB (1GB = 1024MB, 5GB = 5120MB)
+  readonly FREE_STORAGE_LIMIT = 1024; // 1 GB
+  readonly PRO_STORAGE_LIMIT = 5120;  // 5 GB
 
-  maxStorage = 1024;
-  usedStorage = 0;
+  maxStorage = 1024; // in MB
+  usedStorage = 0;   // in MB
   storagePercentage = 0;
   uploadedFiles = 0;
   isPro = false;
@@ -61,6 +68,20 @@ export class UploadMusicComponent {
   selectedFolder: Folder | null = this.folders[0];
   showCreateFolderModal = false;
   newFolderName = '';
+
+  // Search & Sort State
+  searchTerm = '';
+  sortBy: 'date' | 'name' | 'size' = 'date';
+  sortOrder: 'asc' | 'desc' = 'desc';
+
+  // Edit Modal State
+  showEditModal = false;
+  editData = { id: '', name: '', artist: '' };
+
+
+  // File Options Modal State (Kebab Menu)
+  showFileOptionsModal = false;
+  fileForOptions: MusicFile | null = null;
 
   // Move Modal State
   showMoveModal = false;
@@ -78,16 +99,49 @@ export class UploadMusicComponent {
     this.setStorageLimit();
     this.calculateStorage();
     if (!this.selectedFolder) this.selectedFolder = this.folders[0];
+
+    // Attempt to repair files (duration + persistent blobs)
+    setTimeout(() => this.repairFiles(), 1000);
   }
 
   get filteredMusicFiles(): MusicFile[] {
-    if (!this.selectedFolder) return this.uploadedMusicFiles;
+    let files = this.uploadedMusicFiles;
 
-    if (this.selectedFolder.id === '2') {
-      return this.uploadedMusicFiles.filter(f => f.isFavorite);
+    // 1. Filter by Folder
+    if (this.selectedFolder) {
+      if (this.selectedFolder.id === '2') {
+        files = files.filter(f => f.isFavorite);
+      } else {
+        files = files.filter(f => f.folderId === this.selectedFolder?.id);
+      }
     }
 
-    return this.uploadedMusicFiles.filter(f => f.folderId === this.selectedFolder?.id);
+    // 2. Filter by Search Term
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      files = files.filter(f =>
+        f.name.toLowerCase().includes(term) ||
+        f.artist.toLowerCase().includes(term)
+      );
+    }
+
+    // 3. Sort
+    return files.sort((a, b) => {
+      let comparison = 0;
+      switch (this.sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'size':
+          comparison = a.sizeRaw - b.sizeRaw;
+          break;
+        case 'date':
+        default:
+          comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+          break;
+      }
+      return this.sortOrder === 'asc' ? comparison : -comparison;
+    });
   }
 
   // Set storage limit based on user type
@@ -97,7 +151,7 @@ export class UploadMusicComponent {
   }
 
   getStorageLimitInfo(): string {
-    return this.isPro ? '20 GB (Pro)' : '1 GB (Free)';
+    return this.isPro ? '5 GB (Pro)' : '1 GB (Free)';
   }
 
   get maxStorageGB(): number {
@@ -106,6 +160,25 @@ export class UploadMusicComponent {
 
   get usedStorageGB(): string {
     return (this.usedStorage / 1024).toFixed(2);
+  }
+
+  // Storage warning level (for visual indicators)
+  get storageWarningLevel(): 'safe' | 'warning' | 'danger' {
+    if (this.storagePercentage >= 90) return 'danger';
+    if (this.storagePercentage >= 75) return 'warning';
+    return 'safe';
+  }
+
+  // Estimated song capacity (assuming average 4MB per song)
+  get estimatedSongsRemaining(): number {
+    const avgSongSizeMB = 4;
+    const remainingMB = this.maxStorage - this.usedStorage;
+    return Math.floor(remainingMB / avgSongSizeMB);
+  }
+
+  get totalSongCapacity(): number {
+    const avgSongSizeMB = 4;
+    return Math.floor(this.maxStorage / avgSongSizeMB);
   }
 
   canUpgrade(): boolean {
@@ -119,7 +192,90 @@ export class UploadMusicComponent {
   }
 
   upgradeToPro() {
-    this.showToastNotification('👑 ¡Próximamente disponible!');
+    // Create a premium, responsive toast
+    const message = `
+      <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px; border-radius: 12px; position: relative; overflow: hidden;">
+        <!-- Animated gradient overlay -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24); background-size: 200% 100%; animation: shimmer 2s infinite;"></div>
+        
+        <!-- Crown Icon Header -->
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 10px; border-radius: 50%; box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);">
+            <span style="font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></span>
+          </div>
+        </div>
+        
+        <!-- Title -->
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; letter-spacing: 0.5px;">
+            PLAN PRO
+          </div>
+          <div style="font-size: 11px; color: #94a3b8; font-weight: 500;">
+            Próximamente disponible
+          </div>
+        </div>
+        
+        <!-- Benefits Section -->
+        <div style="background: rgba(30, 41, 59, 0.5); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(251, 191, 36, 0.1);">
+          <div style="font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 14px;"></span>
+            <span>Beneficios Exclusivos</span>
+          </div>
+          
+          <div style="display: grid; gap: 8px;">
+            <!-- Benefit 1 -->
+            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(16, 185, 129, 0.05); border-radius: 6px; border-left: 3px solid #10b981;">
+              <span style="font-size: 14px; flex-shrink: 0;"></span>
+              <div style="font-size: 12px; line-height: 1.4;">
+                <strong style="color: #10b981;">5 GB</strong> <span style="color: #cbd5e1;">de almacenamiento</span>
+                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">vs 1 GB en plan FREE</div>
+              </div>
+            </div>
+            
+            <!-- Benefit 2 -->
+            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(59, 130, 246, 0.05); border-radius: 6px; border-left: 3px solid #3b82f6;">
+              <span style="font-size: 14px; flex-shrink: 0;"></span>
+              <div style="font-size: 12px; line-height: 1.4;">
+                <strong style="color: #3b82f6;">~1,280 canciones</strong>
+                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">vs ~256 en plan FREE</div>
+              </div>
+            </div>
+            
+            <!-- Benefit 3 -->
+            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(168, 85, 247, 0.05); border-radius: 6px; border-left: 3px solid #a855f7;">
+              <span style="font-size: 14px; flex-shrink: 0;"></span>
+              <div style="font-size: 12px; line-height: 1.4; color: #cbd5e1;">
+                <strong style="color: #a855f7;">Sin anuncios</strong>
+              </div>
+            </div>
+            
+            <!-- Benefit 4 -->
+            <div style="display: flex; align-items: start; gap: 8px; padding: 6px; background: rgba(236, 72, 153, 0.05); border-radius: 6px; border-left: 3px solid #ec4899;">
+              <span style="font-size: 14px; flex-shrink: 0;"></span>
+              <div style="font-size: 12px; line-height: 1.4; color: #cbd5e1;">
+                <strong style="color: #ec4899;">Soporte prioritario</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.1);">
+          <div style="font-size: 10px; color: #64748b; line-height: 1.5;">
+             Te notificaremos cuando esté disponible
+          </div>
+        </div>
+      </div>
+      
+      <style>
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      </style>
+    `;
+    
+    this.toastService.showHtml(message, 'info', 15000); // 10 seconds
   }
 
   onFileSelected(event: any) {
@@ -144,34 +300,64 @@ export class UploadMusicComponent {
   async processFiles(files: FileList) {
     if (files.length === 0) return;
 
+    // Calculate total size of files to upload
+    let totalSizeMB = 0;
+    const audioFiles: File[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('audio/')) {
+        this.showToastNotification(`⚠️ "${file.name}" no es un archivo de audio válido.`);
+        continue;
+      }
+      audioFiles.push(file);
+      totalSizeMB += file.size / (1024 * 1024);
+    }
+
+    if (audioFiles.length === 0) return;
+
+    // Check if there's enough space BEFORE starting upload
+    const spaceNeeded = this.usedStorage + totalSizeMB;
+    const spaceAvailable = this.maxStorage - this.usedStorage;
+
+    if (spaceNeeded > this.maxStorage) {
+      const spaceNeededGB = (totalSizeMB / 1024).toFixed(2);
+      const spaceAvailableGB = (spaceAvailable / 1024).toFixed(2);
+
+      if (this.isPro) {
+        this.toastService.error(`⚠️ Espacio insuficiente. Necesitas ${spaceNeededGB} GB pero solo tienes ${spaceAvailableGB} GB disponibles.`);
+      } else {
+        this.toastService.error(`⚠️ Límite alcanzado. Necesitas ${spaceNeededGB} GB pero el plan FREE solo permite 1 GB. Actualiza a PRO para obtener 5 GB.`);
+      }
+      return;
+    }
+
+    // Warn if approaching limit (>80%)
+    const futurePercentage = (spaceNeeded / this.maxStorage) * 100;
+    if (futurePercentage > 80 && futurePercentage <= 100) {
+      const remainingGB = ((this.maxStorage - spaceNeeded) / 1024).toFixed(2);
+      this.toastService.warning(`⚠️ Te quedarán solo ${remainingGB} GB disponibles después de esta subida.`);
+    }
+
     let targetFolderId = this.selectedFolder?.id || '1';
     if (targetFolderId === '2') targetFolderId = '1';
 
     this.isUploading = true;
     this.uploadProgress = 0;
-    const totalFiles = files.length;
+    const totalFiles = audioFiles.length;
     let processedFiles = 0;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.startsWith('audio/')) {
-        this.showToastNotification(`⚠️ El archivo "${file.name}" no es un archivo de audio válido.`);
-        continue;
-      }
+    for (const file of audioFiles) {
       this.currentUploadingFile = file.name;
       const simulationDuration = Math.min(2000, Math.max(500, file.size / 10000));
       const steps = 10;
+
       for (let step = 1; step <= steps; step++) {
         await new Promise(resolve => setTimeout(resolve, simulationDuration / steps));
         const currentFileProgress = (step / steps);
         this.uploadProgress = Math.round(((processedFiles + currentFileProgress) / totalFiles) * 100);
       }
-      const fileSizeMB = file.size / (1024 * 1024);
-      if (this.usedStorage + fileSizeMB > this.maxStorage) {
-        this.showToastNotification('⚠️ No hay suficiente espacio de almacenamiento.');
-        this.isUploading = false;
-        return;
-      }
+
       await this.addFile(file, targetFolderId);
       processedFiles++;
     }
@@ -179,7 +365,7 @@ export class UploadMusicComponent {
     this.isUploading = false;
     this.uploadProgress = 0;
     this.currentUploadingFile = '';
-    this.showToastNotification(`✅ ¡${processedFiles} archivos subidos!`);
+    this.showToastNotification(`✅ ¡${processedFiles} ${processedFiles === 1 ? 'archivo subido' : 'archivos subidos'}!`);
     this.saveToLocalStorage();
   }
 
@@ -209,16 +395,75 @@ export class UploadMusicComponent {
     });
   }
 
+  private async repairFiles() {
+    console.log('Verificando integridad de archivos...');
+    const files = this.uploadedMusicFiles;
+
+    for (const file of files) {
+      // 1. Check if we need to restore the file object (for playback/re-extraction)
+      if (!file.file || !file.url || file.url === '') {
+        try {
+          const dbFile = await this.storageService.getFile(file.id);
+          if (dbFile && dbFile.file) {
+            file.file = dbFile.file;
+            file.url = URL.createObjectURL(dbFile.file);
+
+            // 2. Check/Repair Duration
+            if (!file.duration || file.duration === '0:00') {
+              file.duration = await this.getAudioDuration(dbFile.file);
+            }
+
+            // 3. Restore Cover Art (if assuming blob URLs died on reload)
+            if (!file.coverUrl || file.coverUrl.startsWith('blob:')) {
+              const metadata = await this.extractMetadata(dbFile.file);
+              if (metadata.picture) {
+                file.coverUrl = metadata.picture;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Error restoring file data', file.id, err);
+        }
+      }
+    }
+
+    this.saveToLocalStorage();
+    console.log('Verificación completada');
+  }
+
+  async extractMetadata(file: File): Promise<{ title?: string, artist?: string, picture?: string }> {
+    try {
+      const metadata = await mm.parseBlob(file);
+      const title = metadata.common.title;
+      const artist = metadata.common.artist;
+      let picture = '';
+
+      if (metadata.common.picture && metadata.common.picture.length > 0) {
+        const pic = metadata.common.picture[0];
+        const blob = new Blob([pic.data as any], { type: pic.format });
+        picture = URL.createObjectURL(blob);
+      }
+
+      return { title, artist, picture };
+    } catch (error) {
+      console.error('Error extracting metadata:', error);
+      return {};
+    }
+  }
+
   async addFile(file: File, folderId: string): Promise<void> {
     const fileId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
-    // Calculate duration before saving
+    // Calculate duration
     let duration = '0:00';
     try {
       duration = await this.getAudioDuration(file);
     } catch (e) {
       console.error('Error getting duration', e);
     }
+
+    // Extract Metadata (ID3)
+    const metadata = await this.extractMetadata(file);
 
     // Store actual file in IndexedDB
     try {
@@ -235,22 +480,62 @@ export class UploadMusicComponent {
 
     const newFile: MusicFile = {
       id: fileId,
-      name: file.name.replace(/\.[^/.]+$/, ""),
-      artist: 'Desconocido',
-      url: URL.createObjectURL(file), // Valid for current session
-      coverUrl: '',
+      name: metadata.title || file.name.replace(/\.[^/.]+$/, ""), // Use ID3 title if available
+      artist: metadata.artist || 'Desconocido', // Use ID3 artist if available
+      url: URL.createObjectURL(file),
+      coverUrl: metadata.picture || '', // Use ID3 picture if available
       size: this.formatSize(file.size),
       sizeRaw: file.size,
       dateAdded: new Date(),
       folderId: folderId,
-      file: file, // Keep ref for current session
-      isFavorite: false
-      
+      file: file,
+      isFavorite: false,
+      duration: duration
     };
 
     this.uploadedMusicFiles.unshift(newFile);
     this.calculateStorage();
     this.saveToLocalStorage();
+  }
+
+  // Options Menu Logic
+  openFileOptions(file: MusicFile, event: Event) {
+    event.stopPropagation();
+    this.fileForOptions = file;
+    this.showFileOptionsModal = true;
+  }
+
+  closeFileOptions() {
+    this.showFileOptionsModal = false;
+    this.fileForOptions = null;
+  }
+
+  // Edit Logic
+  openEditModal(file: MusicFile, event?: Event) {
+    if (event) event.stopPropagation();
+    this.closeFileOptions(); // Close options menu if open
+    this.editData = { id: file.id, name: file.name, artist: file.artist };
+    this.showEditModal = true;
+  }
+
+  saveEdit() {
+    const fileIndex = this.uploadedMusicFiles.findIndex(f => f.id === this.editData.id);
+    if (fileIndex !== -1) {
+      this.uploadedMusicFiles[fileIndex].name = this.editData.name;
+      this.uploadedMusicFiles[fileIndex].artist = this.editData.artist || 'Desconocido';
+      this.saveToLocalStorage();
+      this.showToastNotification('✅ Cambios guardados');
+    }
+    this.showEditModal = false;
+  }
+
+  setSort(sort: 'date' | 'name' | 'size') {
+    if (this.sortBy === sort) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = sort;
+      this.sortOrder = 'asc';
+    }
   }
 
   updateFolderCount(folderId: string, change: number) {
@@ -315,7 +600,7 @@ export class UploadMusicComponent {
   }
 
   async playFile(file: MusicFile) {
-    this.toastService.info('📂 Cargando carpeta para reproducción...');
+    // this.toastService.info('📂 Cargando carpeta para reproducción...');
 
     try {
       // 1. Fetch all stored files from IndexedDB to ensure playlist continuity
@@ -337,10 +622,10 @@ export class UploadMusicComponent {
         return {
           id: f.id,
           artistId: 0,
-          img: '',
+          img: f.coverUrl || '',
           title: f.name,
-          artist: 'Desconocido',
-          duration: '0:00',
+          artist: f.artist,
+          duration: f.duration || '0:00',
           url: f.url || '', // Should be valid now if file exists
           album: 'Uploads'
         };
@@ -402,6 +687,8 @@ export class UploadMusicComponent {
   }
 
   deleteFile(file: MusicFile) {
+    this.closeFileOptions();
+
     // If in favorites view, just toggle favorite off
     if (this.selectedFolder?.id === '2') {
       this.toggleFavorite(file);
@@ -453,11 +740,13 @@ export class UploadMusicComponent {
         id: f.id,
         name: f.name,
         artist: f.artist,
+        coverUrl: f.coverUrl, // Save cover URL (blob url might expire, need logic to persist blobs ideally, but for now this works for session/memory or if blobs are re-created)
         size: f.size,
         sizeRaw: f.sizeRaw,
         folderId: f.folderId,
         dateAdded: f.dateAdded,
-        isFavorite: f.isFavorite
+        isFavorite: f.isFavorite,
+        duration: f.duration
       }))
     };
     localStorage.setItem('donmusic_uploads_meta', JSON.stringify(data));
@@ -482,8 +771,10 @@ export class UploadMusicComponent {
         if (parsed.files) {
           this.uploadedMusicFiles = parsed.files.map((f: any) => ({
             ...f,
+            ...f,
             url: '',
-            coverUrl: ''
+            coverUrl: f.coverUrl || '',
+            duration: f.duration || '0:00'
           }));
         }
         this.recalculateFolderCounts();

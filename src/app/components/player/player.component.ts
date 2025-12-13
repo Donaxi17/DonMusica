@@ -31,6 +31,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showTimerMenu = false;
   sleepTimer: any = null;
   timerMinutes = 0;
+  imageLoadError = false;
 
   private subscriptions: Subscription[] = [];
 
@@ -56,6 +57,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.playerService.currentSong$.subscribe(song => {
         this.currentSong = song;
+        this.imageLoadError = false;
       }),
       this.playerService.isPlaying$.subscribe(playing => {
         this.isPlaying = playing;
@@ -212,6 +214,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.sleepTimer = null;
     }
     this.timerMinutes = 0;
+    this.timerMinutes = 0;
     this.showTimerMenu = false;
+  }
+
+  onImageError(event: any) {
+    this.imageLoadError = true;
   }
 }

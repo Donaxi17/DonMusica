@@ -39,6 +39,10 @@
             </p>
         </header>
 
+        <!-- Loading State / No Connection / Content -->
+        @if (!networkService.isOnline()) {
+        <app-no-connection></app-no-connection>
+        } @else {
         <!-- Loading State -->
         <div *ngIf="loading()" class="flex justify-center py-12">
             <div class="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-t-2 border-b-2 border-cyan-500">
@@ -79,8 +83,8 @@
             </div>
 
             <!-- <app-ad-banner adName="Banner Principal Blog" adSlot="6639202178" adFormat="auto"
-                class="block my-4 md:my-0">
-            </app-ad-banner> -->
+                    class="block my-4 md:my-0">
+                </app-ad-banner> -->
 
             <!-- Recent Posts Grid -->
             <div>
@@ -192,6 +196,7 @@
                 <app-ads-container [index]="999"></app-ads-container>
             </div>
         </div>
+        }
     </div>
 </div>
 

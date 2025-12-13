@@ -1,14 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 
 @Component({
     selector: 'app-browse',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, NoConnectionComponent],
     templateUrl: './browse.component.html'
 })
 export class BrowseComponent {
+    networkService = inject(NetworkService);
+
 
     scrollToLink(event: MouseEvent, nav: HTMLElement) {
         const target = event.currentTarget as HTMLElement;

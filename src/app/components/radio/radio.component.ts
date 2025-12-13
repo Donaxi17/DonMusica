@@ -1,17 +1,20 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject } from '@angular/core';
+﻿import { Component, inject, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RadioService } from '../../services/radio.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { ToastService } from '../../services/toast.service';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 
 @Component({
   selector: 'app-radio',
   standalone: true,
-  imports: [CommonModule, AdsContainerComponent],
+  imports: [CommonModule, AdsContainerComponent, NoConnectionComponent],
   templateUrl: './radio.component.html',
   styleUrl: './radio.component.css'
 })
 export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
+  networkService = inject(NetworkService);
   stations: any[] = [];
   currentStation: any = null;
   audio = new Audio();

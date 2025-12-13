@@ -20,10 +20,10 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Smartlink configuration
   // Active Monetag Smartlink
-  private readonly SMARTLINK_URL = 'https://otieu.com/4/10301736';
+  // private readonly SMARTLINK_URL = 'https://otieu.com/4/10301736';
 
   // Backup Adsterra Smartlink (Future use)
-  // private readonly BACKUP_LINK = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
+  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
   constructor(
     private router: Router,

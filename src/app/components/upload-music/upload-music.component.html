@@ -1,30 +1,63 @@
-<div class="min-h-screen bg-zinc-950 text-white pt-6 md:pt-10">
+﻿<div class="min-h-screen bg-zinc-950 text-white pt-6 md:pt-10">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
 
         <!-- HEADER SECTION -->
         <div class="flex flex-col text-center md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-12">
-            <div>
-                <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight">
-                    Mi Música
+            <div class="text-center md:text-left relative z-10">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 backdrop-blur-md mb-4 shadow-lg shadow-black/20">
+                    <span class="relative flex h-2 w-2">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">Espacio Personal</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black tracking-tighter text-white my-4 drop-shadow-2xl">
+                    <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-600">Mi</span>
+                    Música
                 </h1>
-                <p class="text-zinc-500 text-sm md:text-base mt-2">
-                    Gestiona tu nube personal.
+                <p class="text-zinc-400 text-sm md:text-base font-medium max-w-md mx-auto md:mx-0 leading-relaxed">
+                    Sube tus canciones favoritas, crea carpetas y organízalas. Todo se guarda en tu navegador.
                 </p>
             </div>
 
             <!-- Mobile Storage Indicator -->
-            <div class="md:hidden bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+            <div class="md:hidden bg-zinc-900 rounded-xl p-4 mt-8 border border-zinc-800">
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs font-bold text-zinc-400">Almacenamiento ({{ isPro ? 'PRO' : 'FREE' }})</span>
-                    <span class="text-xs font-mono text-emerald-500">{{ usedStorageGB }} / {{ maxStorageGB }} GB</span>
+                    <span class="text-xs font-mono" [ngClass]="{
+                        'text-emerald-500': storageWarningLevel === 'safe',
+                        'text-yellow-500': storageWarningLevel === 'warning',
+                        'text-red-500': storageWarningLevel === 'danger'
+                    }">{{ usedStorageGB }} / {{ maxStorageGB }} GB</span>
                 </div>
                 <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden mb-3">
-                    <div class="h-full bg-emerald-500 transition-all duration-500" [style.width.%]="storagePercentage">
+                    <div class="h-full transition-all duration-500" [style.width.%]="storagePercentage" [ngClass]="{
+                            'bg-emerald-500': storageWarningLevel === 'safe',
+                            'bg-yellow-500': storageWarningLevel === 'warning',
+                            'bg-red-500': storageWarningLevel === 'danger'
+                        }">
                     </div>
                 </div>
+                <div class="text-[10px] text-zinc-400 mb-3 flex justify-between">
+                    <span>~{{ totalSongCapacity }} canciones</span>
+                    <span *ngIf="estimatedSongsRemaining > 0" [ngClass]="{
+                        'text-emerald-400': storageWarningLevel === 'safe',
+                        'text-yellow-400': storageWarningLevel === 'warning',
+                        'text-red-400': storageWarningLevel === 'danger'
+                    }">~{{ estimatedSongsRemaining }} más</span>
+                    <span *ngIf="estimatedSongsRemaining <= 0" class="text-red-400 font-bold">⚠️ Lleno</span>
+                </div>
                 <button *ngIf="canUpgrade()" (click)="upgradeToPro()"
-                    class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-yellow-500 text-xs font-bold rounded-lg border border-yellow-500/20 transition-colors flex items-center justify-center gap-2 active:bg-zinc-700">
-                    <span>👑 Aumentar Espacio</span>
+                    class="w-full py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 active:scale-95"
+                    [ngClass]="{
+                        'bg-gradient-to-r from-yellow-500 to-amber-500 text-black': storageWarningLevel === 'danger',
+                        'bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-yellow-500/20': storageWarningLevel !== 'danger'
+                    }">
+                    <span>👑</span>
+                    <span>{{ storageWarningLevel === 'danger' ? 'Actualizar a PRO' : 'Aumentar Espacio' }}</span>
                 </button>
             </div>
         </div>
@@ -74,7 +107,6 @@
                     </div>
                 </div>
 
-                <!-- Desktop Storage info (Visible only on md+) -->
                 <div class="hidden md:block bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-zinc-300 flex items-center gap-2">
@@ -87,17 +119,56 @@
                         <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">{{
                             isPro ? 'PRO' : 'FREE' }}</span>
                     </div>
+
+                    <!-- Progress Bar with Dynamic Colors -->
                     <div class="w-full h-3 bg-zinc-800 rounded-full overflow-hidden mb-2 border border-zinc-700/50">
-                        <div class="h-full bg-emerald-500 transition-all duration-1000 ease-out"
-                            [style.width.%]="storagePercentage"></div>
+                        <div class="h-full transition-all duration-1000 ease-out" [style.width.%]="storagePercentage"
+                            [ngClass]="{
+                                'bg-emerald-500': storageWarningLevel === 'safe',
+                                'bg-yellow-500': storageWarningLevel === 'warning',
+                                'bg-red-500': storageWarningLevel === 'danger'
+                            }"></div>
                     </div>
-                    <div class="flex justify-between text-xs font-medium text-zinc-500">
+
+                    <div class="flex justify-between text-xs font-medium text-zinc-500 mb-3">
                         <span>{{ usedStorageGB }} GB usados</span>
                         <span>{{ maxStorageGB }} GB total</span>
                     </div>
+
+                    <!-- Song Capacity Info -->
+                    <div class="text-xs text-zinc-400 mb-4 p-2 bg-zinc-800/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                </svg>
+                                Capacidad estimada:
+                            </span>
+                            <span class="font-bold text-white">~{{ totalSongCapacity }} canciones</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-1" *ngIf="estimatedSongsRemaining > 0">
+                            <span>Espacio para:</span>
+                            <span class="font-bold" [ngClass]="{
+                                'text-emerald-400': storageWarningLevel === 'safe',
+                                'text-yellow-400': storageWarningLevel === 'warning',
+                                'text-red-400': storageWarningLevel === 'danger'
+                            }">~{{ estimatedSongsRemaining }} canciones más</span>
+                        </div>
+                        <div class="text-red-400 font-bold mt-1" *ngIf="estimatedSongsRemaining <= 0">
+                            ⚠️ Almacenamiento lleno
+                        </div>
+                    </div>
+
+                    <!-- Upgrade Button -->
                     <button *ngIf="canUpgrade()" (click)="upgradeToPro()"
-                        class="mt-4 w-full py-2 text-xs font-bold text-yellow-500 hover:text-yellow-400 hover:underline">
-                        Aumentar espacio
+                        class="mt-2 w-full py-2.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                        [ngClass]="{
+                            'bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20': storageWarningLevel === 'danger',
+                            'bg-zinc-800 text-yellow-500 hover:bg-zinc-700': storageWarningLevel !== 'danger'
+                        }">
+                        <span>👑</span>
+                        <span>{{ storageWarningLevel === 'danger' ? 'Actualizar a PRO' : 'Aumentar espacio' }}</span>
                     </button>
                 </div>
 
@@ -122,9 +193,14 @@
                         <div *ngFor="let folder of folders" (click)="selectFolder(folder)"
                             class="relative aspect-[1.1/1] md:aspect-[4/3] rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all border select-none active:scale-[0.98]"
                             [ngClass]="{
-                                'bg-emerald-500/10 border-emerald-500/50': folder.id === selectedFolder?.id && folder.colorClass === 'emerald',
-                                'bg-red-500/10 border-red-500/50': folder.id === selectedFolder?.id && folder.colorClass === 'red',
-                                'bg-zinc-900 border-zinc-800 hover:border-zinc-600': folder.id !== selectedFolder?.id
+                                'bg-emerald-500/20 border-emerald-500 shadow-lg shadow-emerald-500/10': folder.id === selectedFolder?.id && folder.colorClass === 'emerald',
+                                'bg-emerald-900/20 border-emerald-500/30 hover:bg-emerald-500/10 hover:border-emerald-500/50': folder.id !== selectedFolder?.id && folder.colorClass === 'emerald',
+                                
+                                'bg-red-500/20 border-red-500 shadow-lg shadow-red-500/10': folder.id === selectedFolder?.id && folder.colorClass === 'red',
+                                'bg-red-900/20 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50': folder.id !== selectedFolder?.id && folder.colorClass === 'red',
+                                
+                                'bg-zinc-800 border-zinc-700 text-white': folder.id === selectedFolder?.id && (!folder.colorClass || folder.colorClass === 'zinc'),
+                                'bg-zinc-900 border-zinc-800 hover:border-zinc-600': folder.id !== selectedFolder?.id && (!folder.colorClass || folder.colorClass === 'zinc')
                                 }">
 
                             <!-- Icon -->
@@ -159,87 +235,152 @@
 
                 <!-- Files List Section -->
                 <div>
-                    <div class="flex items-center gap-3 mb-4 pt-2">
-                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center"
-                            [ngClass]="selectedFolder?.colorClass === 'red' ? 'bg-red-500 text-black' : 'bg-emerald-500 text-black'">
-                            <svg class="w-4 h-4 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                            </svg>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-white">{{ selectedFolder ? selectedFolder.name :
-                            'Todos' }}</h3>
-                    </div>
-
-                    <!-- File List Container -->
-                    <div
-                        class="bg-zinc-900/20 md:bg-zinc-900/30 border border-zinc-800/50 md:border-zinc-800 rounded-2xl overflow-hidden min-h-[300px]">
-
-                        <!-- Empty State -->
-                        <div *ngIf="filteredMusicFiles.length === 0"
-                            class="flex flex-col items-center justify-center text-center py-16 text-zinc-500">
-                            <div class="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4">
-                                <svg class="w-8 h-8 opacity-40" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex flex-col md:flex-row items-center gap-3 mb-6 pt-2">
+                        <!-- Folder Title -->
+                        <div class="flex items-center gap-3 self-start md:self-auto min-w-0">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/20"
+                                [ngClass]="selectedFolder?.colorClass === 'red' ? 'bg-gradient-to-br from-red-500 to-red-600 text-white' : 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-black'">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 drop-shadow-sm" fill="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path
                                         d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                                 </svg>
                             </div>
-                            <p class="text-sm font-medium">Esta carpeta está vacía</p>
+                            <h3 class="text-2xl md:text-3xl font-bold text-white truncate">{{ selectedFolder ?
+                                selectedFolder.name : 'Todos' }}</h3>
+                        </div>
+
+                        <!-- Search & Sort Controls -->
+                        <div class="flex-1 w-full md:w-auto flex gap-2 md:ml-auto">
+                            <div class="relative flex-1 group">
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-emerald-500 transition-colors">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
+                                    </svg>
+                                </span>
+                                <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar canción..."
+                                    class="w-full bg-zinc-900/50 border border-zinc-800 rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900 outline-none transition-all">
+                            </div>
+
+                            <div
+                                class="flex bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden p-1 gap-1">
+                                <button (click)="setSort('date')"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                    [class.bg-zinc-800]="sortBy === 'date'" [class.text-white]="sortBy === 'date'"
+                                    [class.text-zinc-500]="sortBy !== 'date'">
+                                    Fecha
+                                </button>
+                                <button (click)="setSort('name')"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                    [class.bg-zinc-800]="sortBy === 'name'" [class.text-white]="sortBy === 'name'"
+                                    [class.text-zinc-500]="sortBy !== 'name'">
+                                    Nombre
+                                </button>
+                                <button (click)="setSort('size')"
+                                    class="hidden md:block px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                    [class.bg-zinc-800]="sortBy === 'size'" [class.text-white]="sortBy === 'size'"
+                                    [class.text-zinc-500]="sortBy !== 'size'">
+                                    Tamaño
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File List Container -->
+                    <div>
+
+                        <!-- Empty State -->
+                        <div *ngIf="filteredMusicFiles.length === 0"
+                            class="flex flex-col items-center justify-center text-center py-20 text-zinc-500 bg-zinc-900/20 md:bg-zinc-900/30 border border-zinc-800/50 md:border-zinc-800 rounded-3xl overflow-hidden">
+                            <div
+                                class="w-20 h-20 bg-zinc-900/80 rounded-full flex items-center justify-center mb-5 border border-zinc-800">
+                                <!-- Favorite Icon -->
+                                <svg *ngIf="selectedFolder?.id === '2'" class="w-8 h-8 text-red-500/30"
+                                    fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                                <!-- Default Icon -->
+                                <svg *ngIf="selectedFolder?.id !== '2'" class="w-10 h-10 opacity-20" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-white font-bold mb-1">{{ selectedFolder?.id === '2' ? 'Sin favoritas' :
+                                'Carpeta vacía' }}</h4>
+                            <p class="text-xs text-zinc-500 max-w-[200px]">{{ selectedFolder?.id === '2' ? 'Marca
+                                canciones con el corazón para verlas aquí.' : 'Aún no has subido canciones aquí.' }}</p>
                         </div>
 
                         <!-- File Items -->
-                        <div *ngIf="filteredMusicFiles.length > 0" class="divide-y divide-zinc-800/30">
+                        <div *ngIf="filteredMusicFiles.length > 0" class="divide-y divide-zinc-800/40">
                             <div *ngFor="let file of filteredMusicFiles"
-                                class="flex items-center gap-3 p-2 md:p-3 hover:bg-zinc-800/60 transition-colors group rounded-xl mx-2 my-1">
+                                class="flex items-center gap-3 p-2 transition-colors group relative rounded-xl border border-transparent hover:border-zinc-700/50 mb-1"
+                                [ngClass]="{
+                                    'bg-red-500/10 border-red-500/10 hover:bg-red-500/20 hover:border-red-500/20': file.isFavorite,
+                                    'bg-emerald-500/5 border-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/10': !file.isFavorite
+                                }">
 
                                 <!-- Icon/Image -->
-                                <div class="w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center flex-shrink-0"
-                                    (click)="playFile(file)"
-                                    [ngClass]="file.isFavorite ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'">
-                                    <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                                    </svg>
+                                <div class="w-11 h-11 md:w-12 md:h-12 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm border border-white/5 relative group-active:scale-95 transition-transform"
+                                    (click)="playFile(file)">
+                                    <img *ngIf="file.coverUrl" [src]="file.coverUrl" class="w-full h-full object-cover">
+                                    <!-- Fallback Icon -->
+                                    <div *ngIf="!file.coverUrl" class="w-full h-full flex items-center justify-center"
+                                        [ngClass]="file.isFavorite ? 'bg-red-500/20' : 'bg-emerald-500/20'">
+                                        <svg class="w-5 h-5"
+                                            [ngClass]="file.isFavorite ? 'text-red-500' : 'text-emerald-500'"
+                                            fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                        </svg>
+                                    </div>
+                                    <!-- Play Overlay -->
+                                    <div
+                                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                    </div>
                                 </div>
 
                                 <!-- Info -->
                                 <div class="flex-1 min-w-0 pr-2" (click)="playFile(file)">
-                                    <h4 class="font-bold text-sm md:text-base text-white truncate mb-0.5">
+                                    <h4
+                                        class="font-bold text-xs md:text-sm text-zinc-100 truncate mb-0.5 leading-tight">
                                         {{ file.name }}
                                     </h4>
-                                    <div class="flex items-center gap-2 text-xs text-zinc-500">
-                                        <span>{{ file.size }}</span>
+                                    <div
+                                        class="flex items-center gap-2 text-[10px] md:text-xs text-zinc-500 font-medium">
+                                        <span class="truncate text-zinc-400">{{ file.artist || 'Desconocido' }}</span>
+                                        <span class="hidden md:inline w-0.5 h-0.5 bg-zinc-600 rounded-full"></span>
+                                        <span class="hidden md:inline opacity-70">{{ file.size }}</span>
                                     </div>
                                 </div>
 
                                 <!-- Mobile Actions -->
-                                <div class="flex items-center gap-1 md:gap-3">
+                                <div class="flex items-center">
                                     <!-- Favorite -->
                                     <button (click)="toggleFavorite(file, $event)"
-                                        class="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-all active:scale-95"
-                                        [ngClass]="file.isFavorite ? 'text-red-500' : 'text-zinc-400 hover:text-red-500'">
-                                        <svg class="w-6 h-6 md:w-7 md:h-7"
-                                            [attr.fill]="file.isFavorite ? 'currentColor' : 'none'"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-all active:scale-90"
+                                        [ngClass]="file.isFavorite ? 'text-red-500' : 'text-zinc-600 hover:text-red-500'">
+                                        <svg class="w-5 h-5" [attr.fill]="file.isFavorite ? 'currentColor' : 'none'"
                                             stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path
                                                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                         </svg>
                                     </button>
 
-                                    <!-- Move (Desktop only for now, can enable for mobile if needed, but keeping simple) -->
-                                    <button (click)="openMoveModal(file)"
-                                        class="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-blue-400 transition-all">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <!-- More Options (Kebab Menu) -->
+                                    <button (click)="openFileOptions(file, $event)"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 active:bg-zinc-700 transition-all ml-1">
+                                        <svg class="w-5 h-5 transform rotate-90" fill="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path
-                                                d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z M14 14l4-4-4-4v3h-4v2h4v3z" />
-                                        </svg>
-                                    </button>
-
-                                    <button *ngIf="selectedFolder?.id !== '2'" (click)="deleteFile(file)"
-                                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-red-500 active:bg-zinc-800/80 transition-all">
-                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                                d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                                         </svg>
                                     </button>
                                 </div>
@@ -262,7 +403,82 @@
 
 
 
-<!-- MODALS & TOASTS (Same as before) -->
+<!-- MODALS & TOASTS -->
+
+<!-- File Options Modal (Centered) -->
+<div *ngIf="showFileOptionsModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
+    (click)="closeFileOptions()">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+
+    <!-- Content -->
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-[320px] p-5 shadow-2xl relative animate-zoom-in"
+        (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-xl overflow-hidden bg-zinc-800 shadow-lg border border-white/5 flex-shrink-0">
+                <img *ngIf="fileForOptions?.coverUrl" [src]="fileForOptions?.coverUrl"
+                    class="w-full h-full object-cover">
+                <div *ngIf="!fileForOptions?.coverUrl"
+                    class="w-full h-full flex items-center justify-center bg-zinc-800">
+                    <svg class="w-7 h-7 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0 pr-10">
+                <h3 class="font-bold text-white truncate text-base leading-tight mb-1">{{ fileForOptions?.name }}</h3>
+                <p class="text-zinc-500 text-sm truncate font-medium">{{ fileForOptions?.artist }}</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-2">
+            <button (click)="openEditModal(fileForOptions!)"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all font-medium border border-transparent hover:border-zinc-700/50 group">
+                <div
+                    class="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                </div>
+                Editar información
+            </button>
+            <button (click)="openMoveModal(fileForOptions!)"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all font-medium border border-transparent hover:border-zinc-700/50 group">
+                <div
+                    class="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zM14 14l4-4-4-4v3h-4v2h4v3z" />
+                    </svg>
+                </div>
+                Mover a carpeta
+            </button>
+            <div class="h-2"></div>
+            <button (click)="deleteFile(fileForOptions!)"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-all font-medium border border-red-500/10 hover:border-red-500/20 group">
+                <div
+                    class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                </div>
+                Eliminar canción
+            </button>
+        </div>
+
+        <button (click)="closeFileOptions()"
+            class="absolute top-3 right-3 text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700 p-2 rounded-full transition-all z-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+</div>
 
 <div *ngIf="showCreateFolderModal"
     class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[90] animate-fade-in"
@@ -277,6 +493,35 @@
                 class="flex-1 py-3.5 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">Cancelar</button>
             <button (click)="createFolder()"
                 class="flex-1 py-3.5 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">Crear</button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showEditModal"
+    class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[90] animate-fade-in"
+    (click)="showEditModal = false">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+        (click)="$event.stopPropagation()">
+        <h3 class="text-xl font-bold text-white mb-6 text-center">Editar Info</h3>
+
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-xs text-zinc-500 mb-1 ml-1">Título</label>
+                <input [(ngModel)]="editData.name" type="text" placeholder="Nombre de la canción..."
+                    class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:border-emerald-500 outline-none transition-all">
+            </div>
+            <div>
+                <label class="block text-xs text-zinc-500 mb-1 ml-1">Artista</label>
+                <input [(ngModel)]="editData.artist" type="text" placeholder="Artista..."
+                    class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:border-emerald-500 outline-none transition-all">
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button (click)="showEditModal = false"
+                class="flex-1 py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">Cancelar</button>
+            <button (click)="saveEdit()"
+                class="flex-1 py-3 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">Guardar</button>
         </div>
     </div>
 </div>

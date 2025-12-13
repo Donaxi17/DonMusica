@@ -64,6 +64,18 @@ export class StorageService {
         });
     }
 
+    async getFile(id: string): Promise<any> {
+        const db = await this.dbPromise;
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(this.storeName, 'readonly');
+            const store = transaction.objectStore(this.storeName);
+            const request = store.get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
     async updateFile(fileData: any): Promise<void> {
         // Same as saveFile since 'put' updates if key exists
         return this.saveFile(fileData);

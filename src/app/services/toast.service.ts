@@ -1,22 +1,37 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface Toast {
     id: number;
-    message: string;
+    message: string | SafeHtml;
     type: 'success' | 'error' | 'info' | 'warning';
     duration?: number;
+    isHtml?: boolean;
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class ToastService {
+    private sanitizer = inject(DomSanitizer);
     toasts = signal<Toast[]>([]);
     private nextId = 0;
 
     show(message: string, type: Toast['type'] = 'info', duration = 3000) {
         const id = this.nextId++;
-        const toast: Toast = { id, message, type, duration };
+        const toast: Toast = { id, message, type, duration, isHtml: false };
+
+        this.toasts.update(toasts => [...toasts, toast]);
+
+        if (duration > 0) {
+            setTimeout(() => this.remove(id), duration);
+        }
+    }
+
+    showHtml(htmlMessage: string, type: Toast['type'] = 'info', duration = 3000) {
+        const id = this.nextId++;
+        const safeHtml = this.sanitizer.bypassSecurityTrustHtml(htmlMessage);
+        const toast: Toast = { id, message: safeHtml, type, duration, isHtml: true };
 
         this.toasts.update(toasts => [...toasts, toast]);
 

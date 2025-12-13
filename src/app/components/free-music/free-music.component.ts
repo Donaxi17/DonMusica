@@ -1,8 +1,10 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+﻿import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { MusicApiService } from '../../services/music-api.service';
 import { PlayerService } from '../../services/player.service';
@@ -11,17 +13,19 @@ import { SeoService } from '../../services/seo.service';
 import { OfflineService } from '../../services/offline.service';
 import { ToastService } from '../../services/toast.service';
 import { ShareService } from '../../services/share.service';
+import { CacheService } from '../../services/cache.service';
 import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
 export class FreeMusicComponent implements OnInit {
+  networkService = inject(NetworkService);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private seoService = inject(SeoService);
@@ -30,6 +34,7 @@ export class FreeMusicComponent implements OnInit {
   private offlineService = inject(OfflineService);
   private toastService = inject(ToastService);
   private shareService = inject(ShareService);
+  private cacheService = inject(CacheService);
 
   // Géneros modernos
   latinGenres = [
@@ -107,6 +112,23 @@ export class FreeMusicComponent implements OnInit {
 
   loadMusicByGenre(genre: string) {
     this.selectedGenre.set(genre);
+
+    // Clave de caché única para este género
+    const cacheKey = `music_genre_${genre}`;
+
+    // 1. Intentar cargar desde caché primero (especialmente si está offline)
+    const cachedSongs = this.cacheService.get<Song[]>(cacheKey);
+
+    if (cachedSongs && !this.networkService.isOnline()) {
+      // Si está offline y hay caché, usar caché
+      console.log('📦 Usando música en caché (offline)');
+      this.songs.set(cachedSongs);
+      this.isLoading.set(false);
+      this.toastService.info('📦 Mostrando contenido en caché');
+      return;
+    }
+
+    // 2. Si está online o no hay caché, cargar desde API
     this.isLoading.set(true);
 
     // Actualizar SEO dinámicamente según el género con keywords potentes
@@ -121,10 +143,22 @@ export class FreeMusicComponent implements OnInit {
       next: (songs) => {
         this.songs.set(songs);
         this.isLoading.set(false);
+
+        // 3. Guardar en caché (expira en 60 minutos)
+        this.cacheService.set(cacheKey, songs, 60);
       },
       error: (err) => {
         console.error('Error cargando música:', err);
-        this.songs.set([]);
+
+        // 4. Si falla la API pero hay caché, usar caché como fallback
+        if (cachedSongs) {
+          console.log('⚠️ API falló, usando caché como fallback');
+          this.songs.set(cachedSongs);
+          this.toastService.warning('Mostrando contenido en caché');
+        } else {
+          this.songs.set([]);
+        }
+
         this.isLoading.set(false);
       }
     });

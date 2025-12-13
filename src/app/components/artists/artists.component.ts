@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
@@ -6,11 +6,13 @@ import { VoiceRecognitionService } from '../../services/voice-recognition.servic
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 
 import { RouterModule } from '@angular/router';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent, RouterModule],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })
@@ -18,6 +20,7 @@ export class ArtistsComponent implements OnInit {
   private seoService = inject(SeoService);
   private voiceService = inject(VoiceRecognitionService);
   private cdr = inject(ChangeDetectorRef);
+  networkService = inject(NetworkService);
 
   searchQuery = signal<string>('');
   isListening = false;

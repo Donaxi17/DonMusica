@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+﻿import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,15 +8,19 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { SeoService } from '../../services/seo.service';
 import { lastValueFrom } from 'rxjs';
 import { VideoPlayerService, Video } from '../../services/video-player.service';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
+  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, NoConnectionComponent],
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.css']
 })
 export class VideosComponent {
+  networkService = inject(NetworkService);
+
   private http = inject(HttpClient);
   private seoService = inject(SeoService);
   private videoPlayerService = inject(VideoPlayerService);

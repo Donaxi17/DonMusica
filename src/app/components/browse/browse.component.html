@@ -77,7 +77,11 @@
     </div>
 
     <!-- Main Content Container (Reduced Padding) -->
+    @if (!networkService.isOnline()) {
+    <app-no-connection></app-no-connection>
+    } @else {
     <div class="max-w-7xl mx-auto px-4 pt-4 pb-16 md:pt-8 md:pb-10 animate-fade-in">
         <router-outlet></router-outlet>
     </div>
+    }
 </div>

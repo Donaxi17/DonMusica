@@ -1,8 +1,10 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+﻿import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BlogService, BlogPost } from '../../services/blog.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { SeoService } from '../../services/seo.service';
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 
 interface EvergreenArticle {
     id: number;
@@ -17,10 +19,11 @@ interface EvergreenArticle {
 @Component({
     selector: 'app-blog',
     standalone: true,
-    imports: [CommonModule, AdsContainerComponent],
+    imports: [CommonModule, AdsContainerComponent, NoConnectionComponent],
     templateUrl: './blog.component.html'
 })
 export class BlogComponent implements OnInit {
+    networkService = inject(NetworkService);
     private blogService = inject(BlogService);
     private seoService = inject(SeoService);
 
