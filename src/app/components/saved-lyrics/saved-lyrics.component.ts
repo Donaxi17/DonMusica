@@ -81,6 +81,10 @@ export class SavedLyricsComponent implements OnInit {
     this.loadLyrics(); // Trigger update
   }
 
+  upgradeToPro() {
+    this.proService.showUpgradeModal();
+  }
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;

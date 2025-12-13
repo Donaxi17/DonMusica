@@ -1,32 +1,61 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { ToastService } from './toast.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
     providedIn: 'root'
 })
 export class NetworkService {
     private toastService = inject(ToastService);
-    isOnline = signal(navigator.onLine);
+    private platformId = inject(PLATFORM_ID);
+
+    // Initialize signal
+    isOnline = signal<boolean>(true);
 
     constructor() {
+        if (isPlatformBrowser(this.platformId)) {
+            // Initial monitor setup
+            this.initNetworkMonitoring();
+        }
+    }
+
+    private initNetworkMonitoring() {
+        // Set initial state based on navigator
+        this.isOnline.set(navigator.onLine);
+
         // Listen for online/offline events
         window.addEventListener('online', () => {
-            this.isOnline.set(true);
-            console.log('🌐 Connection restored');
-            this.toastService.success('✅ Conexión restaurada');
-
-            // Verificar conexión real al servidor
             this.checkRealConnection();
         });
 
         window.addEventListener('offline', () => {
-            this.isOnline.set(false);
-            console.log('📡 Connection lost');
-            this.toastService.warning('⚠️ Sin conexión a internet');
+            this.updateOnlineStatus(false);
         });
 
-        // Verificar conexión real al iniciar
+        // Initial real check
         this.checkRealConnection();
+
+        // Poll every 5 seconds to detect "soft" offline states (connected to WiFi but no data)
+        setInterval(() => {
+            if (navigator.onLine) {
+                this.checkRealConnection();
+            }
+        }, 5000);
+    }
+
+    private updateOnlineStatus(status: boolean) {
+        // Only update and notify if status CHANGED
+        if (this.isOnline() !== status) {
+            this.isOnline.set(status);
+
+            if (status) {
+                console.log('🌐 Connection restored');
+                this.toastService.success('✅ Conexión restaurada');
+            } else {
+                console.log('📡 Connection lost');
+                this.toastService.warning('⚠️ Sin conexión a internet');
+            }
+        }
     }
 
     /**
@@ -34,20 +63,38 @@ export class NetworkService {
      * Evita falsos positivos de navigator.onLine
      */
     async checkRealConnection(): Promise<boolean> {
+        // If navigator says we are offline, trust it immediately
+        if (!navigator.onLine) {
+            this.updateOnlineStatus(false);
+            return false;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
         try {
-            // Intentar hacer ping a Google (rápido y confiable)
-            const response = await fetch('https://www.google.com/favicon.ico', {
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+
+            // Try to ping Google (fast) or fallback to a local asset if you prefer
+            // Using 'no-cors' means we can't read the response, but if it throws, we are offline.
+            await fetch(`https://www.google.com/favicon.ico?_=${timestamp}`, {
                 method: 'HEAD',
                 mode: 'no-cors',
-                cache: 'no-cache'
+                cache: 'no-cache',
+                // Add a short timeout to fail fast
+                signal: controller.signal
             });
 
-            const hasConnection = true; // Si llegamos aquí, hay conexión
-            this.isOnline.set(hasConnection);
-            return hasConnection;
+            clearTimeout(timeoutId);
+
+            // If we get here, the request didn't throw (or timeout), so we have connectivity
+            this.updateOnlineStatus(true);
+            return true;
         } catch (error) {
+            clearTimeout(timeoutId);
             console.warn('Real connection check failed:', error);
-            this.isOnline.set(false);
+            this.updateOnlineStatus(false);
             return false;
         }
     }

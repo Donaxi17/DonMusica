@@ -26,8 +26,10 @@ interface MusicFile {
   dateAdded: Date;
   folderId: string;
   file?: File;
+  pictureBlob?: Blob;
   isFavorite: boolean;
   duration: string;
+  hasImageError?: boolean;
 }
 
 interface Folder {
@@ -116,9 +118,6 @@ export class UploadMusicComponent {
     });
 
     if (!this.selectedFolder) this.selectedFolder = this.folders[0];
-
-    // Attempt to repair files (duration + persistent blobs)
-    setTimeout(() => this.repairFiles(), 1000);
   }
 
   // State property for filtered files instead of getter for OnPush performance
@@ -359,35 +358,40 @@ export class UploadMusicComponent {
 
     try {
       duration = await this.getAudioDuration(file);
-      metadata = await this.extractMetadata(file);
+      metadata = await this.extractMetadata(file); // Now returns blob
     } catch (e) {
       console.warn('Metadata error', e);
     }
 
-    // Save actual blob
-    await this.storageService.saveFile({ id: fileId, file: file });
+    const pictureBlob = metadata.pictureBlob;
+    const coverUrl = pictureBlob ? URL.createObjectURL(pictureBlob) : '';
 
     const newFile: MusicFile = {
       id: fileId,
       name: metadata.title || file.name.replace(/\.[^/.]+$/, ""),
       artist: metadata.artist || 'Desconocido',
       url: URL.createObjectURL(file), // Provide initial URL for immediate playback
-      coverUrl: metadata.picture || '',
+      coverUrl: coverUrl,
+      pictureBlob: pictureBlob, // Persist blob
       size: this.formatSize(file.size),
       sizeRaw: file.size,
       dateAdded: new Date(),
       folderId: folderId,
       file: file,
       isFavorite: false,
-      duration: duration
+      duration: duration,
+      hasImageError: false
     };
+
+    // Save FULL object to IndexedDB (persisting metadata + blob)
+    await this.storageService.saveFile(newFile);
 
     // Update state
     this.uploadedMusicFiles.unshift(newFile);
     this.updateFolderCount(folderId, 1);
     this.calculateStorage();
     this.filterFiles();
-    this.saveToLocalStorage();
+    this.saveToLocalStorage(); // Saves folders only
   }
 
   private async getAudioDuration(file: File): Promise<string> {
@@ -396,7 +400,7 @@ export class UploadMusicComponent {
       const url = URL.createObjectURL(file);
       audio.src = url;
       audio.onloadedmetadata = () => {
-        URL.revokeObjectURL(url); // Clean up
+        URL.revokeObjectURL(url);
         const seconds = audio.duration;
         resolve(this.formatDuration(seconds));
       };
@@ -410,22 +414,22 @@ export class UploadMusicComponent {
   private async extractMetadata(file: File): Promise<any> {
     try {
       const m = await mm.parseBlob(file);
-      let picture = '';
+      let pictureBlob: Blob | null = null;
+
       if (m.common.picture && m.common.picture.length > 0) {
         const pic = m.common.picture[0];
         let blob = new Blob([pic.data as any], { type: pic.format });
-
-        // Resize optimization (max 120px)
         try {
+          // Resize to save space
           blob = await this.resizeImage(blob, 120, 120);
         } catch (e) { console.warn('Resize failed, using original', e); }
-
-        picture = URL.createObjectURL(blob);
+        pictureBlob = blob;
       }
+
       return {
         title: m.common.title,
         artist: m.common.artist,
-        picture: picture
+        pictureBlob: pictureBlob
       };
     } catch {
       return {};
@@ -441,8 +445,6 @@ export class UploadMusicComponent {
         URL.revokeObjectURL(url);
         let width = img.width;
         let height = img.height;
-
-        // Calculate new dimensions
         if (width > height) {
           if (width > maxWidth) {
             height *= maxWidth / width;
@@ -454,7 +456,6 @@ export class UploadMusicComponent {
             height = maxHeight;
           }
         }
-
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -475,21 +476,72 @@ export class UploadMusicComponent {
     });
   }
 
-  private repairFiles() {
-    // Restore URLs if missing (page reload)
-    this.uploadedMusicFiles.forEach(async f => {
-      if (!f.url || f.url === '') {
-        const dbFile = await this.storageService.getFile(f.id);
-        if (dbFile && dbFile.file) {
-          f.file = dbFile.file;
-          f.url = URL.createObjectURL(dbFile.file);
-          this.cdr.markForCheck();
-        }
-      }
-    });
+
+
+  // Persist folders structure only (files are in IndexedDB)
+  saveToLocalStorage() {
+    const foldersToSave = this.folders.filter(f => !f.isSystem);
+    localStorage.setItem('donmusic_folders', JSON.stringify(foldersToSave));
   }
 
-  // --- UI Helpers ---
+  async loadFromLocalStorage() {
+    this.isUploading = true;
+    this.cdr.markForCheck();
+
+    try {
+      // 1. Load Folder Structure
+      const storedFolders = localStorage.getItem('donmusic_folders');
+      if (storedFolders) {
+        const parsedFolders = JSON.parse(storedFolders);
+        this.folders = [
+          ...this.folders.filter(f => f.isSystem),
+          ...parsedFolders.filter((f: Folder) => !f.isSystem)
+        ];
+      }
+
+      // 2. Load Files from IndexedDB
+      const dbFiles = await this.storageService.getAllFiles();
+
+      this.uploadedMusicFiles = dbFiles.map((dbFile: any) => {
+        // Reconstruct Blob URL if file exists
+        let url = '';
+        if (dbFile.file) {
+          url = URL.createObjectURL(dbFile.file);
+        }
+
+        // Reconstruct Image URL
+        let coverUrl = '';
+        if (dbFile.pictureBlob) {
+          coverUrl = URL.createObjectURL(dbFile.pictureBlob);
+        } else if (dbFile.coverUrl && !dbFile.coverUrl.startsWith('blob:')) {
+          // Fallback for old data or external links
+          coverUrl = dbFile.coverUrl;
+        }
+
+        return {
+          ...dbFile,
+          url: url,
+          coverUrl: coverUrl,
+          dateAdded: new Date(dbFile.dateAdded), // Restore Date object
+          hasImageError: false
+        };
+      });
+
+      // 3. Sort by Date Descending by default
+      this.uploadedMusicFiles.sort((a, b) => b.dateAdded.getTime() - a.dateAdded.getTime());
+
+      this.recalculateFolderCounts();
+      this.calculateStorage();
+      this.filterFiles();
+
+    } catch (error) {
+      console.error('Error loading data:', error);
+      this.showToastNotification('Error cargando datos');
+    } finally {
+      this.isUploading = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   openFileOptions(file: MusicFile, event: Event) {
     event.stopPropagation();
@@ -713,12 +765,17 @@ export class UploadMusicComponent {
   }
 
   calculateStorage() {
-    const totalBytes = this.uploadedMusicFiles.reduce((acc, f) => acc + (f.sizeRaw || 0), 0);
+    const totalBytes = this.uploadedMusicFiles.reduce((acc, f) => acc + (Number(f.sizeRaw) || 0), 0);
     this.usedStorage = totalBytes / (1024 * 1024);
 
     if (!this.maxStorage) this.maxStorage = 1024;
 
-    this.storagePercentage = Math.min(100, (this.usedStorage / this.maxStorage) * 100);
+    let pct = (this.usedStorage / this.maxStorage) * 100;
+
+    // Visual improvement: Show at least 1% if there is any data, so the user sees the bar exists
+    if (this.usedStorage > 0 && pct < 1) pct = 1;
+
+    this.storagePercentage = Math.min(100, pct);
     this.cdr.markForCheck();
   }
 
@@ -737,13 +794,10 @@ export class UploadMusicComponent {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
-  // Persist folders structure only (files are in IndexedDB)
-  saveToLocalStorage() {
-    const foldersToSave = this.folders.filter(f => !f.isSystem);
-    localStorage.setItem('donmusic_folders', JSON.stringify(foldersToSave));
+  handleImageError(file: MusicFile) {
+    file.hasImageError = true;
+    this.cdr.markForCheck();
   }
 
-  loadFromLocalStorage() {
-    // Intentionally left blank, logic moved to constructor
-  }
+
 }

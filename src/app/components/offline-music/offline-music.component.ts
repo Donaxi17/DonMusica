@@ -33,6 +33,12 @@ export class OfflineMusicComponent implements OnInit {
     effect(() => {
       this.updateStorageLimit();
     });
+
+    effect(() => {
+      // Trigger generic dependency on offlineSongs signal
+      this.offlineSongs();
+      this.updateTotalSize();
+    });
   }
 
   get isPro(): boolean {
