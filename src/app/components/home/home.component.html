@@ -9,13 +9,9 @@
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10"></div>
 
             <!-- Hero Image -->
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop"
-                srcset="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=640&auto=format&fit=crop 640w,
-                        https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1080&auto=format&fit=crop 1080w,
-                        https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop 1920w"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
-                alt="Fondo de concierto de música urbana" loading="eager" fetchpriority="high" decoding="async"
-                class="w-full h-full object-cover object-center animate-fade-in blur-sm scale-105">
+            <img ngSrc="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop"
+                fill priority alt="Fondo de concierto de música urbana"
+                class="object-cover object-center animate-fade-in blur-sm scale-105">
         </div>
 
         <!-- HERO CONTENT (Centered by parent flex) -->
@@ -154,105 +150,117 @@
 
         <!-- MODULES GUIDE -->
         <div class="mb-12 md:mb-16">
-            <h2 class="text-xl md:text-2xl font-bold text-white mb-6 text-center md:text-left pl-1">Todo lo que
-                necesitas</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white mb-6 text-center md:text-left pl-1">Menú Principal</h2>
+            <div class="grid grid-cols-1 gap-4">
 
-                <!-- Card 1: Explorar -->
-                <div (click)="navigateTo('/browse')" (keydown.enter)="navigateTo('/browse')" tabindex="0" role="button"
-                    aria-label="Explorar tendencias y música nueva"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M12 10.999c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zm-2.121-1.414l-1.414 1.414 3.535 3.535 1.414-1.414-3.535-3.535z" />
-                            </svg>
-                        </div>
-                        <svg class="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-white font-bold text-lg mb-2">Explorar</h3>
-                    <p class="text-zinc-300 text-xs leading-relaxed mb-3">
-                        Tendencias globales, rankings actualizados y estrenos. Todo lo que suena ahora mismo.
-                    </p>
-                    <span class="text-blue-500 text-xs font-bold uppercase tracking-wide">Ver Novedades</span>
-                </div>
-
-                <!-- Card 2: Charts -->
-                <div (click)="navigateTo('/browse/charts')" (keydown.enter)="navigateTo('/browse/charts')" tabindex="0"
-                    role="button" aria-label="Ver Top Charts y Rankings"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-yellow-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    <div class="flex justify-between items-start mb-4">
+                <!-- 1. Artistas -->
+                <a routerLink="/artists"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-purple-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-500 flex flex-col md:flex-row md:items-center gap-4 no-underline decoration-transparent">
+                    <div class="flex-shrink-0">
                         <div
-                            class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M21 4h-3V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v3c0 4.31 1.799 6.91 4.819 7.012A6.001 6.001 0 0 0 11 17.91V20H9v2h6v-2h-2v-2.09a6.01 6.01 0 0 0 4.181-2.898C20.201 14.91 22 12.31 22 8V5a1 1 0 0 0-1-1zM4 8V6h2v6.83C4.216 12.078 4 9.299 4 8zm8 8c-2.206 0-4-1.794-4-4V4h8v8c0 2.206-1.794 4-4 4zm6-3.17V6h2v2c0 1.299-.216 4.078-2 4.83z" />
-                            </svg>
-                        </div>
-                        <svg class="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-white font-bold text-lg mb-2">Top Charts</h3>
-                    <p class="text-zinc-300 text-xs leading-relaxed mb-3">
-                        Rankings en tiempo real por país. Descubre qué está sonando en Colombia, USA, España y más.
-                    </p>
-                    <span class="text-yellow-500 text-xs font-bold uppercase tracking-wide">Ver Ranking</span>
-                </div>
-
-                <!-- Card 3: Artistas -->
-                <div (click)="navigateTo('/artists')" (keydown.enter)="navigateTo('/artists')" tabindex="0"
-                    role="button" aria-label="Buscar Artistas"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-purple-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <div class="flex justify-between items-start mb-4">
-                        <div
-                            class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
                             </svg>
                         </div>
-                        <svg class="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
-                        </svg>
                     </div>
-                    <h3 class="text-white font-bold text-lg mb-2">Artistas</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
-                        Catálogo completo de artistas urbanos. Discografías, álbumes y toda su música en un solo lugar.
-                    </p>
-                    <span class="text-purple-500 text-xs font-bold uppercase tracking-wide">Buscar Artista</span>
-                </div>
-
-                <!-- Card 4: Sin Copyright -->
-                <div (click)="navigateTo('/sin-copyright')" (keydown.enter)="navigateTo('/sin-copyright')" tabindex="0"
-                    role="button" aria-label="Ir a Música Sin Copyright"
-                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-emerald-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <div class="flex justify-between items-start mb-4">
-                        <div
-                            class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm6 9.09c0 4-2.55 7.7-6 8.83-3.45-1.13-6-4.82-6-8.83V6.31l6-2.12 6 2.12v4.78z" />
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-white font-bold text-xl group-hover:text-purple-400 transition-colors">
+                                Artistas</h3>
+                            <svg class="w-5 h-5 text-zinc-600 group-hover:text-purple-400 transition-colors"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
                             </svg>
                         </div>
-                        <svg class="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
-                        </svg>
+                        <p class="text-zinc-400 text-sm leading-relaxed mb-0">
+                            Catálogo completo de artistas urbanos, discografías y álbumes.
+                        </p>
                     </div>
-                    <h3 class="text-white font-bold text-lg mb-2">Sin Copyright</h3>
-                    <p class="text-zinc-400 text-xs leading-relaxed mb-3">
-                        Miles de tracks libres de derechos. Perfectos para YouTube, Twitch, TikTok y proyectos
-                        comerciales.
-                    </p>
-                    <span class="text-emerald-500 text-xs font-bold uppercase tracking-wide">Descargar Gratis</span>
-                </div>
+                </a>
+
+                <!-- 2. Videos -->
+                <a routerLink="/videos"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-red-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-500 flex flex-col md:flex-row md:items-center gap-4 no-underline decoration-transparent">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400">
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M4 6.47L5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-white font-bold text-xl group-hover:text-red-400 transition-colors">Videos
+                            </h3>
+                            <svg class="w-5 h-5 text-zinc-600 group-hover:text-red-400 transition-colors"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                            </svg>
+                        </div>
+                        <p class="text-zinc-400 text-sm leading-relaxed mb-0">
+                            Disfruta de videos musicales oficiales y clips verticales.
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 3. Radio -->
+                <a routerLink="/radio"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-cyan-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-cyan-500 flex flex-col md:flex-row md:items-center gap-4 no-underline decoration-transparent">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 12 7.4l3.38 4.6L17 10.83 14.92 8H20v6z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-white font-bold text-xl group-hover:text-cyan-400 transition-colors">Radio
+                            </h3>
+                            <svg class="w-5 h-5 text-zinc-600 group-hover:text-cyan-400 transition-colors"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                            </svg>
+                        </div>
+                        <p class="text-zinc-400 text-sm leading-relaxed mb-0">
+                            Emisoras en vivo de todo el mundo. Música 24/7 sin interrupciones.
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 4. Blog -->
+                <a routerLink="/blog"
+                    class="group bg-zinc-900 border border-zinc-800 p-5 rounded-2xl hover:border-violet-500/30 transition-all cursor-pointer hover:-translate-y-1 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-violet-500 flex flex-col md:flex-row md:items-center gap-4 no-underline decoration-transparent">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400">
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.805 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zM9.503 5a1.503 1.503 0 1 1 0 3.006 1.503 1.503 0 0 1 0-3.006zM12 13H7V9h5v4zm5 0h-3V9h3v4z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-white font-bold text-xl group-hover:text-violet-400 transition-colors">Blog
+                            </h3>
+                            <svg class="w-5 h-5 text-zinc-600 group-hover:text-violet-400 transition-colors"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                            </svg>
+                        </div>
+                        <p class="text-zinc-400 text-sm leading-relaxed mb-0">
+                            Noticias, curiosidades y lo último del género urbano.
+                        </p>
+                    </div>
+                </a>
+
             </div>
         </div>
 

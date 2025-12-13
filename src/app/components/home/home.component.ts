@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { Song } from '../../services/playlist.service';
@@ -10,7 +11,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NgOptimizedImage],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
