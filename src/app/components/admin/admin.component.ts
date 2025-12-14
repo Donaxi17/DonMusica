@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -34,7 +34,26 @@ export class AdminComponent implements OnInit {
   // Lists from Firebase
   artists = signal<Artist[]>([]);
   albums = signal<Album[]>([]);
-  genres = signal<string[]>(['Reggaeton', 'Trap', 'Rap', 'Pop', 'Dancehall', 'R&B']);
+  genres = signal<string[]>(['Reggaeton', 'Trap Latino', 'Pop', 'Vallenato', 'Salsa', 'Champeta', 'Cristiana']);
+
+  // Filter
+  selectedGenreFilter = signal<string>('all');
+
+  filteredArtists = computed(() => {
+    const filter = this.selectedGenreFilter().toLowerCase();
+    const allArtists = this.artists();
+
+    let filtered = allArtists;
+    if (filter !== 'all') {
+      filtered = allArtists.filter(artist =>
+        artist.genre?.toLowerCase() === filter ||
+        (filter === 'otros' && !artist.genre)
+      );
+    }
+
+    // Sort alphabetically
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   // Form data
   songData = {
@@ -50,6 +69,7 @@ export class AdminComponent implements OnInit {
 
   // New artist/album/genre
   newArtistName = '';
+  newArtistGenre = '';
   newAlbumName = '';
   newGenre = '';
 
@@ -60,7 +80,7 @@ export class AdminComponent implements OnInit {
 
   // Files
   audioFiles: File[] = [];
-  imageFile: File | null = null;
+  // imageFile removido - ya no subimos imágenes manualmente al storage
 
   // Preview Data
   previewSongs = signal<{ title: string, file: File, duration: string }[]>([]);
@@ -72,16 +92,7 @@ export class AdminComponent implements OnInit {
     message: ''
   });
 
-  // Preview URLs
-  audioPreview: string | null = null;
-  imagePreview: string | null = null;
 
-  // iTunes Search
-  itunesSearchQuery = '';
-  itunesSearchType: 'artist' | 'song' = 'artist';
-  itunesSearchResults = signal<any[]>([]);
-  itunesSearching = signal(false);
-  selectedItunesItem = signal<any>(null);
 
   ngOnInit() {
     this.loadArtists();
@@ -122,6 +133,11 @@ export class AdminComponent implements OnInit {
       this.showNewArtistForm.set(true);
       // No resetear artistId aquí para mantener el estado "new"
       this.songData.artistName = '';
+
+      // Auto-seleccionar género si hay un filtro activo
+      const currentFilter = this.selectedGenreFilter();
+      this.newArtistGenre = currentFilter !== 'all' ? currentFilter : '';
+
       return;
     }
 
@@ -139,6 +155,7 @@ export class AdminComponent implements OnInit {
   cancelNewArtist() {
     this.showNewArtistForm.set(false);
     this.newArtistName = '';
+    this.newArtistGenre = '';
     this.songData.artistId = '';
   }
 
@@ -148,10 +165,15 @@ export class AdminComponent implements OnInit {
       return;
     }
 
+    if (!this.newArtistGenre) {
+      alert('Por favor selecciona el género del artista');
+      return;
+    }
+
     try {
       const newArtist: Artist = {
         name: this.newArtistName.trim(),
-        genre: this.songData.genre,
+        genre: this.newArtistGenre,
         image: '/assets/img/default-artist.jpg', // Imagen por defecto
         bio: ''
       };
@@ -163,6 +185,7 @@ export class AdminComponent implements OnInit {
 
       // Limpiar y cerrar form
       this.newArtistName = '';
+      this.newArtistGenre = '';
       this.showNewArtistForm.set(false);
 
       alert('✅ Artista creado exitosamente');
@@ -334,31 +357,34 @@ export class AdminComponent implements OnInit {
 
       // Si es solo uno, mantenemos comportamiento anterior
       if (files.length === 1) {
-        this.audioPreview = URL.createObjectURL(files[0]);
         this.songData.title = previews[0].title;
         this.songData.duration = previews[0].duration;
       } else {
-        this.audioPreview = null;
         this.songData.title = `Carga Masiva (${files.length} canciones)`;
         this.songData.duration = 'Varios';
       }
     }
   }
 
-  onImageFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
+  removeSong(index: number) {
+    // Remove from files array
+    const currentFiles = [...this.audioFiles];
+    currentFiles.splice(index, 1);
+    this.audioFiles = currentFiles;
 
-      // Validar que sea una imagen
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor selecciona una imagen válida');
-        input.value = '';
-        return;
-      }
+    // Remove from preview signal
+    const currentPreviews = [...this.previewSongs()];
+    currentPreviews.splice(index, 1);
+    this.previewSongs.set(currentPreviews);
 
-      this.imageFile = file;
-      this.imagePreview = URL.createObjectURL(file);
+    // Update form status
+    if (this.audioFiles.length === 0) {
+      this.resetForm();
+    } else if (this.audioFiles.length === 1) {
+      this.songData.title = currentPreviews[0].title;
+      this.songData.duration = currentPreviews[0].duration;
+    } else {
+      this.songData.title = `Carga Masiva (${this.audioFiles.length} canciones)`;
     }
   }
 
@@ -374,11 +400,6 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    if (!this.imageFile && !this.imagePreview) {
-      alert('Por favor selecciona una imagen de portada o busca en iTunes');
-      return;
-    }
-
     try {
       this.uploadProgress.set({
         uploading: true,
@@ -386,21 +407,9 @@ export class AdminComponent implements OnInit {
         message: 'Iniciando carga...'
       });
 
-      // 1. Obtener URL de imagen (Subir archivo o usar iTunes)
-      let imageUrl = '';
-
-      if (this.imageFile) {
-        this.uploadProgress.set({
-          uploading: true,
-          progress: 5,
-          message: 'Subiendo imagen de portada...'
-        });
-
-        const imagePath = `covers/${this.songData.artistName}/${Date.now()}_${this.imageFile.name}`;
-        imageUrl = await this.dbService.uploadFile(imagePath, this.imageFile);
-      } else if (this.imagePreview) {
-        imageUrl = this.imagePreview;
-      }
+      // 1. Obtener imagen del Arista (Automático)
+      const artist = this.artists().find(a => a.id === this.songData.artistId);
+      const imageUrl = artist?.image || '/assets/img/default-music.png';
 
       // 2. Iterar sobre cada canción
       const totalFiles = this.audioFiles.length;
@@ -418,14 +427,17 @@ export class AdminComponent implements OnInit {
         });
 
         // Subir audio
+        // Subir audio simple (revertido para asegurar compilación)
         const audioPath = `songs/${this.songData.artistName}/${this.songData.albumName || 'Sin Album'}/${Date.now()}_${file.name}`;
+        console.log(`Subiendo archivo: ${file.name}`);
         const audioUrl = await this.dbService.uploadFile(audioPath, file);
+        console.log(`Archivo subido: ${audioUrl}`);
 
         const song: Song = {
           title: preview.title,
           artist: this.songData.artistName,
           url: audioUrl,
-          img: imageUrl, // Usamos la misma imagen para todas
+          img: imageUrl, // Usamos la imagen del artista
           duration: preview.duration,
           album: this.songData.albumName || 'Sin Álbum',
           genre: this.songData.genre,
@@ -469,15 +481,10 @@ export class AdminComponent implements OnInit {
     };
     this.audioFiles = [];
     this.previewSongs.set([]);
-    this.imageFile = null;
-    this.audioPreview = null;
-    this.imagePreview = null;
 
     // Reset file inputs
     const audioInput = document.querySelector('input[type="file"][accept="audio/*"]') as HTMLInputElement;
-    const imageInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
     if (audioInput) audioInput.value = '';
-    if (imageInput) imageInput.value = '';
   }
 
   logout(): void {
@@ -487,79 +494,5 @@ export class AdminComponent implements OnInit {
 
     // Redirigir al login
     this.router.navigate(['/admin-login']);
-  }
-
-  // ===== ITUNES SEARCH METHODS =====
-
-  searchITunes(): void {
-    if (!this.itunesSearchQuery || this.itunesSearchQuery.trim().length < 2) {
-      return;
-    }
-
-    this.itunesSearching.set(true);
-    this.itunesSearchResults.set([]);
-
-    if (this.itunesSearchType === 'artist') {
-      this.musicApi.searchArtistInITunes(this.itunesSearchQuery).subscribe({
-        next: (results) => {
-          this.itunesSearchResults.set(results);
-          this.itunesSearching.set(false);
-        },
-        error: (error) => {
-          console.error('Error searching iTunes:', error);
-          this.itunesSearching.set(false);
-          alert('Error buscando en iTunes. Intenta de nuevo.');
-        }
-      });
-    } else {
-      this.musicApi.searchTrack(this.itunesSearchQuery).subscribe({
-        next: (results) => {
-          this.itunesSearchResults.set(results);
-          this.itunesSearching.set(false);
-        },
-        error: (error) => {
-          console.error('Error searching iTunes:', error);
-          this.itunesSearching.set(false);
-          alert('Error buscando en iTunes. Intenta de nuevo.');
-        }
-      });
-    }
-  }
-
-  selectItunesItem(item: any): void {
-    this.selectedItunesItem.set(item);
-    this.imageFile = null; // Clear manual file if iTunes item is selected
-
-    if (this.itunesSearchType === 'artist') {
-      // Pre-fill artist name with iTunes data
-      this.newArtistName = item.artistName;
-      // Set image preview from iTunes
-      this.imagePreview = item.artworkUrl600 || item.artworkUrl100;
-      console.log('Artist image URL:', this.imagePreview);
-    } else {
-      // Pre-fill song data
-      this.songData.title = item.title;
-      this.songData.artistName = item.artist;
-      this.songData.albumName = item.album;
-      this.songData.duration = item.duration;
-      // Set image preview from iTunes
-      this.imagePreview = item.img;
-      console.log('Song image URL:', this.imagePreview);
-    }
-  }
-
-  clearItunesSearch(): void {
-    this.itunesSearchQuery = '';
-    this.itunesSearchResults.set([]);
-    this.selectedItunesItem.set(null);
-  }
-
-  useItunesImageForArtist(): string {
-    const selected = this.selectedItunesItem();
-    if (selected && selected.artworkUrl600) {
-      // Instead of uploading, we'll save this URL directly to Firestore
-      return selected.artworkUrl600;
-    }
-    return '';
   }
 }

@@ -70,7 +70,6 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
             <ul class="space-y-2 md:space-y-3 text-xs md:text-sm text-zinc-500">
               <li><a routerLink="/privacy" class="hover:text-emerald-400 transition-colors">Política de Privacidad</a></li>
               <li><a routerLink="/terms" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</a></li>
-              <li><a href="#" class="hover:text-emerald-400 transition-colors">Cookies</a></li>
             </ul>
           </div>
         </div>

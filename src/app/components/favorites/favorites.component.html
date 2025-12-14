@@ -76,4 +76,51 @@
             reproductor para verlas
             aquí.</p>
     </div>
+
+    <!-- Favorites List -->
+    <div *ngIf="favorites.length > 0" class="space-y-2">
+        <div *ngFor="let song of favorites; let i = index" (click)="onPlaySong(song)"
+            class="group flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-zinc-900/50 transition-colors border border-transparent hover:border-zinc-800 cursor-pointer"
+            [class.bg-zinc-900]="currentSongId === song.id" [class.border-l-4]="currentSongId === song.id"
+            [class.border-l-red-500]="currentSongId === song.id">
+
+            <!-- Number/Play Icon -->
+            <div class="w-6 md:w-8 flex items-center justify-center flex-shrink-0 text-zinc-500 text-sm font-bold">
+                <span class="group-hover:hidden" [class.text-red-500]="currentSongId === song.id">{{ i + 1 }}</span>
+                <button class="hidden group-hover:block text-white hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="currentSongId !== song.id || !isPlaying">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="currentSongId === song.id && isPlaying">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Album Art -->
+            <div
+                class="relative w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden bg-zinc-800 shadow-sm flex-shrink-0">
+                <img [src]="song.img" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Song Info -->
+            <div class="flex-1 min-w-0">
+                <h4 class="text-white font-bold text-sm md:text-base truncate leading-tight mb-0.5"
+                    [class.text-red-500]="currentSongId === song.id">{{ song.title }}</h4>
+                <p class="text-zinc-500 text-xs md:text-sm truncate">{{ song.artist }}</p>
+            </div>
+
+            <!-- Like Button (Remove) -->
+            <button (click)="onRemove(song.id, $event)" title="Quitar de favoritos"
+                class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors active:scale-95 group/btn">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-red-500 group-hover/btn:text-red-400 group-hover/btn:scale-110 transition-transform animate-heart-burst"
+                    fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+            </button>
+        </div>
+    </div>
 </section>

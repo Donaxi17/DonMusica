@@ -87,23 +87,24 @@
                 </button>
             </div>
 
-            <div *ngIf="userPlaylists.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngIf="userPlaylists.length > 0"
+                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                 @for(playlist of userPlaylists; track playlist.id) {
                 <div (click)="selectPlaylist(playlist)"
-                    class="group cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden hover:border-emerald-500/50 transition-all hover:transform hover:scale-105">
+                    class="group cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-lg md:rounded-xl overflow-hidden hover:border-emerald-500/50 transition-all hover:transform hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/10">
 
                     <!-- Playlist Cover -->
                     <div
                         class="aspect-square bg-gradient-to-br from-emerald-900/20 to-green-900/20 flex items-center justify-center relative overflow-hidden">
                         <div *ngIf="playlist.songs.length === 0" class="text-center">
-                            <svg class="w-16 h-16 text-zinc-700" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-8 h-8 md:w-10 md:h-10 text-zinc-700" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M6 18.573c2.206 0 4-1.794 4-4V4.428L19 7.7v7.43a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4V7a.998.998 0 0 0-.658-.939l-11-4A.999.999 0 0 0 8 3v8.13a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4z" />
                             </svg>
                         </div>
-                        <div *ngIf="playlist.songs.length > 0" class="grid grid-cols-2 gap-1 w-full h-full p-2">
+                        <div *ngIf="playlist.songs.length > 0" class="grid grid-cols-2 gap-0.5 w-full h-full">
                             @for(song of playlist.songs.slice(0, 4); track song.id) {
-                            <div class="bg-zinc-800 rounded overflow-hidden">
+                            <div class="bg-zinc-800 overflow-hidden">
                                 <img [src]="song.img" [alt]="song.title" class="w-full h-full object-cover">
                             </div>
                             }
@@ -112,7 +113,7 @@
                             class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                             <button (click)="$event.stopPropagation(); playPlaylistSongs(playlist)"
                                 class="transform scale-0 group-hover:scale-100 transition-transform duration-300 hover:scale-110">
-                                <svg class="w-16 h-16 text-emerald-400 drop-shadow-lg" fill="currentColor"
+                                <svg class="w-8 h-8 md:w-10 md:h-10 text-emerald-400 drop-shadow-lg" fill="currentColor"
                                     viewBox="0 0 24 24">
                                     <path
                                         d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
@@ -123,16 +124,19 @@
                     </div>
 
                     <!-- Playlist Info -->
-                    <div class="p-4">
-                        <h4 class="font-bold text-lg mb-1 truncate group-hover:text-emerald-400 transition-colors">
+                    <div class="p-2 md:p-2.5">
+                        <h4
+                            class="font-bold text-xs md:text-sm mb-0.5 truncate group-hover:text-emerald-400 transition-colors leading-tight">
                             {{playlist.name}}
                         </h4>
-                        <p class="text-sm text-zinc-500 mb-2 truncate">{{playlist.description || 'Sin descripción'}}</p>
-                        <div class="flex items-center justify-between text-xs text-zinc-600">
-                            <span>{{playlist.songs.length}} canciones</span>
+                        <p class="text-[9px] md:text-[10px] text-zinc-500 mb-1.5 truncate">{{playlist.description ||
+                            'Sin
+                            descripción'}}</p>
+                        <div class="flex items-center justify-between text-[9px] md:text-[10px] text-zinc-600">
+                            <span>{{playlist.songs.length}} songs</span>
                             <button (click)="$event.stopPropagation(); deletePlaylist(playlist.id)"
-                                class="p-1 hover:text-red-400 transition-colors">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                class="p-0.5 hover:text-red-400 transition-colors" title="Eliminar playlist">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z" />
                                     <path d="M9 10h2v8H9zm4 0h2v8h-2z" />

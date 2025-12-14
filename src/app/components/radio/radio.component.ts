@@ -31,15 +31,7 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    try {
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      // Initialize first ad
-      (window as any).adsbygoogle.push({});
-      // Initialize second ad (footer)
-      (window as any).adsbygoogle.push({});
-    } catch (e) {
-      console.error('AdSense error:', e);
-    }
+    // AdSense initialization is handled by AdsContainerComponent
   }
 
   ngOnDestroy(): void {

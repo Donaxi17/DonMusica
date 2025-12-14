@@ -101,7 +101,51 @@
         </div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Playlist Songs List -->
+    <div *ngIf="playlist.songs.length > 0" class="mt-8 space-y-2">
+        <div *ngFor="let song of playlist.songs; let i = index" (click)="onPlaySong(song)"
+            class="group flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-zinc-900/50 transition-colors border border-transparent hover:border-zinc-800 cursor-pointer"
+            [class.bg-zinc-900]="currentSongId === song.id" [class.border-l-4]="currentSongId === song.id"
+            [class.border-l-emerald-500]="currentSongId === song.id">
+
+            <!-- Number/Play Icon -->
+            <div class="w-6 md:w-8 flex items-center justify-center flex-shrink-0 text-zinc-500 text-sm font-bold">
+                <span class="group-hover:hidden" [class.text-emerald-500]="currentSongId === song.id">{{ i + 1 }}</span>
+                <button class="hidden group-hover:block text-white hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="currentSongId !== song.id || !isPlaying">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"
+                        *ngIf="currentSongId === song.id && isPlaying">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Album Art -->
+            <div
+                class="relative w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden bg-zinc-800 shadow-sm flex-shrink-0">
+                <img [src]="song.img" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Song Info -->
+            <div class="flex-1 min-w-0">
+                <h4 class="text-white font-bold text-sm md:text-base truncate leading-tight mb-0.5"
+                    [class.text-emerald-500]="currentSongId === song.id">{{ song.title }}</h4>
+                <p class="text-zinc-500 text-xs md:text-sm truncate">{{ song.artist }}</p>
+            </div>
+
+            <!-- Remove Button -->
+            <button (click)="onRemoveSong(song.id, $event)" title="Quitar de playlist"
+                class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors active:scale-95 group/btn">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-zinc-600 group-hover/btn:text-red-500 transition-colors"
+                    fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                </svg>
+            </button>
+        </div>
+    </div>
     <div *ngIf="playlist.songs.length === 0"
         class="mt-8 text-center py-16 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed">
         <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">

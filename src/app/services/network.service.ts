@@ -76,11 +76,9 @@ export class NetworkService {
             // Add timestamp to prevent caching
             const timestamp = new Date().getTime();
 
-            // Try to ping Google (fast) or fallback to a local asset if you prefer
-            // Using 'no-cors' means we can't read the response, but if it throws, we are offline.
-            await fetch(`https://www.google.com/favicon.ico?_=${timestamp}`, {
+            // Ping a local asset (reliable and no CORS issues)
+            await fetch(`/assets/icons/icon-72x72.png?_=${timestamp}`, {
                 method: 'HEAD',
-                mode: 'no-cors',
                 cache: 'no-cache',
                 // Add a short timeout to fail fast
                 signal: controller.signal

@@ -31,20 +31,22 @@
             <nav #navContainer class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
 
                 <a routerLink="/browse/trends" (click)="scrollToLink($event, navContainer)"
-                    routerLinkActive="bg-emerald-500/20 text-emerald-500 font-bold shadow-lg shadow-emerald-500/20 border-emerald-500"
-                    #trendsLink="routerLinkActive" [class.text-zinc-400]="!trendsLink.isActive"
-                    class="flex-shrink-0 px-3 py-1.5 md:px-6 md:py-2.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95 cursor-pointer">
-                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                    routerLinkActive="bg-white/10 text-white font-bold" #trendsLink="routerLinkActive"
+                    [class.text-zinc-400]="!trendsLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 md:px-5 md:py-2 rounded-full font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-white/5 hover:text-white whitespace-nowrap active:scale-95 cursor-pointer">
+                    <svg class="w-5 h-5 md:w-5 md:h-5 transition-transform" [class.scale-110]="trendsLink.isActive"
+                        fill="currentColor" viewBox="0 0 24 24">
                         <path d="M13 6.99h3L12 3 8 6.99h3v10.02H8L12 21l4-3.99h-3z" />
                     </svg>
                     Tendencias
                 </a>
 
                 <a routerLink="/browse/new-releases" (click)="scrollToLink($event, navContainer)"
-                    routerLinkActive="bg-purple-500/20 text-purple-500 font-bold shadow-lg shadow-purple-500/20 border-purple-500"
-                    #releasesLink="routerLinkActive" [class.text-zinc-400]="!releasesLink.isActive"
-                    class="flex-shrink-0 px-4 py-1.5 md:px-6 md:py-2.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95 cursor-pointer">
-                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                    routerLinkActive="bg-white/10 text-white font-bold" #releasesLink="routerLinkActive"
+                    [class.text-zinc-400]="!releasesLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 md:px-5 md:py-2 rounded-full font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-white/5 hover:text-white whitespace-nowrap active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 transition-transform" [class.scale-110]="releasesLink.isActive"
+                        fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M20.92 2.38A15.72 15.72 0 0 0 17.5 2a8.26 8.26 0 0 0-6 2.06Q9.89 5.67 8.31 7.27c-1.21-.13-4.08-.2-6 1.74a1 1 0 0 0 0 1.41l11.3 11.32a1 1 0 0 0 1.41 0c1.95-2 1.89-4.82 1.77-6l3.21-3.2c3.19-3.19 1.74-9.18 1.68-9.43a1 1 0 0 0-.76-.73z" />
                     </svg>
@@ -52,10 +54,11 @@
                 </a>
 
                 <a routerLink="/browse/charts" (click)="scrollToLink($event, navContainer)"
-                    routerLinkActive="bg-blue-500/20 text-blue-500 font-bold shadow-lg shadow-blue-500/20 border-blue-500"
-                    #chartsLink="routerLinkActive" [class.text-zinc-400]="!chartsLink.isActive"
-                    class="flex-shrink-0 px-3 py-1.5 md:px-6 md:py-2.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95 cursor-pointer">
-                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                    routerLinkActive="bg-white/10 text-white font-bold" #chartsLink="routerLinkActive"
+                    [class.text-zinc-400]="!chartsLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 md:px-5 md:py-2 rounded-full font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-white/5 hover:text-white whitespace-nowrap active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 transition-transform" [class.scale-110]="chartsLink.isActive"
+                        fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M21 4h-3V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v3c0 4.31 1.799 6.91 4.819 7.012A6.001 6.001 0 0 0 11 17.91V20H9v2h6v-2h-2v-2.09a6.01 6.01 0 0 0 4.181-2.898C20.201 14.91 22 12.31 22 8V5a1 1 0 0 0-1-1zM4 8V6h2v6.83C4.216 12.078 4 9.299 4 8zm8 8c-2.206 0-4-1.794-4-4V4h8v8c0 2.206-1.794 4-4 4zm8-3.17V6h2v2c0 1.299-.216 4.078-2 4.83z" />
                     </svg>
@@ -63,10 +66,11 @@
                 </a>
 
                 <a routerLink="/browse/search" (click)="scrollToLink($event, navContainer)"
-                    routerLinkActive="bg-pink-500/20 text-pink-500 font-bold shadow-lg shadow-pink-500/20 border-pink-500"
-                    #searchLink="routerLinkActive" [class.text-zinc-400]="!searchLink.isActive"
-                    class="flex-shrink-0 px-3 py-1.5 md:px-6 md:py-2.5 rounded-full bg-zinc-900 border border-zinc-800 font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-zinc-800 whitespace-nowrap active:scale-95 cursor-pointer">
-                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                    routerLinkActive="bg-white/10 text-white font-bold" #searchLink="routerLinkActive"
+                    [class.text-zinc-400]="!searchLink.isActive"
+                    class="flex-shrink-0 px-3 py-1.5 md:px-5 md:py-2 rounded-full font-semibold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 hover:bg-white/5 hover:text-white whitespace-nowrap active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 transition-transform" [class.scale-110]="searchLink.isActive"
+                        fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
                     </svg>

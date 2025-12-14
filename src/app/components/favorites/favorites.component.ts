@@ -15,7 +15,7 @@ export class FavoritesComponent {
 
     @Output() playAll = new EventEmitter<void>();
     @Output() playSong = new EventEmitter<Song>();
-    @Output() remove = new EventEmitter<number>();
+    @Output() remove = new EventEmitter<number | string>();
 
     onPlayAll() {
         this.playAll.emit();
@@ -25,7 +25,7 @@ export class FavoritesComponent {
         this.playSong.emit(song);
     }
 
-    onRemove(id: number, event: Event) {
+    onRemove(id: number | string, event: Event) {
         event.stopPropagation();
         this.remove.emit(id);
     }

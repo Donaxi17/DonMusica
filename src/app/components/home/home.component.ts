@@ -8,10 +8,13 @@ import { MusicApiService } from '../../services/music-api.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
+import { NetworkService } from '../../services/network.service';
+import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NgOptimizedImage],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NgOptimizedImage, NoConnectionComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -19,6 +22,7 @@ export class HomeComponent implements OnInit {
   private router = inject(Router);
   private seoService = inject(SeoService);
   private musicApi = inject(MusicApiService);
+  public networkService = inject(NetworkService);
 
   requestArtist = '';
   requestSong = '';

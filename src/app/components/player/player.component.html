@@ -29,8 +29,25 @@
             <!-- Song Info -->
             <div class="flex-grow w-full text-center md:text-left min-w-0">
                 <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Reproduciendo ahora</p>
-                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-2 truncate px-2 md:px-0">{{currentSong.title}}
-                </h2>
+                <div class="flex items-center justify-center md:justify-start gap-4 mb-2 w-full px-2 md:px-0">
+                    <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold truncate min-w-0 max-w-[85%]">
+                        {{currentSong.title}}</h2>
+                    <button *ngIf="currentSong.album !== 'Uploads'"
+                        (click)="$event.stopPropagation(); toggleFavorite(currentSong)"
+                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all active:scale-75 group"
+                        title="Me encanta">
+                        <svg class="w-6 h-6 text-zinc-400 group-hover:text-red-400 transition-colors"
+                            fill="currentColor" viewBox="0 0 24 24" *ngIf="!isFavorite(currentSong.id)">
+                            <path
+                                d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416zM12 18.586l-6.793-6.793c-1.562-1.563-1.562-4.095 0-5.657.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172l1.207 1.207 1.207-1.207c.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172c1.562 1.562 1.562 4.095 0 5.657L12 18.586z" />
+                        </svg>
+                        <svg class="w-6 h-6 text-red-500 animate-heart-burst" fill="currentColor" viewBox="0 0 24 24"
+                            *ngIf="isFavorite(currentSong.id)">
+                            <path
+                                d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
+                        </svg>
+                    </button>
+                </div>
                 <p class="text-zinc-400 text-base md:text-lg mb-3 md:mb-4 truncate px-2 md:px-0">{{currentSong.artist}}
                 </p>
 
@@ -105,7 +122,7 @@
 
                     <!-- Timer Menu Dropdown -->
                     <div *ngIf="showTimerMenu"
-                        class="absolute bottom-full left-0 mb-2 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in flex flex-col">
+                        class="absolute bottom-full right-0 md:left-0 md:right-auto mb-2 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in flex flex-col">
                         <div class="px-3 py-2 text-xs font-bold text-zinc-500 border-b border-zinc-800">
                             Detener audio en:
                         </div>
@@ -249,14 +266,15 @@
                 <div class="flex items-center gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     [class.opacity-100]="currentSong?.id === song.id">
                     <button *ngIf="song.album !== 'Uploads'" (click)="$event.stopPropagation(); toggleFavorite(song)"
-                        class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-colors" title="Favorito">
-                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"
-                            *ngIf="!isFavorite(song.id)">
+                        class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-all active:scale-75 group/btn"
+                        title="Favorito">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-500 group-hover/btn:text-red-400 transition-colors"
+                            fill="currentColor" viewBox="0 0 24 24" *ngIf="!isFavorite(song.id)">
                             <path
                                 d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416zM12 18.586l-6.793-6.793c-1.562-1.563-1.562-4.095 0-5.657.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172l1.207 1.207 1.207-1.207c.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172c1.562 1.562 1.562 4.095 0 5.657L12 18.586z" />
                         </svg>
-                        <svg class="w-4 h-4 md:w-5 md:h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
-                            *ngIf="isFavorite(song.id)">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-red-500 animate-heart-burst" fill="currentColor"
+                            viewBox="0 0 24 24" *ngIf="isFavorite(song.id)">
                             <path
                                 d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
                         </svg>

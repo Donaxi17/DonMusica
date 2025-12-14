@@ -15,7 +15,7 @@ export class PlaylistDetailComponent {
 
     @Output() playPlaylist = new EventEmitter<Playlist>();
     @Output() playSong = new EventEmitter<Song>();
-    @Output() removeSong = new EventEmitter<{ playlistId: string, songId: number }>();
+    @Output() removeSong = new EventEmitter<{ playlistId: string, songId: number | string }>();
     @Output() deletePlaylist = new EventEmitter<string>();
     @Output() share = new EventEmitter<Playlist>();
     @Output() back = new EventEmitter<void>();
@@ -28,7 +28,7 @@ export class PlaylistDetailComponent {
         this.playSong.emit(song);
     }
 
-    onRemoveSong(songId: number, event: Event) {
+    onRemoveSong(songId: number | string, event: Event) {
         event.stopPropagation();
         this.removeSong.emit({ playlistId: this.playlist.id, songId });
     }

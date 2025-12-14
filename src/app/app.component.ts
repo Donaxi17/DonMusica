@@ -29,7 +29,6 @@ export class AppComponent implements OnInit {
         script.src = '//pl28232772.effectivegatecpm.com/bf/3b/e2/bf3be2c66537a0c5cca838fe602a1be1.js';
         script.defer = true;
         document.head.appendChild(script);
-        console.log('✅ Adsterra Social Bar loaded after 20s delay');
       } catch (e) {
         console.error('Error loading Adsterra script', e);
       }

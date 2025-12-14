@@ -110,7 +110,7 @@ export class LayoutComponent implements OnInit {
   }
 
   isMoreActive(): boolean {
-    const moreRoutes = ['/sin-copyright', '/converter', '/radio', '/playlists', '/blog', '/saved-lyrics', '/about', '/contact'];
+    const moreRoutes = ['/tools', '/sin-copyright', '/radio', '/playlists', '/blog', '/saved-lyrics', '/about', '/contact'];
     return moreRoutes.some(route => this.isActive(route));
   }
 

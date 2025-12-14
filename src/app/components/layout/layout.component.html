@@ -207,64 +207,71 @@
     <!-- MOBILE BOTTOM NAVIGATION (Fixed) -->
     <!-- ========================================== -->
     <nav
-        class="md:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/5 z-50 px-2 pb-safe pt-2 h-[calc(3.5rem+env(safe-area-inset-bottom,20px))] flex justify-around items-start">
+        class="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-2xl border-t border-white/5 z-50 pb-[env(safe-area-inset-bottom,20px)] pt-2 h-[calc(4rem+env(safe-area-inset-bottom,20px))] flex justify-between items-center px-1 md:px-0">
+
         <button (click)="navigateTo('/')"
-            class="flex flex-col items-center justify-center w-14 gap-0.5 transition-colors duration-300"
-            [class.text-emerald-400]="isActive('/')" [class.text-zinc-500]="!isActive('/')">
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24" *ngIf="isActive('/')">
+            class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
+            [class.text-white]="isActive('/')" [class.text-zinc-500]="!isActive('/')">
+            <div *ngIf="isActive('/')"
+                class="absolute top-1 w-12 h-8 bg-emerald-500/20 rounded-full -z-10 animate-fade-in"></div>
+            <svg class="w-6 h-6 transition-transform group-active:scale-90" [class.text-emerald-400]="isActive('/')"
+                fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M3 13h1v7c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-7h1a1 1 0 0 0 .707-1.707l-9-9a.999.999 0 0 0-1.414 0l-9 9A1 1 0 0 0 3 13z" />
             </svg>
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24" *ngIf="!isActive('/')">
-                <path
-                    d="M3 13h1v7c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-7h1a1 1 0 0 0 .707-1.707l-9-9a.999.999 0 0 0-1.414 0l-9 9A1 1 0 0 0 3 13zm7 7v-5h4v5h-4zm2-15.586 6 6V15l.001 5H16v-5c0-1.103-.897-2-2-2h-4c-1.103 0-2 .897-2 2v5H6v-9.586l6-6z" />
-            </svg>
-            <span class="text-[9px] font-medium tracking-wide">Inicio</span>
+            <span class="text-[10px] font-medium tracking-wide">Inicio</span>
         </button>
 
         <button (click)="navigateTo('/artists')"
-            class="flex flex-col items-center justify-center w-14 gap-0.5 transition-colors duration-300"
-            [class.text-emerald-400]="isActive('/artists')" [class.text-zinc-500]="!isActive('/artists')">
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24" *ngIf="isActive('/artists')">
+            class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
+            [class.text-white]="isActive('/artists')" [class.text-zinc-500]="!isActive('/artists')">
+            <div *ngIf="isActive('/artists')"
+                class="absolute top-1 w-12 h-8 bg-purple-500/20 rounded-full -z-10 animate-fade-in"></div>
+            <svg class="w-6 h-6 transition-transform group-active:scale-90"
+                [class.text-purple-400]="isActive('/artists')" fill="currentColor" viewBox="0 0 24 24">
                 <path
-                    d="M6 18.573c2.206 0 4-1.794 4-4V4.428L19 7.7v7.43a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4V7a.998.998 0 0 0-.658-.939l-11-4A.999.999 0 0 0 8 3v8.13a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4z" />
+                    d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
             </svg>
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24" *ngIf="!isActive('/artists')">
-                <path
-                    d="M6 18.573c2.206 0 4-1.794 4-4V4.428L19 7.7v7.43a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4V7a.998.998 0 0 0-.658-.939l-11-4A.999.999 0 0 0 8 3v8.13a3.953 3.953 0 0 0-2-.557c-2.206 0-4 1.794-4 4s1.794 4 4 4z" />
-            </svg>
-            <span class="text-[9px] font-medium tracking-wide">Artistas</span>
+            <span class="text-[10px] font-medium tracking-wide">Artistas</span>
         </button>
 
         <button (click)="navigateTo('/browse')"
-            class="flex flex-col items-center justify-center w-14 gap-0.5 transition-colors duration-300"
-            [class.text-emerald-400]="isActive('/browse')" [class.text-zinc-500]="!isActive('/browse')">
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24">
+            class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
+            [class.text-white]="isActive('/browse')" [class.text-zinc-500]="!isActive('/browse')">
+            <div *ngIf="isActive('/browse')"
+                class="absolute top-1 w-12 h-8 bg-blue-500/20 rounded-full -z-10 animate-fade-in"></div>
+            <svg class="w-6 h-6 transition-transform group-active:scale-90" [class.text-blue-400]="isActive('/browse')"
+                fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z M12 10.999c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zm-2.121-1.414l-1.414 1.414 3.535 3.535 1.414-1.414-3.535-3.535z" />
             </svg>
-            <span class="text-[9px] font-medium tracking-wide">Explorar</span>
+            <span class="text-[10px] font-medium tracking-wide">Explorar</span>
         </button>
 
         <button (click)="navigateTo('/videos')"
-            class="flex flex-col items-center justify-center w-14 gap-0.5 transition-colors duration-300"
-            [class.text-red-500]="isActive('/videos')" [class.text-zinc-500]="!isActive('/videos')">
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24">
+            class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
+            [class.text-white]="isActive('/videos')" [class.text-zinc-500]="!isActive('/videos')">
+            <div *ngIf="isActive('/videos')"
+                class="absolute top-1 w-12 h-8 bg-red-500/20 rounded-full -z-10 animate-fade-in"></div>
+            <svg class="w-6 h-6 transition-transform group-active:scale-90" [class.text-red-400]="isActive('/videos')"
+                fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M18 7c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-3.333L22 17V7l-4 3.333V7z" />
             </svg>
-            <span class="text-[9px] font-medium tracking-wide">Videos</span>
+            <span class="text-[10px] font-medium tracking-wide">Videos</span>
         </button>
 
         <button (click)="toggleMobileMoreMenu($event)"
-            class="flex flex-col items-center justify-center w-14 gap-0.5 transition-colors duration-300"
-            [class.text-emerald-400]="showMobileMoreMenu || isMoreActive()"
+            class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
+            [class.text-white]="showMobileMoreMenu || isMoreActive()"
             [class.text-zinc-500]="!showMobileMoreMenu && !isMoreActive()">
-            <svg class="w-6 h-6 mb-px" fill="currentColor" viewBox="0 0 24 24">
+            <div *ngIf="showMobileMoreMenu || isMoreActive()"
+                class="absolute top-1 w-12 h-8 bg-zinc-700/50 rounded-full -z-10 animate-fade-in"></div>
+            <svg class="w-6 h-6 transition-transform group-active:scale-90" fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M10 3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM9 9H5V5h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm-1 6h-4V5h4v4zm-9 4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6H5v-4h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6h-4v-4h4v4z" />
             </svg>
-            <span class="text-[9px] font-medium tracking-wide">Más</span>
+            <span class="text-[10px] font-medium tracking-wide">Más</span>
         </button>
     </nav>
 
