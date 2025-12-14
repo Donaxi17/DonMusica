@@ -60,8 +60,8 @@
                 </div>
 
                 <!-- Progress Bar -->
-                <div (click)="seekTo($event)"
-                    class="relative h-2 bg-zinc-800 rounded-full cursor-pointer group overflow-hidden">
+                <div #progressBarRef (mousedown)="startDrag($event)" (touchstart)="startDrag($event)"
+                    class="relative h-2 bg-zinc-800 rounded-full cursor-pointer group overflow-hidden touch-none">
                     <div class="absolute inset-y-0 left-0 rounded-full transition-all"
                         [ngClass]="isFavoritesPlaying ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-emerald-500 to-green-600'"
                         [style.width.%]="progress"></div>

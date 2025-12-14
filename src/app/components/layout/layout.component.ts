@@ -1,10 +1,9 @@
-import { Component, OnInit, signal, HostListener } from '@angular/core';
+import { Component, OnInit, signal, HostListener, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
-import { Song } from '../../services/playlist.service';
+import { Song, PlaylistService } from '../../services/playlist.service';
 import { filter } from 'rxjs/operators';
-
 import { FooterComponent } from '../shared/footer/footer.component';
 import { RecentlyPlayedComponent } from '../shared/recently-played/recently-played.component';
 import { RedesSocialesComponent } from '../redes-sociales/redes-sociales.component';
@@ -18,6 +17,11 @@ import { VideoPlayerComponent } from '../shared/video-player/video-player.compon
   styleUrl: './layout.component.css'
 })
 export class LayoutComponent implements OnInit {
+  @ViewChild('progressBarRef') progressBarRef!: ElementRef<HTMLElement>;
+
+  // Inject PlaylistService
+  private playlistService = inject(PlaylistService);
+
   currentSong: Song | null = null;
   isPlaying = false;
   isFavoritesPlaying = false;
@@ -28,12 +32,22 @@ export class LayoutComponent implements OnInit {
   currentLanguage: 'ES' | 'EN' = 'EN';
   progress = 0;
   imageLoadError = false;
+
+  isDragging = false;
+
   private previousRoute: string = '/';
 
   constructor(
     public playerService: PlayerService,
     public router: Router
   ) { }
+
+  // Rest of code...
+
+  isFavorite(songId: string | number): boolean {
+    return this.playlistService.isFavorite(String(songId));
+  }
+
 
   ngOnInit(): void {
     // Load saved language from localStorage
@@ -64,7 +78,10 @@ export class LayoutComponent implements OnInit {
     });
 
     this.playerService.progress$.subscribe(prog => {
-      this.progress = prog;
+      // Only update local progress if not dragging
+      if (!this.isDragging) {
+        this.progress = prog;
+      }
     });
 
     this.router.events.pipe(
@@ -79,30 +96,73 @@ export class LayoutComponent implements OnInit {
     });
   }
 
+  // --- Drag & Seek Logic ---
+  startDrag(event: MouseEvent | TouchEvent): void {
+    if (event.cancelable) {
+      event.preventDefault(); // Prevent text selection/scroll
+    }
+    event.stopPropagation();
+    this.isDragging = true;
+    this.updateProgressFromEvent(event);
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDragMove(event: MouseEvent | TouchEvent): void {
+    if (this.isDragging) {
+      this.updateProgressFromEvent(event);
+    }
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  stopDrag(): void {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.playerService.seekTo(this.progress);
+    }
+  }
+
+  private updateProgressFromEvent(event: MouseEvent | TouchEvent): void {
+    if (!this.progressBarRef) return;
+
+    const progressBar = this.progressBarRef.nativeElement;
+    const rect = progressBar.getBoundingClientRect();
+
+    let clientX: number;
+    if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+    } else {
+      clientX = event.touches[0].clientX;
+    }
+
+    // Calculate position
+    const clickPosition = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const percentage = (clickPosition / rect.width) * 100;
+
+    // Update locally for smooth UI
+    this.progress = percentage;
+  }
+
   seekTo(event: MouseEvent): void {
-    event.stopPropagation(); // Prevent opening player
-    const progressBar = event.currentTarget as HTMLElement;
-    const clickPosition = event.offsetX;
-    const barWidth = progressBar.offsetWidth;
-    const percentage = (clickPosition / barWidth) * 100;
-    this.playerService.seekTo(percentage);
+    // Legacy click seek (fallback)
+    this.startDrag(event);
+    this.stopDrag();
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
+    // Avoid closing if dragging
+    if (this.isDragging) return;
+
     // Cerrar menú desktop si se hace clic fuera
     if (this.showMoreMenu) {
-      const target = event.target as HTMLElement;
-      // Asumiendo que el botón y el menú tienen ids o clases específicas, o simplemente cerramos
-      // si el clic no fue procesado por el botón de toggle (que usa stopPropagation)
       this.showMoreMenu = false;
     }
-
     // Cerrar menú de idioma si se hace clic fuera
     if (this.showLanguageMenu) {
       this.showLanguageMenu = false;
     }
-
     // Cerrar menú móvil si se hace clic fuera
     if (this.showMobileMoreMenu) {
       this.showMobileMoreMenu = false;
@@ -179,7 +239,14 @@ export class LayoutComponent implements OnInit {
   }
 
   openPlayer(): void {
-    this.router.navigate(['/player']);
+    // If dragging, do nothing
+    if (this.isDragging) return;
+
+    if (this.playerService.playbackContext === 'artist' && this.currentSong?.artistId) {
+      this.router.navigate(['/artist', this.currentSong.artistId]);
+    } else {
+      this.router.navigate(['/player']);
+    }
   }
 
   toggleLanguageMenu(event?: Event) {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 export interface Song {
   id: number | string; // Permitir string para IDs de API
-  artistId: number;
+  artistId: number | string;
   img: string;
   title: string;
   artist: string;

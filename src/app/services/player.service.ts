@@ -29,6 +29,7 @@ export class PlayerService {
   private isShuffleSubject = new BehaviorSubject<boolean>(false);
   private repeatModeSubject = new BehaviorSubject<'off' | 'all' | 'one'>('off');
   private isFavoritesPlayingSubject = new BehaviorSubject<boolean>(false);
+  private playbackContextSubject = new BehaviorSubject<string>('unknown'); // 'artist', 'playlist', 'album', etc.
 
   // Exponer como observables públicos
   currentSong$ = this.currentSongSubject.asObservable();
@@ -41,6 +42,9 @@ export class PlayerService {
   isShuffle$ = this.isShuffleSubject.asObservable();
   repeatMode$ = this.repeatModeSubject.asObservable();
   isFavoritesPlaying$ = this.isFavoritesPlayingSubject.asObservable();
+  playbackContext$ = this.playbackContextSubject.asObservable();
+
+  // ... existing code ...
 
   constructor(private musicApi: MusicApiService) {
     this.initializeAudioListeners();
@@ -123,9 +127,17 @@ export class PlayerService {
       this.currentSongSubject.next(song);
       this.updateMediaSessionMetadata(song);
 
-      // Reproducir directamente (iTunes previews)
+      // Reproducir directamente (iTunes previews o Dropbox)
       if (song.url) {
-        this.audio.src = song.url;
+        // Hotfix: Limpiar URLs corruptas de Dropbox (ej: ...dl=0?dl=1)
+        let cleanUrl = song.url;
+        if (cleanUrl.includes('dropbox.com') && cleanUrl.includes('dl=0')) {
+          cleanUrl = cleanUrl.replace('dl=0?dl=1', 'dl=1'); // Fix specific double param
+          cleanUrl = cleanUrl.replace('dl=0', 'dl=1'); // General fix
+        }
+
+        console.log('PlayerService: Cargando URL:', cleanUrl);
+        this.audio.src = cleanUrl;
         this.audio.load();
         this.play();
       } else {
@@ -161,9 +173,10 @@ export class PlayerService {
     }
   }
 
-  setPlaylist(songs: Song[], isFavorites: boolean = false): void {
+  setPlaylist(songs: Song[], isFavorites: boolean = false, context: string = 'unknown'): void {
     this.playlistSubject.next(songs);
     this.isFavoritesPlayingSubject.next(isFavorites);
+    this.playbackContextSubject.next(context);
   }
 
   resume(): void {
@@ -246,6 +259,10 @@ export class PlayerService {
 
   get isPlaying(): boolean {
     return this.isPlayingSubject.value;
+  }
+
+  get playbackContext(): string {
+    return this.playbackContextSubject.value;
   }
 
   get playlist(): Song[] {

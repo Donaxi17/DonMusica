@@ -1,4 +1,4 @@
-﻿import { Component, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, inject, signal, OnInit, ChangeDetectorRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
@@ -8,6 +8,8 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { RouterModule } from '@angular/router';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { DatabaseService, Artist } from '../../services/database.service';
+import { ItunesService } from '../../services/itunes.service';
 
 @Component({
   selector: 'app-artists',
@@ -21,10 +23,16 @@ export class ArtistsComponent implements OnInit {
   private voiceService = inject(VoiceRecognitionService);
   private cdr = inject(ChangeDetectorRef);
   networkService = inject(NetworkService);
+  private dbService = inject(DatabaseService);
+  private itunesService = inject(ItunesService);
 
   searchQuery = signal<string>('');
   isListening = false;
   selectedGenre = signal<string>('all');
+
+  // Artists Data
+  artists = signal<Artist[]>([]);
+  loading = signal<boolean>(true);
 
   genres = [
     { id: 'all', name: 'Todos', icon: 'grid', color: 'emerald' },
@@ -37,6 +45,17 @@ export class ArtistsComponent implements OnInit {
     { id: 'cristiana', name: 'Cristiana', icon: 'heart', color: 'indigo' }
   ];
 
+  filteredArtists = computed(() => {
+    const query = this.searchQuery().toLowerCase();
+    const genre = this.selectedGenre();
+
+    return this.artists().filter(artist => {
+      const matchesSearch = artist.name.toLowerCase().includes(query);
+      const matchesGenre = genre === 'all' || artist.genre?.toLowerCase() === genre;
+      return matchesSearch && matchesGenre;
+    });
+  });
+
   ngOnInit() {
     this.seoService.setSeoData('Artistas', 'Explora artistas musicales.');
 
@@ -47,6 +66,8 @@ export class ArtistsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    this.loadArtists();
   }
 
   toggleVoiceSearch() {
@@ -62,5 +83,30 @@ export class ArtistsComponent implements OnInit {
 
   onGenreChange(genreId: string): void {
     this.selectedGenre.set(genreId);
+  }
+
+  loadArtists() {
+    this.loading.set(true);
+    this.dbService.getArtists().subscribe(async (artists) => {
+      // Optimizacion: Solo buscamos imagen si no tiene una personalizada o si es la default
+      const artistsWithImages = await Promise.all(artists.map(async (artist) => {
+        if (!artist.image || artist.image.includes('default-artist')) {
+          try {
+            const itunesImage = await this.itunesService.getArtistImageBestEffort(artist.name).toPromise();
+            if (itunesImage) {
+              // Nota: Idealmente actualizariamos la DB con esta URL para no buscar siempre,
+              // pero por ahora solo la mostramos en vivo.
+              return { ...artist, image: itunesImage };
+            }
+          } catch (e) {
+            console.error('Error fetching iTunes image', e);
+          }
+        }
+        return artist;
+      }));
+
+      this.artists.set(artistsWithImages);
+      this.loading.set(false);
+    });
   }
 }

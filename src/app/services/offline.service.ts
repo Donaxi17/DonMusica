@@ -109,6 +109,67 @@ export class OfflineService {
         }
     }
 
+    async getItunesArtwork(title: string, artist: string): Promise<string | null> {
+        try {
+            // Clean up search terms
+            const cleanTitle = title.toLowerCase().trim();
+            const cleanArtist = artist.toLowerCase().trim();
+
+            const searchTerm = encodeURIComponent(`${title} ${artist}`);
+            const response = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&media=music&entity=song&limit=5`);
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (data.results && data.results.length > 0) {
+                // Find the best match by comparing title and artist
+                let bestMatch = null;
+                let bestScore = 0;
+
+                for (const track of data.results) {
+                    const trackTitle = (track.trackName || '').toLowerCase();
+                    const trackArtist = (track.artistName || '').toLowerCase();
+
+                    // Calculate similarity score
+                    let score = 0;
+
+                    // Exact title match
+                    if (trackTitle === cleanTitle) {
+                        score += 10;
+                    } else if (trackTitle.includes(cleanTitle) || cleanTitle.includes(trackTitle)) {
+                        score += 5;
+                    }
+
+                    // Exact artist match
+                    if (trackArtist === cleanArtist) {
+                        score += 10;
+                    } else if (trackArtist.includes(cleanArtist) || cleanArtist.includes(trackArtist)) {
+                        score += 5;
+                    }
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = track;
+                    }
+                }
+
+                // Only return if we have a reasonable match (score >= 10)
+                if (bestMatch && bestScore >= 10) {
+                    // Get high quality artwork (600x600)
+                    return bestMatch.artworkUrl100?.replace('100x100', '600x600') || bestMatch.artworkUrl100 || null;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            console.error('iTunes artwork search error:', error);
+            return null;
+        }
+    }
+
     private async downloadFile(url: string, onProgress?: (progress: number) => void): Promise<Blob> {
         const response = await fetch(url);
 

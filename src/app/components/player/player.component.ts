@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
 import { PlaylistService, Song } from '../../services/playlist.service';
@@ -15,6 +15,8 @@ import { Subscription } from 'rxjs';
   styleUrl: './player.component.css'
 })
 export class PlayerComponent implements OnInit, OnDestroy {
+  @ViewChild('progressBarRef') progressBarRef!: ElementRef<HTMLElement>;
+
   currentSong: Song | null = null;
   playlist: Song[] = [];
   currentArtist: Artist | null = null;
@@ -32,12 +34,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
   sleepTimer: any = null;
   timerMinutes = 0;
   imageLoadError = false;
+  isDragging = false;
 
   private subscriptions: Subscription[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     public playerService: PlayerService,
     public playlistService: PlaylistService
   ) { }
@@ -66,13 +70,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.playlist = playlist;
       }),
       this.playerService.currentTime$.subscribe(time => {
-        this.currentTime = time;
+        // Only update current time if not dragging to prevent stutter
+        if (!this.isDragging) {
+          this.currentTime = time;
+        }
       }),
       this.playerService.duration$.subscribe(dur => {
         this.duration = dur;
       }),
       this.playerService.progress$.subscribe(prog => {
-        this.progress = prog;
+        // Only update progress if not dragging
+        if (!this.isDragging) {
+          this.progress = prog;
+        }
       }),
       this.playerService.volume$.subscribe(vol => {
         this.volume = vol;
@@ -129,14 +139,53 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.playerService.nextTrack();
   }
 
-  seekTo(event: MouseEvent): void {
-    const progressBar = event.currentTarget as HTMLElement;
-    const clickPosition = event.offsetX;
-    const barWidth = progressBar.offsetWidth;
-    const percentage = (clickPosition / barWidth) * 100;
+  // --- Drag & Seek Logic ---
 
-    this.playerService.seekTo(percentage);
+  startDrag(event: MouseEvent | TouchEvent): void {
+    this.isDragging = true;
+    this.updateProgressFromEvent(event);
   }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDragMove(event: MouseEvent | TouchEvent): void {
+    if (this.isDragging) {
+      this.updateProgressFromEvent(event);
+    }
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  stopDrag(): void {
+    if (this.isDragging) {
+      this.isDragging = false;
+      // Commit the seek on drag end
+      this.playerService.seekTo(this.progress);
+    }
+  }
+
+  private updateProgressFromEvent(event: MouseEvent | TouchEvent): void {
+    if (!this.progressBarRef) return;
+
+    const progressBar = this.progressBarRef.nativeElement;
+    const rect = progressBar.getBoundingClientRect();
+
+    let clientX: number;
+    if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+    } else {
+      clientX = event.touches[0].clientX;
+    }
+
+    // Calculate position
+    const clickPosition = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const percentage = (clickPosition / rect.width) * 100;
+
+    // Update local UI state immediately for smooth dragging
+    this.progress = percentage;
+    this.currentTime = (this.duration * percentage) / 100;
+  }
+
 
   setVolume(value: number): void {
     this.playerService.setVolume(value);
@@ -173,7 +222,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/artists']);
+    this.location.back();
   }
 
   formatTime(seconds: number): string {

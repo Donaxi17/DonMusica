@@ -1,9 +1,10 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DatabaseService, Song, Artist } from '../../services/database.service';
 import { MusicApiService } from '../../services/music-api.service';
+import { Storage, ref, uploadBytesResumable, getDownloadURL } from '@angular/fire/storage';
 
 interface UploadProgress {
   uploading: boolean;
@@ -30,6 +31,8 @@ export class AdminComponent implements OnInit {
   private dbService = inject(DatabaseService);
   private router = inject(Router);
   private musicApi = inject(MusicApiService);
+  private storage = inject(Storage);
+  private zone = inject(NgZone);
 
   // Lists from Firebase
   artists = signal<Artist[]>([]);
@@ -64,7 +67,8 @@ export class AdminComponent implements OnInit {
     albumName: '',
     genre: '',
     year: new Date().getFullYear(),
-    duration: ''
+    duration: '',
+    externalUrl: '' // Nuevo campo para URL externa
   };
 
   // New artist/album/genre
@@ -333,11 +337,16 @@ export class AdminComponent implements OnInit {
   async onAudioFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      // Convertir FileList a Array
-      const files = Array.from(input.files).filter(file => file.type.startsWith('audio/'));
+      // Convertir FileList a Array y permitir audio/* o extensiones comunes si el tipo mime falla
+      const files = Array.from(input.files).filter(file =>
+        file.type.startsWith('audio/') ||
+        file.name.toLowerCase().endsWith('.mp3') ||
+        file.name.toLowerCase().endsWith('.wav') ||
+        file.name.toLowerCase().endsWith('.m4a')
+      );
 
       if (files.length === 0) {
-        alert('Por favor selecciona archivos de audio válidos');
+        alert('Por favor selecciona archivos de audio válidos (MP3, WAV, M4A)');
         return;
       }
 
@@ -391,80 +400,92 @@ export class AdminComponent implements OnInit {
   async uploadSong(): Promise<void> {
     // Validaciones básicas
     if (!this.songData.artistName) {
-      alert('Por favor selecciona un artista');
-      return;
+      if (this.songData.artistId) {
+        const artist = this.artists().find(a => a.id === this.songData.artistId);
+        if (artist) {
+          this.songData.artistName = artist.name;
+        } else {
+          alert('Por favor selecciona un artista válido');
+          return;
+        }
+      } else {
+        alert('Por favor selecciona un artista');
+        return;
+      }
     }
 
-    if (this.audioFiles.length === 0) {
-      alert('Por favor selecciona archivos de audio');
+    // Validación simplificada: solo requerimos título y URL
+    if (!this.songData.title || !this.songData.externalUrl) {
+      alert('Por favor ingresa el título y la URL de la canción');
       return;
     }
 
     try {
       this.uploadProgress.set({
         uploading: true,
-        progress: 0,
-        message: 'Iniciando carga...'
+        progress: 10,
+        message: 'Procesando enlace...'
       });
 
       // 1. Obtener imagen del Arista (Automático)
       const artist = this.artists().find(a => a.id === this.songData.artistId);
       const imageUrl = artist?.image || '/assets/img/default-music.png';
 
-      // 2. Iterar sobre cada canción
-      const totalFiles = this.audioFiles.length;
-      const previews = this.previewSongs();
+      // 2. Procesar URL (Convertir Dropbox DL=0 a DL=1)
+      let finalAudioUrl = this.songData.externalUrl;
 
-      for (let i = 0; i < totalFiles; i++) {
-        const file = this.audioFiles[i];
-        const preview = previews[i];
-        const currentNum = i + 1;
-
-        this.uploadProgress.set({
-          uploading: true,
-          progress: Math.round(((i) / totalFiles) * 100),
-          message: `Subiendo ${currentNum}/${totalFiles}: ${preview.title}...`
-        });
-
-        // Subir audio
-        // Subir audio simple (revertido para asegurar compilación)
-        const audioPath = `songs/${this.songData.artistName}/${this.songData.albumName || 'Sin Album'}/${Date.now()}_${file.name}`;
-        console.log(`Subiendo archivo: ${file.name}`);
-        const audioUrl = await this.dbService.uploadFile(audioPath, file);
-        console.log(`Archivo subido: ${audioUrl}`);
-
-        const song: Song = {
-          title: preview.title,
-          artist: this.songData.artistName,
-          url: audioUrl,
-          img: imageUrl, // Usamos la imagen del artista
-          duration: preview.duration,
-          album: this.songData.albumName || 'Sin Álbum',
-          genre: this.songData.genre,
-          year: this.songData.year
-        };
-
-        await this.dbService.addSong(song);
+      if (finalAudioUrl.includes('dropbox.com')) {
+        // Opción A: Ya tiene dl=0 (sea ?dl=0 o &dl=0) -> Reemplazar por dl=1
+        if (finalAudioUrl.includes('dl=0')) {
+          finalAudioUrl = finalAudioUrl.replace('dl=0', 'dl=1');
+        }
+        // Opción B: No tiene dl parameter -> Agregar
+        else if (!finalAudioUrl.includes('dl=1')) {
+          const separator = finalAudioUrl.includes('?') ? '&' : '?';
+          finalAudioUrl = finalAudioUrl + separator + 'dl=1';
+        }
       }
+
+      this.uploadProgress.set({
+        uploading: true,
+        progress: 50,
+        message: 'Guardando en base de datos...'
+      });
+
+      // 3. Crear Objeto Canción
+      const song: Song = {
+        title: this.songData.title,
+        artist: this.songData.artistName,
+        url: finalAudioUrl,
+        img: imageUrl, // Usamos la imagen del artista
+        duration: this.songData.duration || '0:00', // Duración opcional o manual
+        album: this.songData.albumName || 'Sin Álbum',
+        genre: this.songData.genre,
+        year: this.songData.year
+      };
+
+      await this.dbService.addSong(song);
 
       this.uploadProgress.set({
         uploading: false,
         progress: 100,
-        message: `✅ ¡${totalFiles} canciones subidas exitosamente!`
+        message: `✅ ¡Canción guardada exitosamente!`
       });
 
       this.resetForm();
+      // Limpiar mensaje después de unos segundos
       setTimeout(() => {
         this.uploadProgress.set({ uploading: false, progress: 0, message: '' });
       }, 4000);
 
-    } catch (error) {
-      console.error('Error al subir:', error);
+    } catch (error: any) {
+      console.error('Error al guardar:', error);
       this.uploadProgress.set({
         uploading: false,
         progress: 0,
-        message: '❌ Error en la subida. Revisa la consola.'
+        message: `❌ Error: ${error.message || 'Error desconocido'}`
       });
+      alert(`Error al guardar: ${error.message || error}`);
     }
   }
 
@@ -477,7 +498,8 @@ export class AdminComponent implements OnInit {
       albumName: '',
       genre: '',
       year: new Date().getFullYear(),
-      duration: ''
+      duration: '',
+      externalUrl: ''
     };
     this.audioFiles = [];
     this.previewSongs.set([]);

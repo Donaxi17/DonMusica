@@ -1,25 +1,35 @@
 <div class="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
     <!-- Ambient Background Effects -->
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[128px] pointer-events-none">
+    <!-- Ambient Background Effects -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-[128px] pointer-events-none transition-colors duration-500"
+        [ngClass]="mode === 'offline' ? 'bg-cyan-600/10' : 'bg-emerald-600/10'">
     </div>
-    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-green-600/10 rounded-full blur-[128px] pointer-events-none">
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-[128px] pointer-events-none transition-colors duration-500"
+        [ngClass]="mode === 'offline' ? 'bg-blue-600/10' : 'bg-green-600/10'">
     </div>
 
     <div class="max-w-xl w-full relative z-10 animate-fade-in-up">
 
         <!-- Header -->
         <div class="text-center mb-8 md:mb-12">
-            <div
-                class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 mb-6 shadow-2xl shadow-emerald-500/10 ring-1 ring-white/5">
-                <app-svg-icon name="cloud-download" class="text-emerald-400 drop-shadow-md" width="40"
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6 shadow-2xl ring-1 ring-white/5 transition-all duration-300"
+                [ngClass]="{
+                    'bg-emerald-500/10 border border-emerald-500/20 shadow-emerald-500/10': mode !== 'offline',
+                    'bg-cyan-500/10 border border-cyan-500/20 shadow-cyan-500/10': mode === 'offline'
+                }">
+                <app-svg-icon [name]="mode === 'offline' ? 'cloud-download' : 'cloud-download'"
+                    class="drop-shadow-md transition-colors duration-300"
+                    [classList]="mode === 'offline' ? 'text-cyan-400' : 'text-emerald-400'" width="40"
                     height="40"></app-svg-icon>
             </div>
 
             <h1 class="text-3xl md:text-5xl font-black mb-3 tracking-tight">
-                <span
-                    class="bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent">
-                    Preparando descarga
+                <span class="bg-clip-text text-transparent bg-gradient-to-r" [ngClass]="{
+                          'from-emerald-400 via-green-400 to-emerald-500': mode !== 'offline',
+                          'from-cyan-400 via-blue-400 to-cyan-500': mode === 'offline'
+                      }">
+                    {{ mode === 'offline' ? 'Guardando Offline' : 'Preparando descarga' }}
                 </span>
             </h1>
 
@@ -36,20 +46,22 @@
         <div
             class="bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 text-center mb-8 shadow-2xl shadow-black/50 relative overflow-hidden">
             <!-- Glow effect inside card -->
-            <div
-                class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent">
+            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent to-transparent transition-all duration-500"
+                [ngClass]="mode === 'offline' ? 'via-cyan-500/50' : 'via-emerald-500/50'">
             </div>
 
             <div *ngIf="countdown > 0" class="mb-2">
                 <div class="relative inline-block mb-6">
                     <!-- Outer glow ring -->
-                    <div class="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
+                    <div class="absolute inset-0 blur-xl rounded-full transition-colors duration-300"
+                        [ngClass]="mode === 'offline' ? 'bg-cyan-500/20' : 'bg-emerald-500/20'"></div>
 
                     <svg class="w-28 h-28 transform -rotate-90 relative z-10 filter drop-shadow-lg">
                         <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="6" fill="none"
                             class="text-zinc-800/80"></circle>
                         <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="6" fill="none"
-                            class="text-emerald-400 transition-all duration-1000 ease-linear"
+                            class="transition-all duration-1000 ease-linear"
+                            [ngClass]="mode === 'offline' ? 'text-cyan-400' : 'text-emerald-400'"
                             [style.stroke-dasharray]="314" [style.stroke-dashoffset]="314 * (countdown / 5)"
                             stroke-linecap="round"></circle>
                     </svg>
@@ -59,25 +71,33 @@
                 </div>
                 <!-- Status Text -->
                 <div class="space-y-1">
-                    <p class="text-zinc-300 font-medium">Generando enlace seguro...</p>
+                    <p class="text-zinc-300 font-medium">
+                        {{ mode === 'offline' ? 'Preparando almacenamiento...' : 'Generando enlace seguro...' }}
+                    </p>
                     <p class="text-xs text-zinc-500">Por favor espera un momento</p>
                 </div>
             </div>
 
             <div *ngIf="countdown === 0" class="animate-fade-in-up">
                 <button (click)="startDownload()"
-                    class="group w-full relative overflow-hidden px-4 md:px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 whitespace-nowrap">
+                    class="group w-full relative overflow-hidden px-4 md:px-8 py-4 text-black font-bold rounded-2xl text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl flex items-center justify-center gap-3 whitespace-nowrap"
+                    [ngClass]="{
+                        'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20': mode !== 'offline',
+                        'bg-cyan-500 hover:bg-cyan-400 shadow-cyan-500/20': mode === 'offline'
+                    }">
                     <!-- Button sheen effect -->
                     <div
                         class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10">
                     </div>
 
-                    <app-svg-icon name="download" width="20" height="20" class="relative z-20"></app-svg-icon>
-                    <span class="relative z-20">DESCARGAR AHORA</span>
+                    <app-svg-icon [name]="mode === 'offline' ? 'download' : 'download'" width="20" height="20"
+                        class="relative z-20"></app-svg-icon>
+                    <span class="relative z-20">{{ mode === 'offline' ? 'GUARDAR EN APP' : 'DESCARGAR AHORA' }}</span>
                 </button>
                 <p class="text-zinc-500 text-xs mt-4 font-medium flex items-center justify-center gap-1.5 opacity-80">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Enlace listo para descargar
+                    <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+                        [ngClass]="mode === 'offline' ? 'bg-cyan-500' : 'bg-emerald-500'"></span>
+                    {{ mode === 'offline' ? 'Listo para guardar offline' : 'Enlace listo para descargar' }}
                 </p>
             </div>
         </div>
