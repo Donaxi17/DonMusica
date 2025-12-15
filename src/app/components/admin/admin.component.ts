@@ -37,7 +37,7 @@ export class AdminComponent implements OnInit {
   // Lists from Firebase
   artists = signal<Artist[]>([]);
   albums = signal<Album[]>([]);
-  genres = signal<string[]>(['Reggaeton', 'Trap Latino', 'Pop', 'Vallenato', 'Salsa', 'Champeta', 'Cristiana']);
+  genres = signal<string[]>(['Reggaeton', 'Trap', 'Pop', 'Vallenato', 'Salsa', 'Champeta', 'Cristiana']);
 
   // Filter
   selectedGenreFilter = signal<string>('all');

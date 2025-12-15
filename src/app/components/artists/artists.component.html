@@ -135,6 +135,7 @@
 
                     <!-- Image -->
                     <img [src]="artist.image || '/assets/img/default-artist.jpg'" [alt]="artist.name"
+                        (error)="artist.image = '/assets/img/default-artist.jpg'" loading="lazy" decoding="async"
                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
 
                     <!-- Gradient Overlay -->
@@ -171,7 +172,7 @@
         </div>
         } <!-- End else block (network check) -->
     </div>
-    <div>   
+    <div>
         <app-ads-container [index]="2"></app-ads-container>
     </div>
 </div>
