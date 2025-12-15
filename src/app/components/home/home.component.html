@@ -41,33 +41,13 @@
                 Tu portal definitivo de música urbana. Escucha, descarga y comparte sin límites.
             </p>
 
-            <!-- Global Search Bar (UX Improvement) -->
-            <div class="w-full max-w-lg mx-auto mb-8 animate-fade-in-up relative z-20 px-4"
-                style="animation-delay: 250ms;">
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="h-6 w-6 text-zinc-400 group-focus-within:text-emerald-500 transition-colors"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input type="text"
-                        class="block w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:bg-zinc-900/80 transition-all text-lg shadow-xl"
-                        placeholder="Busca artistas, canciones..." (keydown.enter)="navigateTo('/browse')"
-                        (click)="navigateTo('/browse')">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        <span
-                            class="text-zinc-500 text-xs border border-white/10 rounded px-2 py-1 hidden md:block">Enter</span>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Buttons Action Area -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up w-full px-4"
                 style="animation-delay: 300ms;">
 
-                <button (click)="openAdAndStart()" aria-label="Comenzar a escuchar música gratis"
+                <button (click)="navigateToArtists()" aria-label="Comenzar a escuchar música gratis"
                     class="w-full sm:w-auto h-14 px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-full text-lg md:text-xl transition-all transform active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M7 6v12l10-6z" />
@@ -1111,11 +1091,6 @@
             </div>
         </div>
 
-        <!-- Ad Before Contact -->
-        <div class="mb-8">
-            <app-ads-container [index]="1"></app-ads-container>
-        </div>
-
         <!-- Contact Buttons - Now visible on all screens -->
         <div class="grid grid-cols-2 gap-3 md:gap-4 pb-0 max-w-md mx-auto">
             <button (click)="scrollToRequest()"
@@ -1138,5 +1113,9 @@
             </a>
         </div>
 
+        <!-- Ad Before Contact -->
+        <div class="mb-8">
+            <app-ads-container [index]="1"></app-ads-container>
+        </div>
     </div>
 </div>

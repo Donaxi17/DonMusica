@@ -117,8 +117,7 @@
                             <path
                                 d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                         </svg>
-                        <span class="relative z-10">{{ storageWarningLevel === 'danger' ? 'ACTUALIZAR PLAN' : 'AUMENTAR
-                            ESPACIO' }}</span>
+                        <span class="relative z-10">{{ upgradeButtonText }}</span>
                     </button>
                     <!-- Upgrade Promo when Safe -->
                     <button *ngIf="!canUpgrade()"
@@ -391,43 +390,74 @@
                             </div>
                             <h4 class="text-white font-bold mb-1">{{ selectedFolder?.id === '2' ? 'Sin favoritas' :
                                 'Carpeta vacía' }}</h4>
-                            <p class="text-xs text-zinc-500 max-w-[200px]">{{ selectedFolder?.id === '2' ? 'Marca
-                                canciones con el corazón para verlas aquí.' : 'Aún no has subido canciones aquí.' }}</p>
+                            <p class="text-xs text-zinc-500 max-w-[200px]">{{ emptyFolderMessage }}</p>
                         </div>
 
                         <!-- File Items (Standard List to avoid inner scroll) -->
-                        <div *ngIf="filteredMusicFiles.length > 0"
-                            class="w-full bg-zinc-900/10 rounded-3xl border border-zinc-800/30 overflow-hidden">
+                        <div *ngIf="filteredMusicFiles.length > 0" class="w-full">
                             <div class="flex flex-col">
                                 <div *ngFor="let file of filteredMusicFiles"
-                                    class="flex items-center gap-3 p-2 transition-colors group relative rounded-xl border border-transparent hover:border-zinc-700/50 my-1 px-2"
+                                    class="flex items-center gap-3 p-2 transition-colors group relative rounded-xl border my-1 px-2"
                                     [ngClass]="{
-                                        'bg-red-500/10 border-red-500/10 hover:bg-red-500/20 hover:border-red-500/20': file.isFavorite,
-                                        'bg-emerald-500/5 border-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/10': !file.isFavorite
+                                        'bg-emerald-500/20 border-emerald-500/50': currentlyPlayingSong?.id === file.id && !file.isFavorite,
+                                        'bg-rose-500/20 border-rose-500/50': currentlyPlayingSong?.id === file.id && file.isFavorite,
+                                        'hover:bg-white/5 border-transparent': currentlyPlayingSong?.id !== file.id,
+                                        'bg-red-500/10 hover:bg-red-500/20': file.isFavorite && currentlyPlayingSong?.id !== file.id,
+                                        'bg-emerald-500/5 hover:bg-emerald-500/10': !file.isFavorite && currentlyPlayingSong?.id !== file.id
                                     }">
 
                                     <!-- Icon/Image -->
                                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm border border-white/5 relative group-active:scale-95 transition-transform"
                                         (click)="playFile(file)">
-                                        <img *ngIf="file.coverUrl && !file.hasImageError" [src]="file.coverUrl"
-                                            (error)="handleImageError(file)" class="w-full h-full object-cover">
-                                        <!-- Fallback Icon -->
-                                        <div *ngIf="!file.coverUrl || file.hasImageError"
-                                            class="w-full h-full flex items-center justify-center"
-                                            [ngClass]="file.isFavorite ? 'bg-red-500/20' : 'bg-emerald-500/20'">
-                                            <svg class="w-6 h-6"
-                                                [ngClass]="file.isFavorite ? 'text-red-500' : 'text-emerald-500'"
-                                                fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                                            </svg>
+
+                                        <!-- Image or Fallback -->
+                                        <div class="absolute inset-0 z-0">
+                                            <img *ngIf="file.coverUrl && !file.hasImageError" [src]="file.coverUrl"
+                                                (error)="handleImageError(file)" class="w-full h-full object-cover">
+                                            <div *ngIf="!file.coverUrl || file.hasImageError"
+                                                class="w-full h-full flex items-center justify-center"
+                                                [ngClass]="file.isFavorite ? 'bg-red-500/20' : 'bg-emerald-500/20'">
+                                                <svg class="w-6 h-6"
+                                                    [ngClass]="file.isFavorite ? 'text-red-500' : 'text-emerald-500'"
+                                                    fill="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                                </svg>
+                                            </div>
                                         </div>
-                                        <!-- Play Overlay -->
-                                        <div
-                                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
+
+                                        <div class="absolute inset-0 z-10 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            [class.opacity-100]="currentlyPlayingSong?.id === file.id"
+                                            [ngClass]="{'bg-black/60': currentlyPlayingSong?.id === file.id}">
+
+                                            <!-- Playing Equalizer (Only when playing this song) -->
+                                            <div *ngIf="currentlyPlayingSong?.id === file.id && isPlaying"
+                                                class="flex gap-0.5 items-end h-4 group-hover:hidden">
+                                                <div class="w-1 animate-music-bar"
+                                                    [ngClass]="file.isFavorite ? 'bg-rose-500' : 'bg-emerald-500'">
+                                                </div>
+                                                <div class="w-1 animate-music-bar animation-delay-75"
+                                                    [ngClass]="file.isFavorite ? 'bg-rose-500' : 'bg-emerald-500'">
+                                                </div>
+                                                <div class="w-1 animate-music-bar animation-delay-150"
+                                                    [ngClass]="file.isFavorite ? 'bg-rose-500' : 'bg-emerald-500'">
+                                                </div>
+                                            </div>
+
+                                            <!-- Play/Pause Icon -->
+                                            <div class="hidden group-hover:block text-white drop-shadow-md"
+                                                [class.block]="currentlyPlayingSong?.id === file.id && !isPlaying">
+                                                <!-- Show Pause if playing and active -->
+                                                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"
+                                                    *ngIf="currentlyPlayingSong?.id === file.id && isPlaying">
+                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                </svg>
+                                                <!-- Show Play otherwise -->
+                                                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"
+                                                    *ngIf="currentlyPlayingSong?.id !== file.id || !isPlaying">
+                                                    <path d="M8 5v14l11-7z" />
+                                                </svg>
+                                            </div>
                                         </div>
                                     </div>
 

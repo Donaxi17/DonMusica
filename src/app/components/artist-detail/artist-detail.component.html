@@ -1,4 +1,4 @@
-<div class="h-full bg-zinc-950 text-white pb-32 overflow-y-auto">
+<div class="h-full bg-zinc-950 text-white overflow-y-auto">
 
     <!-- Header / Hero Section -->
     <div class="relative w-full h-80 md:h-[400px]">
@@ -44,7 +44,7 @@
 
                 @if (artist()) {
                 <div class="flex items-center gap-4 text-zinc-300 text-sm md:text-base">
-                    <span>{{ listeners() }} oyentes mensuales</span>
+                    <span>{{ listeners() }} Seguidores</span>
                     <span class="w-1 h-1 bg-zinc-500 rounded-full"></span>
                     <span class="px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-xs text-white">
                         {{ artist()?.genre || 'Música' }}
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Controls & Content -->
-    <div class="px-6 md:px-10 py-6 max-w-7xl mx-auto">
+    <div class="px-6 md:px-10 pt-6 max-w-7xl mx-auto">
 
         <!-- Current Song Info (if playing) -->
         <div *ngIf="currentlyPlayingSong()" class="mb-8">
@@ -93,8 +93,11 @@
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="relative h-2 bg-zinc-800 rounded-full cursor-pointer group overflow-hidden touch-none mb-6">
-                    <div class="absolute inset-y-0 left-0 rounded-full transition-all bg-gradient-to-r from-emerald-500 to-green-600"
+                <!-- Progress Bar -->
+                <div #progressBarRef (mousedown)="startDrag($event)" (touchstart)="startDrag($event)"
+                    class="relative h-2 bg-zinc-800 rounded-full cursor-pointer group overflow-hidden touch-none mb-6">
+                    <div class="absolute inset-y-0 left-0 rounded-full transition-all"
+                        [ngClass]="isFavorite(currentlyPlayingSong()?.id || '') ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-emerald-500 to-green-600'"
                         [style.width.%]="progress"></div>
                     <div
                         class="absolute inset-0 bg-emerald-400/20 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -106,7 +109,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center justify-start md:justify-between gap-4 mb-8">
+        <div class="flex items-center justify-between gap-4 mb-8">
             <!-- Left: Shuffle, Repeat & Timer -->
             <div class="flex items-center gap-2">
                 <button (click)="toggleShuffle()" [class.text-emerald-400]="isShuffle"
@@ -152,7 +155,7 @@
 
                     <!-- Timer Menu Dropdown -->
                     <div *ngIf="showTimerMenu"
-                        class="absolute bottom-full right-0 md:left-0 md:right-auto mb-2 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in flex flex-col">
+                        class="absolute bottom-full left-0 md:left-auto mb-2 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in flex flex-col">
                         <div class="px-3 py-2 text-xs font-bold text-zinc-500 border-b border-zinc-800">
                             Detener audio en:
                         </div>
@@ -186,7 +189,8 @@
                     </svg>
                 </button>
                 <button (click)="togglePlayPause()"
-                    class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 shadow-emerald-500/30">
+                    class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all transform hover:scale-105 shadow-lg"
+                    [ngClass]="isFavorite(currentlyPlayingSong()?.id || '') ? 'bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/30' : 'bg-gradient-to-r from-emerald-500 to-green-600 shadow-emerald-500/30'">
                     <svg class="w-5 h-5 md:w-6 md:h-6 text-black" fill="currentColor" viewBox="0 0 24 24"
                         *ngIf="!isPlaying">
                         <path d="M7 6v12l10-6z" />
@@ -207,43 +211,49 @@
 
             <!-- Right: Volume Control - Hidden on mobile -->
             <div class="hidden md:flex items-center gap-3 min-w-[140px] order-3">
-                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" *ngIf="volume > 50">
-                    <path
-                        d="M16 21c3.527-1.547 5.999-4.909 5.999-9S19.527 4.547 16 3v2c2.387 1.386 3.999 4.047 3.999 7S18.387 17.614 16 19v2z" />
-                    <path
-                        d="M16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5zM4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2z" />
-                </svg>
-                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24"
-                    *ngIf="volume > 0 && volume <= 50">
-                    <path
-                        d="M4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2zM16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5z" />
-                </svg>
-                <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" *ngIf="volume === 0">
-                    <path
-                        d="m21.707 20.293-2.023-2.023A9.566 9.566 0 0 0 21.999 12c0-4.091-2.472-7.453-5.999-9v2c2.387 1.386 3.999 4.047 3.999 7a8.113 8.113 0 0 1-1.672 4.913l-1.285-1.285C17.644 14.536 18 13.19 18 12c0-1.771-.775-3.9-2-5v7.586l-2-2V2.132L7.404 7.586 5.586 5.768 13.596 1.86c.324-.176.707-.16 1.004.044.298.205.4.597.4.996v18.2a1 1 0 0 1-1.707.707L7.697 17H4c-1.103 0-2-.897-2-2v-6c0-1.103.897-2 2-2h.879L3.102 5.223 4.516 3.809l17.191 17.191-1.414 1.414z" />
-                </svg>
+                <span class="text-xs font-mono text-zinc-400 w-8 text-right">{{volume}}%</span>
+                <button (click)="toggleMute()" class="focus:outline-none">
+                    <svg class="w-5 h-5 text-zinc-400 hover:text-white transition-colors" fill="currentColor"
+                        viewBox="0 0 24 24" *ngIf="volume > 50">
+                        <path
+                            d="M16 21c3.527-1.547 5.999-4.909 5.999-9S19.527 4.547 16 3v2c2.387 1.386 3.999 4.047 3.999 7S18.387 17.614 16 19v2z" />
+                        <path
+                            d="M16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5zM4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2z" />
+                    </svg>
+                    <svg class="w-5 h-5 text-zinc-400 hover:text-white transition-colors" fill="currentColor"
+                        viewBox="0 0 24 24" *ngIf="volume > 0 && volume <= 50">
+                        <path
+                            d="M4 17h2.697L14 21.868V2.132L6.697 7H4c-1.103 0-2 .897-2 2v6c0 1.103.897 2 2 2zM16 7v10c1.225-1.1 2-3.229 2-5s-.775-3.9-2-5z" />
+                    </svg>
+                    <svg class="w-5 h-5 text-red-500 hover:text-white transition-colors" fill="currentColor"
+                        viewBox="0 0 24 24" *ngIf="volume === 0">
+                        <path
+                            d="m21.707 20.293-2.023-2.023A9.566 9.566 0 0 0 21.999 12c0-4.091-2.472-7.453-5.999-9v2c2.387 1.386 3.999 4.047 3.999 7a8.113 8.113 0 0 1-1.672 4.913l-1.285-1.285C17.644 14.536 18 13.19 18 12c0-1.771-.775-3.9-2-5v7.586l-2-2V2.132L7.404 7.586 5.586 5.768 13.596 1.86c.324-.176.707-.16 1.004.044.298.205.4.597.4.996v18.2a1 1 0 0 1-1.707.707L7.697 17H4c-1.103 0-2-.897-2-2v-6c0-1.103.897-2 2-2h.879L3.102 5.223 4.516 3.809l17.191 17.191-1.414 1.414z" />
+                    </svg>
+                </button>
+
                 <input type="range" min="0" max="100" [value]="volume" (input)="setVolume($any($event.target).value)"
-                    class="flex-1 h-1 bg-zinc-800 rounded-full appearance-none cursor-pointer
+                    class="flex-1 h-1 rounded-full appearance-none cursor-pointer
                         [&::-webkit-slider-thumb]:appearance-none 
                         [&::-webkit-slider-thumb]:w-3 
                         [&::-webkit-slider-thumb]:h-3 
                         [&::-webkit-slider-thumb]:rounded-full 
-                        [&::-webkit-slider-thumb]:bg-emerald-500
                         [&::-webkit-slider-thumb]:cursor-pointer
-                        [&::-webkit-slider-thumb]:hover:bg-emerald-400
                         [&::-moz-range-thumb]:w-3 
                         [&::-moz-range-thumb]:h-3 
                         [&::-moz-range-thumb]:rounded-full 
-                        [&::-moz-range-thumb]:bg-emerald-500
                         [&::-moz-range-thumb]:border-0
-                        [&::-moz-range-thumb]:cursor-pointer
-                        [&::-moz-range-thumb]:hover:bg-emerald-400">
+                        [&::-moz-range-thumb]:cursor-pointer"
+                    [ngClass]="isFavorite(currentlyPlayingSong()?.id || '') ? 
+                        '[&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:hover:bg-red-400 [&::-moz-range-thumb]:bg-red-500 [&::-moz-range-thumb]:hover:bg-red-400' : 
+                        '[&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:hover:bg-emerald-400 [&::-moz-range-thumb]:bg-emerald-500 [&::-moz-range-thumb]:hover:bg-emerald-400'"
+                    [style.background]="'linear-gradient(to right, ' + (isFavorite(currentlyPlayingSong()?.id || '') ? '#ef4444' : '#10b981') + ' 0%, ' + (isFavorite(currentlyPlayingSong()?.id || '') ? '#ef4444' : '#10b981') + ' ' + volume + '%, #27272a ' + volume + '%, #27272a 100%)'">
             </div>
         </div>
 
         <!-- Songs List -->
         <div>
-            <h2 class="text-xl font-bold text-white mb-4">Populares</h2>
+            <h2 class="text-xl font-bold text-white">Populares</h2>
 
             @if (loading()) {
             <!-- Skeletons -->
@@ -297,17 +307,22 @@
                         <button
                             class="absolute inset-0 bg-black/60 rounded-full items-center justify-center hidden group-hover:flex text-white transition-all shadow-md active:scale-95"
                             [class.flex]="currentlyPlayingSong()?.id === song.id">
-                            <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"
+                                *ngIf="currentlyPlayingSong()?.id !== song.id || !isPlaying">
                                 <path d="M8 5v14l11-7z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"
+                                *ngIf="currentlyPlayingSong()?.id === song.id && isPlaying">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                             </svg>
                         </button>
                     </div>
 
                     <!-- Image -->
                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 relative">
-                        <img [src]="song.img || artist()?.image || '/assets/img/default-music.png'"
+                        <img [src]="song.img || artist()?.image || '/assets/icons/icon-512x512.png'"
                             class="w-full h-full object-cover"
-                            (error)="$any($event.target).src = '/assets/img/default-music.png'">
+                            (error)="$any($event.target).src = '/assets/icons/icon-512x512.png'">
                         <!-- Offline Indicator -->
                         <div *ngIf="isOffline(song.id || '')"
                             class="absolute bottom-0 right-0 bg-emerald-500 text-black p-0.5 rounded-tl-md">
@@ -338,7 +353,7 @@
                         <!-- Heart Button -->
                         <button
                             class="w-8 h-8 hidden sm:flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
-                            [ngClass]="isFavorite(song.id || '') ? 'text-emerald-500' : 'text-zinc-400 hover:text-white'"
+                            [ngClass]="isFavorite(song.id || '') ? 'text-red-500' : 'text-zinc-400 hover:text-white'"
                             (click)="toggleFavorite(song, $event)">
                             <app-svg-icon [name]="isFavorite(song.id || '') ? 'heart-filled' : 'heart'"
                                 class="w-5 h-5"></app-svg-icon>
@@ -410,6 +425,12 @@
             </div>
             }
         </div>
+
+
+        <div class="">
+            <app-ads-container [index]="2"></app-ads-container>
+        </div>
+
     </div>
     <!-- Playlist Selection Modal -->
     @if (showPlaylistModal()) {
@@ -470,8 +491,6 @@
         </div>
     </div>
     }
-
-
 
     <style>
         .mask-image-gradient {

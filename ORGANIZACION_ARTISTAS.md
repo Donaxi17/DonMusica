@@ -80,7 +80,6 @@ Este archivo sirve como guía para subir los artistas en el orden correcto en el
 
 | # | Artista |
 |---|---|
-| 1 | **Mr. Black El Presidente** |
 | 2 | **Kevin Flórez** |
 | 3 | **Twister El Rey** |
 | 4 | **Criss & Ronny** |

@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-zinc-950 pb-20 animate-fade-in">
+<div class="min-h-screen bg-zinc-950 animate-fade-in">
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-8">
 
         <!-- Header -->
@@ -197,11 +197,19 @@
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-y-auto px-4 py-6">
+            <div class="flex-1 overflow-y-auto px-4 pt-2">
                 <pre
                     class="text-zinc-200 text-sm md:text-base leading-relaxed md:leading-loose whitespace-pre-wrap font-sans mb-8">{{selectedLyric()?.content}}</pre>
+
+                <div class="pb-14">
+                    <app-ads-container [index]="2"></app-ads-container>
+                </div>
             </div>
         </div>
     </div>
     }
+
+    <div class="">
+        <app-ads-container [index]="2"></app-ads-container>
+    </div>
 </div>

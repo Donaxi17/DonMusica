@@ -80,6 +80,8 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
           // MOBILE: 320x50
           iframe.style.width = '320px';
           iframe.style.height = '50px';
+          iframe.style.transform = 'scale(0.95)';
+          iframe.style.transformOrigin = 'center';
           adContent = `
                 <!DOCTYPE html>
                 <html>

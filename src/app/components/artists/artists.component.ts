@@ -8,13 +8,15 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { RouterModule } from '@angular/router';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
-import { DatabaseService, Artist } from '../../services/database.service';
+import { DatabaseService, Artist, Song } from '../../services/database.service';
+import { combineLatest } from 'rxjs';
 import { ItunesService } from '../../services/itunes.service';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })
@@ -50,8 +52,10 @@ export class ArtistsComponent implements OnInit {
     const genre = this.selectedGenre();
 
     return this.artists().filter(artist => {
-      const matchesSearch = artist.name.toLowerCase().includes(query);
-      const matchesGenre = genre === 'all' || artist.genre?.toLowerCase() === genre;
+      const matchesSearch = artist.name.toLowerCase().includes(query) ||
+        (artist.songs && artist.songs.some(s => s.title.toLowerCase().includes(query)));
+
+      const matchesGenre = genre === 'all' || (artist.genre && artist.genre.toLowerCase().includes(genre));
       return matchesSearch && matchesGenre;
     });
   });
@@ -81,21 +85,41 @@ export class ArtistsComponent implements OnInit {
     }
   }
 
-  onGenreChange(genreId: string): void {
+  onGenreChange(genreId: string, event?: Event): void {
     this.selectedGenre.set(genreId);
+
+    if (event) {
+      const target = (event.target as HTMLElement).closest('button');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
   }
 
   loadArtists() {
     this.loading.set(true);
-    this.dbService.getArtists().subscribe(async (artists) => {
+
+    // Use combineLatest to get both artists and songs (real-time updates)
+    combineLatest([
+      this.dbService.getArtists(),
+      this.dbService.getSongs()
+    ]).subscribe(async ([artists, songs]: [Artist[], Song[]]) => {
+
+      // Map songs to artists for searching
+      const artistsWithSongs = artists.map(artist => {
+        // Find songs where artist name matches (loose matching)
+        const artistSongs = songs.filter(song =>
+          song.artist && song.artist.toLowerCase().includes(artist.name.toLowerCase())
+        );
+        return { ...artist, songs: artistSongs };
+      });
+
       // Optimizacion: Solo buscamos imagen si no tiene una personalizada o si es la default
-      const artistsWithImages = await Promise.all(artists.map(async (artist) => {
+      const artistsWithImages = await Promise.all(artistsWithSongs.map(async (artist) => {
         if (!artist.image || artist.image.includes('default-artist')) {
           try {
             const itunesImage = await this.itunesService.getArtistImageBestEffort(artist.name).toPromise();
             if (itunesImage) {
-              // Nota: Idealmente actualizariamos la DB con esta URL para no buscar siempre,
-              // pero por ahora solo la mostramos en vivo.
               return { ...artist, image: itunesImage };
             }
           } catch (e) {

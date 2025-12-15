@@ -128,18 +128,14 @@ export class SpotifyService {
                     }
                 }
 
-                // Return highest quality image if we have a good match
                 if (bestMatch && bestScore >= 10) {
                     const images = bestMatch.album.images;
                     if (images && images.length > 0) {
-                        console.log(`✅ Found artwork for "${searchTitle}" by "${searchArtist}"`);
-                        // Return the largest image (first one is usually the largest)
                         return images[0].url;
                     }
                 }
             }
 
-            console.log(`❌ No artwork found for "${searchTitle}" by "${searchArtist}"`);
             return null;
         } catch (error) {
             console.error('❌ Spotify search error:', error);
@@ -147,7 +143,66 @@ export class SpotifyService {
         }
     }
 
+    async getTrackMetadata(title: string, artist: string): Promise<{ image: string, duration_ms: number } | null> {
+        try {
+            const token = await this.getAccessToken();
+            // Simple query
+            const query = encodeURIComponent(`track:${title} artist:${artist}`);
+
+            const response = await fetch(
+                `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            if (!response.ok) return null;
+            const data = await response.json();
+
+            if (data.tracks?.items?.length > 0) {
+                const track = data.tracks.items[0];
+                return {
+                    image: track.album.images[0]?.url,
+                    duration_ms: track.duration_ms
+                };
+            }
+            return null;
+        } catch (e) {
+            console.error('Error fetching track metadata', e);
+            return null;
+        }
+    }
+
     async getTrackArtwork(title: string, artist: string): Promise<string | null> {
         return this.searchTrack(title, artist);
+    }
+
+    async getArtistStats(artistName: string): Promise<{ followers: number; popularity: number; image?: string } | null> {
+        try {
+            const token = await this.getAccessToken();
+            const query = encodeURIComponent(artistName);
+
+            const response = await fetch(
+                `https://api.spotify.com/v1/search?q=${query}&type=artist&limit=1`,
+                {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }
+            );
+
+            if (!response.ok) return null;
+
+            const data = await response.json();
+
+            if (data.artists && data.artists.items && data.artists.items.length > 0) {
+                const artist = data.artists.items[0];
+                return {
+                    followers: artist.followers.total,
+                    popularity: artist.popularity,
+                    image: artist.images[0]?.url
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching artist stats:', error);
+            return null;
+        }
     }
 }

@@ -83,7 +83,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
           <div class="space-y-6">
             
             <!-- WhatsApp Card (Featured) -->
-            <a href="https://wa.me/573001234567" target="_blank" 
+            <a href="https://wa.me/573017966272" target="_blank" 
                class="block bg-gradient-to-br from-green-900/20 to-zinc-900/60 p-6 rounded-3xl border border-green-500/20 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-900/20 group cursor-pointer relative overflow-hidden">
                <div class="absolute right-[-20px] top-[-20px] bg-green-500/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all"></div>
               <div class="flex items-center gap-5 relative z-10">
@@ -93,7 +93,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                 <div>
                   <h3 class="text-lg font-semibold text-white mb-1 group-hover:text-green-400 transition-colors">WhatsApp Directo</h3>
                   <p class="text-zinc-400 text-xs">Respuesta inmediata</p>
-                  <span class="text-green-500 font-mono text-xs mt-1 inline-block">+57 300 123 4567</span>
+                  <span class="text-green-500 font-mono text-xs mt-1 inline-block">+57 301 796 6272</span>
                 </div>
                 <div class="ml-auto">
                     <app-svg-icon name="chevron-right" class="text-green-500/50 group-hover:translate-x-1 transition-transform"></app-svg-icon>
@@ -109,7 +109,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                         <app-svg-icon name="map" class="text-blue-500"></app-svg-icon>
                     </div>
                     <h3 class="font-bold text-white text-sm">Ubicación</h3>
-                    <p class="text-zinc-500 text-xs mt-1">Bogotá, Colombia</p>
+                    <p class="text-zinc-500 text-xs mt-1">Colombia</p>
                 </div>
 
                 <!-- Schedule -->

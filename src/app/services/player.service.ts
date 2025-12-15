@@ -4,6 +4,7 @@ import { Song } from './playlist.service';
 import { MusicApiService } from './music-api.service';
 import { ToastService } from './toast.service';
 import { VideoPlayerService } from './video-player.service';
+import { OfflineService } from './offline.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class PlayerService {
   private audio = new Audio();
   private toastService = inject(ToastService);
   private injector = inject(Injector);
+  private offlineService = inject(OfflineService);
 
   // Lazy getter to avoid circular dependency
   private get videoPlayerService() {
@@ -25,7 +27,7 @@ export class PlayerService {
   private currentTimeSubject = new BehaviorSubject<number>(0);
   private durationSubject = new BehaviorSubject<number>(0);
   private progressSubject = new BehaviorSubject<number>(0);
-  private volumeSubject = new BehaviorSubject<number>(70);
+  private volumeSubject = new BehaviorSubject<number>(80);
   private isShuffleSubject = new BehaviorSubject<boolean>(false);
   private repeatModeSubject = new BehaviorSubject<'off' | 'all' | 'one'>('off');
   private isFavoritesPlayingSubject = new BehaviorSubject<boolean>(false);
@@ -127,17 +129,26 @@ export class PlayerService {
       this.currentSongSubject.next(song);
       this.updateMediaSessionMetadata(song);
 
-      // Reproducir directamente (iTunes previews o Dropbox)
-      if (song.url) {
-        // Hotfix: Limpiar URLs corruptas de Dropbox (ej: ...dl=0?dl=1)
-        let cleanUrl = song.url;
-        if (cleanUrl.includes('dropbox.com') && cleanUrl.includes('dl=0')) {
-          cleanUrl = cleanUrl.replace('dl=0?dl=1', 'dl=1'); // Fix specific double param
-          cleanUrl = cleanUrl.replace('dl=0', 'dl=1'); // General fix
-        }
+      // Check if song is downloaded (Offline Mode)
+      // We check the OfflineService to see if we have a blob URL for this song
+      const offlineSong = this.offlineService.getOfflineSong(String(song.id || ''));
 
-        console.log('PlayerService: Cargando URL:', cleanUrl);
-        this.audio.src = cleanUrl;
+      let finalUrl = song.url;
+
+      if (offlineSong && offlineSong.audioUrl) {
+        console.log('PlayerService: Reproduciendo desde Caché Offline (Blob)', offlineSong.audioUrl);
+        finalUrl = offlineSong.audioUrl;
+      } else if (song.url) {
+        // Hotfix: Limpiar URLs corruptas de Dropbox (ej: ...dl=0?dl=1)
+        if (finalUrl.includes('dropbox.com') && finalUrl.includes('dl=0')) {
+          finalUrl = finalUrl.replace('dl=0?dl=1', 'dl=1'); // Fix specific double param
+          finalUrl = finalUrl.replace('dl=0', 'dl=1'); // General fix
+        }
+        console.log('PlayerService: Cargando URL Remota:', finalUrl);
+      }
+
+      if (finalUrl) {
+        this.audio.src = finalUrl;
         this.audio.load();
         this.play();
       } else {

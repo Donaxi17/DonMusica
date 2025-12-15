@@ -13,6 +13,7 @@ export interface Song {
   license?: string;
   isStreamUrlFetched?: boolean;
   thumbnail?: string;
+  isFavorite?: boolean;
 }
 
 export interface Playlist {

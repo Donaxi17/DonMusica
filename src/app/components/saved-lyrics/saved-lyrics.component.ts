@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { LyricsService, SavedLyric } from '../../services/lyrics.service';
 import { OfflineService } from '../../services/offline.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-saved-lyrics',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdsContainerComponent],
   templateUrl: './saved-lyrics.component.html'
 })
 export class SavedLyricsComponent implements OnInit {
@@ -16,8 +17,6 @@ export class SavedLyricsComponent implements OnInit {
   private offlineService = inject(OfflineService);
 
   private proService = inject(DonMusicaProService);
-
-  // ... (rest of the file) ...
 
   savedLyrics = signal<SavedLyric[]>([]);
   selectedLyric = signal<SavedLyric | null>(null);
@@ -53,10 +52,12 @@ export class SavedLyricsComponent implements OnInit {
 
   viewLyric(lyric: SavedLyric) {
     this.selectedLyric.set(lyric);
+    document.body.style.overflow = 'hidden'; // Stop background scrolling
   }
 
   closeLyric() {
     this.selectedLyric.set(null);
+    document.body.style.overflow = 'auto'; // Restore background scrolling
   }
 
   deleteLyric(id: string, event: Event) {

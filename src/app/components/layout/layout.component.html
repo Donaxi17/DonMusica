@@ -281,8 +281,9 @@
     <!-- ========================================== -->
     <div *ngIf="!isActive('/player') && currentSong" class="fixed left-2 right-2 md:left-auto md:right-8 md:bottom-8 md:w-96 
                bottom-[calc(3.8rem+env(safe-area-inset-bottom,20px))] 
-               bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-xl p-2 z-40 
-               flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up cursor-pointer"
+               backdrop-blur-xl rounded-xl p-2 z-40 
+               flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up cursor-pointer border"
+        [ngClass]="(isFavorite(currentSong.id || '') || currentSong.isFavorite) ? 'bg-rose-950/95 border-rose-500/30' : 'bg-zinc-900/95 border-white/10'"
         (click)="openPlayer()">
 
         <div
@@ -294,12 +295,17 @@
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                 </svg>
             </div>
-            <div *ngIf="isPlaying && !isFavoritesPlaying"
-                class="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div *ngIf="isPlaying" class="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <div class="flex gap-0.5 items-end h-3">
-                    <div class="w-0.5 bg-emerald-400 animate-music-bar"></div>
-                    <div class="w-0.5 bg-emerald-400 animate-music-bar animation-delay-75"></div>
-                    <div class="w-0.5 bg-emerald-400 animate-music-bar animation-delay-150"></div>
+                    <div class="w-0.5 animate-music-bar"
+                        [ngClass]="(currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-red-500' : 'bg-emerald-400'">
+                    </div>
+                    <div class="w-0.5 animate-music-bar animation-delay-75"
+                        [ngClass]="(currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-red-500' : 'bg-emerald-400'">
+                    </div>
+                    <div class="w-0.5 animate-music-bar animation-delay-150"
+                        [ngClass]="(currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-red-500' : 'bg-emerald-400'">
+                    </div>
                 </div>
             </div>
         </div>
@@ -350,10 +356,9 @@
         <div #progressBarRef
             class="absolute bottom-0 left-0 right-0 h-1 bg-white/10 cursor-pointer hover:h-2 transition-all group z-50 touch-none"
             (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
-            <div class="h-full rounded-r-full relative transition-all duration-100 ease-linear" [ngClass]="{
-                    'bg-gradient-to-r from-emerald-500 to-green-400': !currentSong || !isFavorite(currentSong.id || ''),
-                    'bg-gradient-to-r from-rose-500 to-red-400': currentSong && isFavorite(currentSong.id || '')
-                }" [style.width.%]="progress">
+            <div class="h-full rounded-r-full relative transition-all duration-100 ease-linear"
+                [ngClass]="(currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-gradient-to-r from-rose-500 to-red-600' : 'bg-gradient-to-r from-emerald-500 to-green-600'"
+                [style.width.%]="progress">
                 <!-- Handler handle on hover -->
                 <div
                     class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">

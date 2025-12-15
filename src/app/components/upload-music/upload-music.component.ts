@@ -1,4 +1,4 @@
-﻿import { Component, inject, effect, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, inject, effect, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,7 @@ import { StorageService } from '../../services/storage.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import * as mm from 'music-metadata-browser';
 import { Buffer } from 'buffer';
+import { Subscription } from 'rxjs';
 
 // Polyfill Buffer for the browser if needed (often handled by build tools, but good to ensure)
 (window as any).Buffer = Buffer;
@@ -49,7 +50,7 @@ interface Folder {
   styleUrl: './upload-music.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UploadMusicComponent {
+export class UploadMusicComponent implements OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   private cdr = inject(ChangeDetectorRef);
   private playerService = inject(PlayerService);
@@ -61,6 +62,9 @@ export class UploadMusicComponent {
   usedStorage = 0;   // in MB
   storagePercentage = 0;
   uploadedFiles = 0;
+
+  isPlaying = false;
+  private subs: Subscription[] = [];
 
   get isPro(): boolean {
     return this.proService.isPro();
@@ -117,11 +121,30 @@ export class UploadMusicComponent {
       this.cdr.markForCheck();
     });
 
+    // Subscribe to player state
+    this.subs.push(
+      this.playerService.currentSong$.subscribe(() => {
+        this.cdr.markForCheck();
+      }),
+      this.playerService.isPlaying$.subscribe(playing => {
+        this.isPlaying = playing;
+        this.cdr.markForCheck();
+      })
+    );
+
     if (!this.selectedFolder) this.selectedFolder = this.folders[0];
+  }
+
+  ngOnDestroy() {
+    this.subs.forEach(s => s.unsubscribe());
   }
 
   // State property for filtered files instead of getter for OnPush performance
   filteredMusicFiles: MusicFile[] = [];
+
+  get currentlyPlayingSong() {
+    return this.playerService.currentSong;
+  }
 
   // --- Actions ---
 
@@ -199,6 +222,16 @@ export class UploadMusicComponent {
     if (this.storagePercentage >= 90) return 'danger';
     if (this.storagePercentage >= 75) return 'warning';
     return 'safe';
+  }
+
+  get upgradeButtonText(): string {
+    return this.storageWarningLevel === 'danger' ? 'ACTUALIZAR PLAN' : 'AUMENTAR ESPACIO';
+  }
+
+  get emptyFolderMessage(): string {
+    return this.selectedFolder?.id === '2'
+      ? 'Marca las canciones con el corazón para verlas aquí.'
+      : 'Aún no has subido canciones aquí.';
   }
 
   get estimatedSongsRemaining(): number {
@@ -683,7 +716,8 @@ export class UploadMusicComponent {
           artist: f.artist,
           duration: f.duration || '0:00',
           url: f.url || '',
-          album: 'Uploads'
+          album: 'Uploads',
+          isFavorite: f.isFavorite
         };
       });
 
@@ -795,7 +829,13 @@ export class UploadMusicComponent {
   }
 
   handleImageError(file: MusicFile) {
-    file.hasImageError = true;
+    // 1. Try App Logo
+    if (file.coverUrl && file.coverUrl !== '/assets/icons/icon-512x512.png') {
+      file.coverUrl = '/assets/icons/icon-512x512.png';
+    } else {
+      // 2. Fallback to Note Icon
+      file.hasImageError = true;
+    }
     this.cdr.markForCheck();
   }
 

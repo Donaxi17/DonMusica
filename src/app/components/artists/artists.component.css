@@ -101,3 +101,10 @@
 .animate-pulse {
     animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Force remove focus outline for search input */
+input:focus,
+input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}

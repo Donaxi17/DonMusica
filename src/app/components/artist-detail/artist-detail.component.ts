@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { DatabaseService, Artist, Song } from '../../services/database.service';
@@ -9,12 +9,13 @@ import { ToastService } from '../../services/toast.service';
 import { OfflineService } from '../../services/offline.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap, of } from 'rxjs';
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-artist-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent],
+  imports: [CommonModule, RouterModule, SvgIconComponent, AdsContainerComponent],
   templateUrl: './artist-detail.component.html',
   styleUrl: './artist-detail.component.css'
 })
@@ -61,6 +62,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   sleepTimer: any = null;
   timerMinutes = 0;
 
+  @ViewChild('progressBarRef') progressBarRef!: ElementRef;
+  isDragging = false;
+
   private sub: Subscription | null = null;
 
   ngOnInit() {
@@ -86,7 +90,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     });
 
     this.playerService.currentTime$.subscribe(time => {
-      this.currentTime = time;
+      if (!this.isDragging) {
+        this.currentTime = time;
+      }
     });
 
     this.playerService.duration$.subscribe(dur => {
@@ -94,7 +100,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     });
 
     this.playerService.progress$.subscribe(prog => {
-      this.progress = prog;
+      if (!this.isDragging) {
+        this.progress = prog;
+      }
     });
 
     this.sub = this.route.params.subscribe(params => {
@@ -174,41 +182,64 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     return this.offlineService.isDownloading()[songId] || false;
   }
 
+
+
   loadData(id: string) {
     this.loading.set(true);
 
-    // 1. Get Artist Details
-    this.dbService.getArtists().subscribe(artists => {
-      const found = artists.find(a => a.id === id);
-      if (found) {
-        // Check image
-        if (!found.image || found.image.includes('default')) {
-          this.itunesService.getArtistImageBestEffort(found.name).subscribe(img => {
-            if (img) found.image = img;
-            this.artist.set(found);
+    // 1. Get Artist Details first
+    this.dbService.getArtists().pipe(
+      switchMap(artists => {
+        const found = artists.find(a => a.id === id);
+        if (found) {
+          // Check image and stats logic
+          this.spotifyService.getArtistStats(found.name).then(stats => {
+            if (stats) {
+              this.listeners.set(stats.followers.toLocaleString()); // Set Reat Stats
+              if ((!found.image || found.image.includes('default')) && stats.image) {
+                found.image = stats.image;
+                this.artist.set(found);
+              }
+            }
           });
-        } else {
-          this.artist.set(found);
-        }
-      }
-    });
 
-    // 2. Get Songs
-    this.dbService.getSongs().subscribe(allSongs => {
-      // Filter songs by artist name or ID with loose matching
+          if (!found.image || found.image.includes('default')) {
+            this.itunesService.getArtistImageBestEffort(found.name).subscribe(img => {
+              if (img && (!found.image || found.image.includes('default'))) {
+                found.image = img;
+                this.artist.set(found);
+              }
+            });
+          }
+          this.artist.set(found);
+          // Only if artist is found, fetch songs
+          return this.dbService.getSongs();
+        } else {
+          this.artist.set(null);
+          return of([]); // Return empty if artist not found
+        }
+      })
+    ).subscribe(allSongs => {
       const currentArtist = this.artist();
-      const artistName = currentArtist?.name?.toLowerCase().trim() || '';
-      const artistId = this.artistId();
+
+      if (!currentArtist) {
+        this.songs.set([]);
+        this.loading.set(false);
+        return;
+      }
+
+      const artistName = currentArtist.name.toLowerCase().trim();
 
       const artistSongs = allSongs.filter(s => {
         if (!s.artist) return false;
         const songArtist = s.artist.toLowerCase().trim();
 
         // Match by Name (Exact or Includes)
-        const nameMatch = songArtist === artistName || songArtist.includes(artistName) || artistName.includes(songArtist);
-
-        // Match by ID (if song has artistId stored, though typically it might not yet)
-        // const idMatch = s.artistId === artistId; 
+        // Check if song artist is exactly the artist name, or contains it (e.g. "Feid" in "Feid ft...")
+        // OR if artist name contains song artist (but only if song artist is significant length to avoid "The" matching "The Weeknd")
+        const nameMatch = songArtist === artistName ||
+          songArtist.includes(artistName) ||
+          (songArtist.length > 2 && artistName.includes(songArtist));
 
         return nameMatch;
       });
@@ -216,33 +247,37 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       this.songs.set(artistSongs);
       this.loading.set(false);
 
-      // Background Artwork Fetcher from iTunes
-      this.fetchArtworkForSongs(artistSongs);
+      // Background Artwork Fetcher
+      if (artistSongs.length > 0) {
+        this.fetchArtworkForSongs(artistSongs);
+      }
     });
   }
 
   private async fetchArtworkForSongs(songs: any[]) {
-    console.log('🎨 Fetching artwork for', songs.length, 'songs using Spotify API');
+    console.log('🎨 Fetching metadata for', songs.length, 'songs using Spotify API');
 
     for (const song of songs) {
-      try {
-        console.log(`🔍 Searching Spotify for: "${song.title}" by "${song.artist}"`);
-        const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
+      if (!song.img || song.img.includes('default') || !song.duration || song.duration === '0:00') {
+        try {
+          const metadata = await this.spotifyService.getTrackMetadata(song.title, song.artist);
 
-        if (artwork) {
-          console.log(`✅ Found artwork for "${song.title}":`, artwork);
-          song.img = artwork;
-          // Force signal update to refresh UI
-          this.songs.set([...this.songs()]);
-        } else {
-          console.log(`❌ No artwork found for "${song.title}"`);
+          if (metadata) {
+            if (metadata.image) song.img = metadata.image;
+            if (metadata.duration_ms) {
+              const minutes = Math.floor(metadata.duration_ms / 60000);
+              const seconds = Math.floor((metadata.duration_ms % 60000) / 1000);
+              song.duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            // Force signal update to refresh UI
+            this.songs.set([...this.songs()]);
+          }
+        } catch (error) {
+          console.error(`❌ Error fetching metadata for ${song.title}:`, error);
         }
-      } catch (error) {
-        console.error(`❌ Error fetching artwork for ${song.title}:`, error);
       }
     }
-
-    console.log('✨ Finished fetching artwork');
+    console.log('✨ Finished fetching metadata');
   }
 
   playSong(song: Song, index: number) {
@@ -435,7 +470,16 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     if (this.isPlaying) {
       this.playerService.pause();
     } else {
-      this.playerService.play();
+      // If we have a current song, just resume
+      if (this.currentlyPlayingSong()) {
+        this.playerService.play();
+      } else {
+        // If not, play the first song if available
+        const songs = this.songs();
+        if (songs.length > 0) {
+          this.playSong(songs[0], 0);
+        }
+      }
     }
   }
 
@@ -493,5 +537,76 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
 
   formatTime(seconds: number): string {
     return this.playerService.formatTime(seconds);
+  }
+
+  previousVolume = 70;
+
+  toggleMute() {
+    if (this.volume > 0) {
+      this.previousVolume = this.volume;
+      this.setVolume(0);
+    } else {
+      this.setVolume(this.previousVolume || 50);
+    }
+  }
+  // --- Seek Bar Logic ---
+
+  startDrag(event: MouseEvent | TouchEvent) {
+    this.isDragging = true;
+    this.drag(event);
+    document.addEventListener('mousemove', this.boundDrag);
+    document.addEventListener('mouseup', this.boundStopDrag);
+    document.addEventListener('touchmove', this.boundDrag);
+    document.addEventListener('touchend', this.boundStopDrag);
+  }
+
+  drag(event: MouseEvent | TouchEvent) {
+    if (!this.progressBarRef) return;
+
+    const progressBar = this.progressBarRef.nativeElement;
+    const rect = progressBar.getBoundingClientRect();
+    let clientX = 0;
+
+    if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+    } else if (event.touches && event.touches.length > 0) {
+      clientX = event.touches[0].clientX;
+    }
+
+    let percentage = ((clientX - rect.left) / rect.width) * 100;
+    percentage = Math.max(0, Math.min(100, percentage));
+
+    this.progress = percentage;
+    this.currentTime = (percentage / 100) * this.duration;
+  }
+
+  stopDrag() {
+    this.isDragging = false;
+    document.removeEventListener('mousemove', this.boundDrag);
+    document.removeEventListener('mouseup', this.boundStopDrag);
+    document.removeEventListener('touchmove', this.boundDrag);
+    document.removeEventListener('touchend', this.boundStopDrag);
+
+    this.playerService.seekTo(this.progress);
+  }
+
+  private boundDrag = (e: MouseEvent | TouchEvent) => this.drag(e);
+  private boundStopDrag = () => this.stopDrag();
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    // If dragging, do not close menus
+    if (this.isDragging) return;
+
+    // Close active menus if click is outside
+    if (this.activeSongMenu()) {
+      this.activeSongMenu.set(null);
+    }
+    if (this.showMenu()) {
+      this.showMenu.set(false);
+    }
+    if (this.showTimerMenu) {
+      this.showTimerMenu = false;
+    }
   }
 }

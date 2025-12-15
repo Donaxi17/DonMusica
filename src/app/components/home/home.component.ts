@@ -90,15 +90,6 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/artists']);
   }
 
-  openAdAndStart(): void {
-    // 1. Open Monetag link in new tab
-    const adUrl = 'https://otieu.com/4/10301736';
-    window.open(adUrl, '_blank');
-
-    // 2. Navigate to the app functionality (Artists)
-    this.navigateToArtists();
-  }
-
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }
@@ -116,17 +107,22 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    console.log('Music Request:', {
-      artist: this.requestArtist,
-      song: this.requestSong,
-      message: this.requestMessage
-    });
+    const message = `⚡ *Nueva Petición Musical* ⚡%0A%0A` +
+      `🎙️ *Artista:* ${this.requestArtist}%0A` +
+      `🎧 *Canción/Álbum:* ${this.requestSong}`;
 
-    alert('¡Solicitud enviada con éxito! Trabajaremos para agregar tu música pronto.');
+    // Replace with your WhatsApp number, e.g., 573000000000
+    // Using a general format, user can change it.
+    const phoneNumber = '573017966272';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
-    // Reset form
-    this.requestArtist = '';
-    this.requestSong = '';
-    this.requestMessage = '';
+    window.open(whatsappUrl, '_blank');
+
+    // Reset form after a slight delay to allow navigation
+    setTimeout(() => {
+      this.requestArtist = '';
+      this.requestSong = '';
+      this.requestMessage = '';
+    }, 1000);
   }
 }

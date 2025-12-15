@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-zinc-950 pb-20 md:pb-24 overflow-x-hidden">
+<div class="min-h-screen bg-zinc-950 overflow-x-hidden">
     <!-- Hero Section with Animated Gradient -->
     <div class="relative h-64 md:h-96 w-full overflow-hidden mb-8 md:mb-16">
         <div
@@ -9,12 +9,6 @@
         </div>
 
         <div class="absolute inset-0 flex flex-col justify-center text-center px-4 md:px-12 z-20 max-w-7xl mx-auto">
-            <div class="mb-4">
-                <div
-                    class="inline-flex items-center gap-2 bg-yellow-500/20 border border-yellow-500/30 px-4 py-2 rounded-full backdrop-blur-md mb-4 animate-pulse">
-                    <span class="text-yellow-400 font-bold text-sm">⏰ Próximamente</span>
-                </div>
-            </div>
             <h1 class="text-4xl md:text-7xl font-black text-white mb-3 md:mb-4 tracking-tight">
                 Descubre <span
                     class="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Artistas</span>
@@ -42,19 +36,19 @@
             </div>
 
             <div
-                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all focus-within:border-emerald-500/50 focus-within:ring-4 focus-within:ring-emerald-500/20">
-                <div class="pl-4 flex items-center justify-center text-zinc-400">
+                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all">
+                <div class="pl-1 flex items-center justify-center text-zinc-400">
                     <app-svg-icon name="search"
                         class="text-zinc-400 group-focus-within:text-emerald-400 transition-colors" width="24"
                         height="24"></app-svg-icon>
                 </div>
 
-                <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar artistas por nombre o género..."
-                    class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-4 py-3 md:py-4 focus:ring-0 text-base md:text-xl outline-none font-medium">
+                <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por artista o canción..."
+                    class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-1 py-3 md:py-4 focus:ring-0 text-sm md:text-xl outline-none font-medium">
 
                 <!-- Voice Button -->
                 <button (click)="toggleVoiceSearch()"
-                    class="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center transition-all duration-300 transform active:scale-95 shadow-lg mr-1 shrink-0"
+                    class="w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center transition-all duration-300 transform active:scale-95 shadow-lg shrink-0"
                     [ngClass]="{
                             'bg-red-500 text-white shadow-red-500/50 animate-pulse': isListening,
                             'bg-gradient-to-br from-emerald-500 to-green-600 text-white hover:shadow-emerald-500/50': !isListening
@@ -65,7 +59,7 @@
 
             <!-- Listening Indicator -->
             <div *ngIf="isListening"
-                class="absolute -bottom-10 left-0 right-0 text-center flex items-center justify-center gap-2 text-red-400 text-sm font-bold animate-pulse">
+                class="absolute -bottom-6 left-0 right-0 text-center flex items-center justify-center gap-2 text-red-400 text-sm font-bold animate-pulse z-20">
                 <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
                 Escuchando...
             </div>
@@ -76,8 +70,8 @@
             <div class="overflow-x-auto pb-4 no-scrollbar">
                 <div class="flex flex-nowrap gap-3 min-w-max px-1">
                     @for (genre of genres; track genre.id) {
-                    <button (click)="onGenreChange(genre.id)"
-                        class="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden select-none cursor-pointer"
+                    <button (click)="onGenreChange(genre.id, $event)"
+                        class="group relative flex items-center gap-2 px-3 py-2 text-xs md:px-5 md:py-3 md:text-sm rounded-xl font-bold transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden select-none cursor-pointer"
                         [ngClass]="{
                                 'bg-gradient-to-r from-emerald-500 to-green-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'all',
                                 'bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg': selectedGenre() === genre.id && genre.id === 'reggaeton',
@@ -176,5 +170,8 @@
             }
         </div>
         } <!-- End else block (network check) -->
+    </div>
+    <div>   
+        <app-ads-container [index]="2"></app-ads-container>
     </div>
 </div>
