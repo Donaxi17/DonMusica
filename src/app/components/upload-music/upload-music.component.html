@@ -140,13 +140,13 @@
                         class="block border-2 border-dashed border-zinc-700/50 group-hover/upload:border-emerald-500/40 rounded-2xl p-6 md:p-10 text-center cursor-pointer relative overflow-hidden bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
                         (dragover)="onDragOver($event)" (drop)="onDrop($event)">
 
-                        <input #fileInput type="file" multiple accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.wma,.opus"
+                        <input #fileInput type="file" multiple accept="audio/*"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                             [disabled]="isUploading" (change)="onFileSelected($event)">
 
                         <!-- DEBUG: Version Indicator to verify PWA update -->
                         <div class="absolute top-2 right-2 text-[10px] text-zinc-600 font-mono opacity-50">
-                            FIX_ANDROID_V6</div>
+                            FIX_ANDROID_V7</div>
 
                         <!-- Upload Overlay -->
                         <div *ngIf="isUploading"
