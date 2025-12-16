@@ -71,18 +71,23 @@ import { SeoService } from '../../services/seo.service';
           </div>
           
           <!-- Texto Explicativo Extra -->
-          <div class="p-8 md:p-10 bg-gradient-to-r from-zinc-900 to-zinc-800/50 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden">
+          <div class="p-8 md:p-12 bg-gradient-to-r from-zinc-900 to-zinc-800/50 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden">
              <!-- Decorative -->
              <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
              
-             <div class="relative z-10 max-w-4xl mx-auto text-center md:text-left">
-                <h3 class="text-2xl font-bold text-white mb-4">Nuestro Compromiso</h3>
-                <p class="text-zinc-300 text-lg leading-relaxed mb-6">
-                    En un mundo digital saturado, <strong>DonMusica</strong> se destaca por poner al usuario primero. No creemos en algoritmos que deciden por ti, sino en herramientas que te empoderan para explorar. 
-                    Desde la calidad de audio sin pérdidas hasta la capacidad de llevar tu biblioteca a cualquier rincón del mundo sin conexión, cada función está diseñada pensando en la libertad.
-                </p>
+             <div class="relative z-10 max-w-4xl mx-auto text-center md:text-left space-y-6">
+                <h3 class="text-3xl font-bold text-white mb-6">Nuestro Compromiso</h3>
+                
                 <p class="text-zinc-300 text-lg leading-relaxed">
-                    Creemos firmemente que la tecnología debe servir al arte, eliminando las barreras técnicas para que lo único que importe sea la emoción de la próxima canción.
+                    En un mundo digital saturado de algoritmos invasivos y suscripciones complejas, <strong>DonMusica</strong> nace como una respuesta honesta: volver a lo esencial. No creemos en cajas negras que deciden tu gusto musical por ti; creemos en herramientas transparentes que te empoderan para <strong>explorar, curar y redescubrir</strong> tu propia banda sonora personal.
+                </p>
+
+                <p class="text-zinc-300 text-lg leading-relaxed">
+                    Más allá de ser solo un reproductor, nos comprometemos a ofrecer una experiencia libre de distracciones, donde la calidad de audio no sea un lujo reservado para pocos, sino el estándar para todos. Desde la capacidad de llevar tu biblioteca a cualquier rincón del mundo <strong>sin conexión</strong>, hasta utilidades profesionales pensadas para músicos, cada función está diseñada con un propósito claro: libertad absoluta.
+                </p>
+
+                <p class="text-zinc-300 text-lg leading-relaxed">
+                    Defendemos firmemente que la tecnología debe ser un puente, no una barrera, entre el artista y su audiencia. Trabajamos incansablemente para eliminar la fricción técnica, asegurando que lo único que importe sea la emoción pura de la próxima canción. Porque en DonMusica, entendemos que la música no es solo contenido de fondo; es la banda sonora de tu vida, y merece ser vivida bajo tus propios términos.
                 </p>
              </div>
           </div>
@@ -96,8 +101,8 @@ import { SeoService } from '../../services/seo.service';
           
           <div class="grid md:grid-cols-3 gap-6">
             <!-- Offline -->
-            <div class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center">
-              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-emerald-400 mb-4 mx-auto">
+            <div routerLink="/offline-music" class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center select-none cursor-pointer hover:bg-zinc-800/40 hover:border-emerald-500/30 transition-all group">
+              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-emerald-400 mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                 </svg>
@@ -107,8 +112,8 @@ import { SeoService } from '../../services/seo.service';
             </div>
 
             <!-- Tools -->
-            <div class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center">
-              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-purple-400 mb-4 mx-auto">
+            <div routerLink="/tools" class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center select-none cursor-pointer hover:bg-zinc-800/40 hover:border-purple-500/30 transition-all group">
+              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-purple-400 mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
@@ -119,8 +124,8 @@ import { SeoService } from '../../services/seo.service';
             </div>
 
             <!-- Lyrics -->
-            <div class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center">
-              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-blue-400 mb-4 mx-auto">
+            <div routerLink="/browse/search" class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center select-none cursor-pointer hover:bg-zinc-800/40 hover:border-blue-500/30 transition-all group">
+              <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-blue-400 mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -142,7 +147,7 @@ import { SeoService } from '../../services/seo.service';
         </div>
 
         <div class="mt-16 text-center text-zinc-600 text-xs">
-           <p>&copy; 2024 DonMusica. Todos los derechos reservados.</p>
+           <p>&copy; 2025 DonMusica. Todos los derechos reservados.</p>
         </div>
 
       </div>
