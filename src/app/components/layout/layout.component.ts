@@ -216,6 +216,10 @@ export class LayoutComponent implements OnInit {
     return currentPath.startsWith(route);
   }
 
+  shouldHideFooter(): boolean {
+    return this.router.url.includes('/biography');
+  }
+
   togglePlayPause(): void {
     if (this.currentSong) {
       if (this.isPlaying) {

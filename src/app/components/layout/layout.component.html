@@ -201,7 +201,7 @@
     <app-redes-sociales *ngIf="!showHistory"></app-redes-sociales>
 
     <!-- FOOTER -->
-    <app-footer></app-footer>
+    <app-footer *ngIf="!shouldHideFooter()"></app-footer>
 
     <!-- ========================================== -->
     <!-- MOBILE BOTTOM NAVIGATION (Fixed) -->

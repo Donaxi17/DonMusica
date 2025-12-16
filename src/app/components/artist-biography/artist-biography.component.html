@@ -1,0 +1,166 @@
+<div
+    class="min-h-screen bg-black text-white selection:bg-emerald-500 selection:text-black font-sans relative overflow-x-hidden">
+
+    <!-- Background Layer (Fixed & Blurred) -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <img [src]="artistImage()" [alt]="artistName()"
+            class="w-full h-full object-cover opacity-50 scale-110 blur-xl mask-radial-faded">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black"></div>
+    </div>
+
+    <!-- Main Content Container - No internal scroll, allow page scroll -->
+    <div class="relative z-10">
+
+        <div class="max-w-5xl mx-auto px-6 pt-10 md:pt-16 flex flex-col justify-end">
+
+            <!-- Navbar / Back Button -->
+            <div class="absolute top-6 left-6 md:top-10 md:left-10 z-50">
+                <button (click)="goBack()"
+                    class="group flex items-center gap-3 px-5 py-2.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/5 backdrop-blur-md transition-all hover:pr-7">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor"
+                        class="w-5 h-5 group-hover:-translate-x-1 transition-transform text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    <span class="text-sm font-medium tracking-wide">Regresar</span>
+                </button>
+            </div>
+
+            <!-- Artist Header Info Centered -->
+            <div class="mb-16 animate-fade-in-up flex flex-col items-center text-center mt-20 md:mt-24">
+                <!-- Added top margin for spacing -->
+                <!-- Image Badge -->
+                <div
+                    class="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden shadow-2xl mb-8 border-4 border-white/10 mx-auto">
+                    <img [src]="artistImage()" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Tags -->
+                <div class="flex flex-wrap justify-center gap-2 mb-6">
+                    @for (tag of tags(); track tag.name) {
+                    <span
+                        class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                        {{ tag.name }}
+                    </span>
+                    }
+                </div>
+
+                <!-- Big Title -->
+                <h1
+                    class="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-none drop-shadow-2xl max-w-4xl mx-auto break-words px-4">
+                    {{ artistName() }}
+                </h1>
+
+                <!-- Stats Divider - Responsive -->
+                @if (stats()) {
+                <div
+                    class="flex flex-col md:flex-row items-center gap-6 md:gap-16 py-6 px-8 md:px-10 border border-white/10 bg-black/40 backdrop-blur-md rounded-2xl mx-auto w-full max-w-sm md:max-w-max">
+                    <div class="flex flex-col items-center">
+                        <span class="text-3xl md:text-4xl font-bold text-white mb-1">{{ stats()?.listeners }}</span>
+                        <span
+                            class="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest font-semibold flex items-center gap-2 text-center whitespace-nowrap">
+                            <app-svg-icon name="users" class="w-4 h-4"></app-svg-icon>
+                            Oyentes Mensuales
+                        </span>
+                    </div>
+
+                    <!-- Divider: Horizontal on mobile, Vertical on desktop -->
+                    <div class="h-px w-full md:w-px md:h-12 bg-white/10"></div>
+
+                    <div class="flex flex-col items-center">
+                        <span class="text-3xl md:text-4xl font-bold text-white mb-1">{{ stats()?.playcount }}</span>
+                        <span
+                            class="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest font-semibold flex items-center gap-2 text-center whitespace-nowrap">
+                            <app-svg-icon name="play-circle" class="w-4 h-4"></app-svg-icon>
+                            Reproducciones
+                        </span>
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Biography Text Card -->
+            <div class="max-w-4xl mx-auto">
+                <div class="animate-fade-in-up animate-delay-200">
+                    @if (loading()) {
+                    <div class="space-y-6 animate-pulse">
+                        <div class="h-4 bg-zinc-800 rounded w-full"></div>
+                        <div class="h-4 bg-zinc-800 rounded w-full"></div>
+                        <div class="h-4 bg-zinc-800 rounded w-5/6"></div>
+                        <div class="h-4 bg-zinc-800 rounded w-full"></div>
+                    </div>
+                    } @else if (biography()) {
+                    <div class="relative text-center mb-16">
+                        <!-- Centered text, no drop-cap -->
+                        <div class="prose prose-xl prose-invert max-w-none text-zinc-300 leading-relaxed font-serif tracking-wide biography-content"
+                            [innerHTML]="biography()">
+                        </div>
+
+                    </div>
+                    } @else {
+                    <div class="p-12 rounded-3xl bg-zinc-900/30 border border-white/5 text-center">
+                        <p class="text-zinc-500 text-lg">La biografía de este artista aún no está disponible.</p>
+                    </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AD BANNER -->
+    <div class="z-20 pb-24">
+        <app-ads-container [index]="2"></app-ads-container>
+    </div>
+
+</div>
+
+<style>
+    .mask-radial-faded {
+        mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+        -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+    }
+
+    .biography-content ::ng-deep p {
+        margin-bottom: 2rem;
+        font-size: 1.125rem;
+        line-height: 1.8;
+        opacity: 0.9;
+    }
+
+    /* Style links within the innerHTML */
+    .biography-content ::ng-deep a {
+        color: #34d399;
+        /* emerald-400 */
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s;
+    }
+
+    .biography-content ::ng-deep a:hover {
+        border-bottom-color: #34d399;
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animate-delay-200 {
+        animation-delay: 0.2s;
+        opacity: 0;
+        /* ensure it's hidden before animation starts */
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

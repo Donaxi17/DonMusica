@@ -8,6 +8,7 @@ import { ItunesService } from '../../services/itunes.service';
 import { ToastService } from '../../services/toast.service';
 import { OfflineService } from '../../services/offline.service';
 import { SpotifyService } from '../../services/spotify.service';
+import { LastFmService } from '../../services/lastfm.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
@@ -29,12 +30,14 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   public offlineService = inject(OfflineService);
   private spotifyService = inject(SpotifyService);
+  private lastFmService = inject(LastFmService);
 
 
   artistId = signal<string>('');
   artist = signal<Artist | null>(null);
   songs = signal<Song[]>([]);
   loading = signal<boolean>(true);
+  biography = signal<string>('');
 
   // Stats
   listeners = signal<string>('0');
@@ -127,6 +130,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
         this.listeners.set(listenerCount.toLocaleString());
       }
     });
+
   }
 
   ngOnDestroy() {
@@ -211,6 +215,13 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
                 found.image = stats.image;
                 this.artist.set(found);
               }
+            }
+          });
+
+          // Fetch Biography from Last.fm
+          this.lastFmService.getArtistInfo(found.name).subscribe(info => {
+            if (info && info.bio && info.bio.content) {
+              this.biography.set(info.bio.summary);
             }
           });
 
