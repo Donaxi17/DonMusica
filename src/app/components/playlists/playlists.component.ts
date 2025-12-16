@@ -4,14 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PlaylistService, Playlist, Song } from '../../services/playlist.service';
 import { PlayerService } from '../../services/player.service';
-import { FavoritesComponent } from '../favorites/favorites.component';
+
 import { PlaylistDetailComponent } from '../playlist-detail/playlist-detail.component';
 import { ToastService } from '../../services/toast.service';
+
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-playlists',
   standalone: true,
-  imports: [CommonModule, FormsModule, FavoritesComponent, PlaylistDetailComponent],
+  imports: [CommonModule, FormsModule, PlaylistDetailComponent, AdsContainerComponent],
   templateUrl: './playlists.component.html',
   styleUrl: './playlists.component.css'
 })

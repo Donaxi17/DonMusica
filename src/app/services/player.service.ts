@@ -27,7 +27,7 @@ export class PlayerService {
   private currentTimeSubject = new BehaviorSubject<number>(0);
   private durationSubject = new BehaviorSubject<number>(0);
   private progressSubject = new BehaviorSubject<number>(0);
-  private volumeSubject = new BehaviorSubject<number>(80);
+  private volumeSubject = new BehaviorSubject<number>(100);
   private isShuffleSubject = new BehaviorSubject<boolean>(false);
   private repeatModeSubject = new BehaviorSubject<'off' | 'all' | 'one'>('off');
   private isFavoritesPlayingSubject = new BehaviorSubject<boolean>(false);
@@ -139,10 +139,13 @@ export class PlayerService {
         console.log('PlayerService: Reproduciendo desde Caché Offline (Blob)', offlineSong.audioUrl);
         finalUrl = offlineSong.audioUrl;
       } else if (song.url) {
-        // Hotfix: Limpiar URLs corruptas de Dropbox (ej: ...dl=0?dl=1)
-        if (finalUrl.includes('dropbox.com') && finalUrl.includes('dl=0')) {
-          finalUrl = finalUrl.replace('dl=0?dl=1', 'dl=1'); // Fix specific double param
-          finalUrl = finalUrl.replace('dl=0', 'dl=1'); // General fix
+        // Hotfix: Limpiar y Estanarizar URLs de Dropbox
+        if (finalUrl.includes('dropbox.com')) {
+          // Replace dl=0 or dl=1 with raw=1
+          finalUrl = finalUrl.replace(/dl=[01]/g, 'raw=1');
+          if (!finalUrl.includes('raw=1')) {
+            finalUrl = (finalUrl.includes('?') ? '&' : '?') + 'raw=1';
+          }
         }
         console.log('PlayerService: Cargando URL Remota:', finalUrl);
       }
@@ -164,7 +167,17 @@ export class PlayerService {
         this.isPlayingSubject.next(true);
         if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
       })
-      .catch(error => console.error('Error al reproducir:', error));
+      .catch(error => {
+        console.error('Error al reproducir:', error);
+        this.isPlayingSubject.next(false);
+
+        // Handle corrupt offline files
+        if (this.audio.src.startsWith('blob:') && error.name === 'NotSupportedError') {
+          this.toastService.error('Archivo dañado. Elimínelo y descárguelo de nuevo.');
+        } else {
+          this.toastService.error('Error al reproducir la canción.');
+        }
+      });
   }
 
   pause(): void {

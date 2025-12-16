@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-zinc-950 animate-fade-in relative z-10">
-    <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
+    <div class="max-w-7xl mx-auto px-3 md:px-6">
 
         <!-- Header Centrado (PC & Móvil) -->
         <div class="mb-8 md:mb-16 flex flex-col items-center text-center">
@@ -222,8 +222,9 @@
                         d="M20 6h-3.17l2.54-2.54-1.42-1.42L15 4.99V3c0-.55-.45-1-1-1s-1 .45-1 1v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM7 18c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm11-3c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm0-3c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1z" />
                 </svg>
             </div>
-            <h3 class="text-lg font-bold text-white mb-1">{{ genre === 'favorites' ? 'No tienes favoritas' : 'No se
-                encontraron emisoras' }}</h3>
+            <h3 class="text-lg font-bold text-white mb-1">
+                {{ genre === 'favorites' ? 'No tienes favoritas' : 'No se encontraron emisoras' }}
+            </h3>
             <p class="text-sm text-zinc-500 text-center max-w-xs">
                 {{ genre === 'favorites' ? 'Toca el corazón en las emisoras para agregarlas aquí.' : 'Intenta con otro
                 género.' }}

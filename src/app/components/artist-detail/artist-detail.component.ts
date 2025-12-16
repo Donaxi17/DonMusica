@@ -141,17 +141,28 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     this.activeSongMenu.set(null);
 
     // Stop if already downloaded
-    if (await this.offlineService.isOffline(target.id || '')) {
+    if (this.offlineService.isOffline(target.id || '')) {
       this.toastService.info('Esta canción ya está descargada.');
       return;
     }
 
+    let url = target.url || '';
+    // Force direct download for Dropbox (Offline Context)
+    // Use dl.dropboxusercontent.com for direct blob fetching (CORS friendly)
+    if (url.includes('dropbox.com')) {
+      url = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+      url = url.replace('dropbox.com', 'dl.dropboxusercontent.com'); // Catch-all if www is missing
+      // Remove dl parameters if present to avoid confusion, though usually ignored by dl. domain
+      url = url.replace(/[?&]dl=[01]/g, '');
+      url = url.replace(/[?&]raw=1/g, '');
+    }
+
     const songToDownload = {
       ...target,
-      id: target.id || '',
+      id: target.id || '', // Ensure ID is string
       artistId: this.artistId(),
       img: target.img || this.artist()?.image || '/assets/img/default-music.png',
-      url: target.url || '',
+      url: url,
       artist: target.artist || this.artist()?.name || '',
       title: target.title || '',
       duration: target.duration || ''
@@ -162,7 +173,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       state: {
         songTitle: songToDownload.title,
         artistName: songToDownload.artist,
-        downloadUrl: songToDownload.url,
+        downloadUrl: url,
         mode: 'offline',
         songData: songToDownload
       }
@@ -255,13 +266,13 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   private async fetchArtworkForSongs(songs: any[]) {
-    console.log('🎨 Fetching metadata for', songs.length, 'songs using Spotify API');
+    // console.log('🎨 Fetching metadata for', songs.length, 'songs using Spotify API');
 
     for (const song of songs) {
       if (!song.img || song.img.includes('default') || !song.duration || song.duration === '0:00') {
         try {
           const metadata = await this.spotifyService.getTrackMetadata(song.title, song.artist);
-
+          // ... rest of logic
           if (metadata) {
             if (metadata.image) song.img = metadata.image;
             if (metadata.duration_ms) {
@@ -273,33 +284,35 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
             this.songs.set([...this.songs()]);
           }
         } catch (error) {
-          console.error(`❌ Error fetching metadata for ${song.title}:`, error);
+          // console.error(`❌ Error fetching metadata for ${song.title}:`, error);
         }
       }
     }
-    console.log('✨ Finished fetching metadata');
+    // console.log('✨ Finished fetching metadata');
   }
 
   playSong(song: Song, index: number) {
     if (!song.url) {
-      alert('Esta canción no tiene un enlace de reproducción válido.');
+      this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
       return;
     }
 
-    console.log('Reproduciendo:', song.title, song.url);
+    // console.log('Reproduciendo:', song.title, song.url);
 
-    // Map DbSong to PlayerSong (adding artistId)
-    const queue = this.songs().map(s => ({
-      ...s,
-      id: s.id || '',
-      artistId: this.artistId(),
-      // Ensure required fields for PlayerService
-      img: s.img || this.artist()?.image || '/assets/img/default-music.png', // Fallback to artist image
-      url: s.url || '',
-      artist: s.artist || '',
-      title: s.title || '',
-      duration: s.duration || ''
-    } as any));
+    const queue = this.songs().map(s => {
+      const offlineVersion = this.offlineService.getOfflineSong(s.id || '');
+      return {
+        ...s,
+        id: s.id || '',
+        artistId: this.artistId(),
+        // Ensure required fields for PlayerService
+        img: offlineVersion?.imageUrl || s.img || this.artist()?.image || '/assets/img/default-music.png', // Fallback to artist image
+        url: offlineVersion?.audioUrl || s.url || '',
+        artist: s.artist || '',
+        title: s.title || '',
+        duration: s.duration || ''
+      } as any;
+    });
 
     this.playerService.setPlaylist(queue, false, 'artist');
     this.playerService.playSong(queue[index]);
@@ -311,7 +324,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       const firstSong = songs[0];
       if (!firstSong.url) {
         console.error('Primera canción no tiene URL válida:', firstSong);
-        alert('Esta canción no tiene un enlace de reproducción válido.');
+        this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
         return;
       }
       console.log('PlayAll: Reproduciendo primera canción:', firstSong.title, firstSong.url);
@@ -342,8 +355,11 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     let url = target.url;
     // Force direct download for Dropbox
     if (url.includes('dropbox.com')) {
-      if (url.includes('dl=0')) url = url.replace('dl=0', 'dl=1');
-      else if (!url.includes('dl=1')) url = (url.includes('?') ? '&' : '?') + 'dl=1';
+      // For file downloads, we MUST use dl=1 to valid 'Content-Disposition: attachment'
+      url = url.replace(/dl=0|raw=1/g, 'dl=1');
+      if (!url.includes('dl=1')) {
+        url = (url.includes('?') ? '&' : '?') + 'dl=1';
+      }
     }
 
     // Close Menu

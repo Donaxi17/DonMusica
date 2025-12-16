@@ -40,19 +40,19 @@ export class ToastService {
         }
     }
 
-    success(message: string, duration = 3000) {
+    success(message: string, duration = 5000) {
         this.show(message, 'success', duration);
     }
 
-    error(message: string, duration = 4000) {
+    error(message: string, duration = 5000) {
         this.show(message, 'error', duration);
     }
 
-    info(message: string, duration = 3000) {
+    info(message: string, duration = 6000) {
         this.show(message, 'info', duration);
     }
 
-    warning(message: string, duration = 3500) {
+    warning(message: string, duration = 6000) {
         this.show(message, 'warning', duration);
     }
 

@@ -76,7 +76,7 @@ export class OfflineService {
             // Descargar imagen
             const imageBlob = await this.downloadFile(song.img, (progress) => {
                 this.downloadProgress.update(state => ({ ...state, [song.id]: 70 + (progress * 0.3) }));
-            });
+            }, 'image');
 
             // Guardar en IndexedDB
             const offlineSong: OfflineSong = {
@@ -170,15 +170,26 @@ export class OfflineService {
         }
     }
 
-    private async downloadFile(url: string, onProgress?: (progress: number) => void): Promise<Blob> {
+    private async downloadFile(url: string, onProgress?: (progress: number) => void, fileType: 'audio' | 'image' = 'audio'): Promise<Blob> {
         const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`Failed to download: ${response.statusText}`);
         }
 
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            throw new Error('Invalid content type: HTML received instead of media file. Possible login/error page.');
+        }
+
         const contentLength = response.headers.get('content-length');
         const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+        // Validation for Audio files (min 200KB)
+        if (fileType === 'audio' && total > 0 && total < 200 * 1024) {
+            throw new Error(`File too small (${Math.round(total / 1024)}KB). Likely an error file.`);
+        }
+
         let loaded = 0;
 
         const reader = response.body?.getReader();

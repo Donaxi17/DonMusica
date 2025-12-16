@@ -116,6 +116,9 @@ export class OfflineMusicComponent implements OnInit {
       url: song.audioUrl || song.url,
       img: song.imageUrl || song.img
     };
+    // No sanitation needed at this level for now, typically handled by player service or sanitizer pipe in template
+    // But ensuring url is stringent string might help debugging if needed.
+    // song.audioUrl should be a blob: scheme string.
     this.playerService.playSong(offlineSongWithUrl);
   }
 
@@ -139,9 +142,7 @@ export class OfflineMusicComponent implements OnInit {
   async deleteSong(song: OfflineSong, event: Event) {
     event.stopPropagation();
 
-    const confirmed = confirm(`¿Eliminar "${song.title}" de las descargas?`);
-    if (!confirmed) return;
-
+    // Removed confirmation alert as requested
     const success = await this.offlineService.deleteSong(String(song.id));
     if (success) {
       this.toastService.success('Canción eliminada de descargas');
@@ -157,9 +158,7 @@ export class OfflineMusicComponent implements OnInit {
       return;
     }
 
-    const confirmed = confirm(`¿Eliminar todas las ${this.offlineSongs().length} canciones descargadas?`);
-    if (!confirmed) return;
-
+    // Removed confirmation alert as requested
     await this.offlineService.clearAll();
     this.toastService.success('Todas las descargas eliminadas');
     this.updateTotalSize();
