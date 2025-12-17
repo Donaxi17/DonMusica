@@ -87,7 +87,8 @@ export class MusicApiService {
             : ['Taylor Swift', 'The Weeknd', 'Drake', 'Bad Bunny', 'Dua Lipa', 'Harry Styles', 'Ariana Grande', 'Justin Bieber', 'Ed Sheeran', 'Beyonce', 'Rihanna', 'Bruno Mars', 'Adele', 'Coldplay', 'Maroon 5', 'Post Malone', 'Billie Eilish', 'Olivia Rodrigo', 'SZA', 'Miley Cyrus', 'Katy Perry', 'Lady Gaga', 'Kendrick Lamar', 'Eminem', 'Imagine Dragons'];
 
         // Pedimos 200 canciones para tener suficiente margen después de filtrar
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=200&country=${region}`;
+        // Agregamos timestamp para evitar caché y asegurar resultados frescos siempre
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=200&country=${region}&_t=${Date.now()}`;
 
         return this.http.get<any>(url).pipe(
             map(res => {
@@ -172,7 +173,8 @@ export class MusicApiService {
         const term = country === 'CO' ? 'Latino' : 'Pop';
 
         // Request 200 items to ensure we have enough after date filtering
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=200&country=${country}`;
+        // Agregamos timestamp para evitar caché
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=200&country=${country}&_t=${Date.now()}`;
 
         return this.http.get<any>(url).pipe(
             map(res => {

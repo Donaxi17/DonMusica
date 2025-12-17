@@ -435,14 +435,16 @@ export class AdminComponent implements OnInit {
       let finalAudioUrl = this.songData.externalUrl;
 
       if (finalAudioUrl.includes('dropbox.com')) {
-        // Opción A: Ya tiene dl=0 (sea ?dl=0 o &dl=0) -> Reemplazar por dl=1
+        // Reemplazar dl=0 o dl=1 por raw=1 para asegurar streaming directo
         if (finalAudioUrl.includes('dl=0')) {
-          finalAudioUrl = finalAudioUrl.replace('dl=0', 'dl=1');
+          finalAudioUrl = finalAudioUrl.replace('dl=0', 'raw=1');
+        } else if (finalAudioUrl.includes('dl=1')) {
+          finalAudioUrl = finalAudioUrl.replace('dl=1', 'raw=1');
         }
-        // Opción B: No tiene dl parameter -> Agregar
-        else if (!finalAudioUrl.includes('dl=1')) {
+        // Si no tiene parámetros, agregar raw=1
+        else if (!finalAudioUrl.includes('raw=1')) {
           const separator = finalAudioUrl.includes('?') ? '&' : '?';
-          finalAudioUrl = finalAudioUrl + separator + 'dl=1';
+          finalAudioUrl = finalAudioUrl + separator + 'raw=1';
         }
       }
 
