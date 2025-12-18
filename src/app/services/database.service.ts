@@ -15,6 +15,7 @@ export interface Artist {
 
 export interface Song {
     id?: string;
+    artistId?: string | number;
     title: string;
     artist: string;
     url: string; // URL del archivo mp3 en Storage

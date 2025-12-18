@@ -434,7 +434,8 @@
             <p class="text-xs md:text-sm font-bold truncate text-white leading-tight mb-0.5">
                 {{currentSong.title}}
             </p>
-            <p class="text-[10px] md:text-xs text-zinc-400 truncate flex items-center gap-1">
+            <p class="text-[10px] md:text-xs text-zinc-400 truncate flex items-center gap-1 hover:text-emerald-400 transition-colors"
+                (click)="goToArtistDetail($event)">
                 {{currentSong.artist}}
                 <span *ngIf="isFavoritesPlaying" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block ml-1"></span>
             </p>

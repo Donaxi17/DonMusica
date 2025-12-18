@@ -639,6 +639,18 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private boundDrag = (e: MouseEvent | TouchEvent) => this.drag(e);
   private boundStopDrag = () => this.stopDrag();
 
+  goToArtistDetail(song: Song | null) {
+    if (!song) return;
+    this.hapticService.medium();
+    if (song.artistId && song.artistId !== '0' && song.artistId !== 0) {
+      if (song.artistId === this.artistId()) return; // Already here
+      this.router.navigate(['/artist', song.artistId]);
+    } else {
+      // Fallback: search by name
+      this.router.navigate(['/artists'], { queryParams: { q: song.artist } });
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     // If dragging, do not close menus

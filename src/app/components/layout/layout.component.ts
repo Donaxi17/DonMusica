@@ -273,6 +273,21 @@ export class LayoutComponent implements OnInit {
     }
   }
 
+  goToArtistDetail(event: Event) {
+    this.hapticService.medium();
+    event.stopPropagation();
+    if (this.currentSong && (this.currentSong.artistId || this.currentSong.artist)) {
+      // If it's a dynamic artist from search/top charts, we might want to search it first
+      // but if we have an ID, we go directly.
+      if (this.currentSong.artistId && this.currentSong.artistId !== 0 && this.currentSong.artistId !== '0') {
+        this.router.navigate(['/artist', this.currentSong.artistId]);
+      } else {
+        // Fallback: search by name
+        this.router.navigate(['/artists'], { queryParams: { q: this.currentSong.artist } });
+      }
+    }
+  }
+
   closePlayer() {
     this.hapticService.light();
     this.playerService.stop();

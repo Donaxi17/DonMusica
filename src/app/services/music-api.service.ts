@@ -18,6 +18,7 @@ export interface SpotifyTrack {
 
 export interface iTunesTrack {
     trackId: number;
+    artistId?: number;
     trackName: string;
     artistName: string;
     collectionName: string;
@@ -349,7 +350,7 @@ export class MusicApiService {
 
         return {
             id: track.trackId.toString(),
-            artistId: 0,
+            artistId: track.artistId ? track.artistId.toString() : 0,
             title: track.trackName,
             artist: track.artistName,
             album: track.collectionName || 'Single',
@@ -364,7 +365,7 @@ export class MusicApiService {
     private convertJamendoToSong(track: any): Song {
         return {
             id: String(track.id),
-            artistId: 0,
+            artistId: track.artist_id ? String(track.artist_id) : 0,
             title: track.name,
             artist: track.artist_name,
             album: track.album_name,
@@ -379,7 +380,7 @@ export class MusicApiService {
     private convertSpotifyToSong(track: SpotifyTrack): Song {
         return {
             id: track.id,
-            artistId: 0,
+            artistId: track.artists && track.artists.length > 0 ? track.artists[0].id : 0,
             title: track.name,
             artist: track.artists.map(a => a.name).join(', '),
             album: track.album.name,
