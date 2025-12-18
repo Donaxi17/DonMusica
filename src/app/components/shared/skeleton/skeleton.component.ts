@@ -53,7 +53,7 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
-    .skeleton-container { display: block; h-full }
+    .skeleton-container { display: block; height: 100%; }
   `]
 })
 export class SkeletonComponent {

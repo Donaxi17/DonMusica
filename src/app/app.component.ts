@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RedesSocialesComponent } from './components/redes-sociales/redes-sociales.component';
 import { ToastContainerComponent } from './components/shared/toast-container/toast-container.component';
 import { ProModalComponent } from './components/shared/pro-modal/pro-modal.component';
-import { inject } from '@vercel/analytics';
+import { inject as vercelInject } from '@vercel/analytics';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { ToastService } from './services/toast.service';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -14,11 +17,24 @@ import { inject } from '@vercel/analytics';
 })
 export class AppComponent implements OnInit {
   title = 'DonMusica';
+  private swUpdate = inject(SwUpdate);
+  private toastService = inject(ToastService);
 
   ngOnInit() {
-    inject();
+    vercelInject();
     this.loadAdsterraSocialBar();
     this.trackPwaInstallation();
+    this.checkForUpdates();
+  }
+
+  private checkForUpdates() {
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates.pipe(
+        filter((evt: any): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+      ).subscribe(() => {
+        this.toastService.info('¡Nueva versión disponible! Recarga la página para actualizar.', 0);
+      });
+    }
   }
 
   private trackPwaInstallation() {
