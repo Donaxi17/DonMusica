@@ -363,7 +363,7 @@ export class MusicApiService {
 
     private convertJamendoToSong(track: any): Song {
         return {
-            id: track.id,
+            id: String(track.id),
             artistId: 0,
             title: track.name,
             artist: track.artist_name,

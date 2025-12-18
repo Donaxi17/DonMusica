@@ -88,69 +88,7 @@
             <div class="animate-spin rounded-full h-8 w-8 border-2 border-zinc-800 border-t-emerald-500"></div>
         </div>
 
-        <!-- Download Section (Inline at top) -->
-        <div *ngIf="showDownloadModal()" id="download-section"
-            class="mb-8 bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 relative animate-fade-in shadow-2xl shadow-emerald-900/20">
 
-            <button (click)="closeDownloadModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white">
-                <app-svg-icon name="x" width="24" height="24"></app-svg-icon>
-            </button>
-
-            <div class="text-center">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center gap-2">
-                    <app-svg-icon name="cloud-download" class="text-emerald-500" width="24" height="24"></app-svg-icon>
-                    Descargar Canción
-                </h3>
-
-                <div class="flex flex-col md:flex-row items-center justify-center gap-6">
-                    <!-- Thumbnail -->
-                    <div class="w-24 h-24 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                        <img [src]="selectedDownloadSong()?.img" class="w-full h-full object-cover">
-                    </div>
-
-                    <!-- Info & Action -->
-                    <div class="flex-1 max-w-md text-left w-full">
-                        <h4 class="text-white font-bold text-lg leading-tight mb-1">{{selectedDownloadSong()?.title}}
-                        </h4>
-                        <p class="text-emerald-400 text-sm mb-4 font-medium">{{selectedDownloadSong()?.artist}}</p>
-
-                        <div *ngIf="!canDownload()"
-                            class="bg-zinc-800/50 rounded-lg p-3 border border-white/5 flex items-center gap-3">
-                            <div
-                                class="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin">
-                            </div>
-                            <span class="text-sm text-zinc-300">Generando enlace en <span
-                                    class="text-emerald-400 font-bold">{{downloadCountdown()}}s</span>...</span>
-                        </div>
-
-                        <!-- Success State -->
-                        <div *ngIf="downloadSuccess()"
-                            class="w-full py-3 bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-bold rounded-lg flex items-center justify-center gap-2 animate-fade-in">
-                            <app-svg-icon name="check" width="24" height="24"></app-svg-icon>
-                            ¡DESCARGA EXITOSA!
-                        </div>
-
-                        <button *ngIf="canDownload() && !downloadSuccess()"
-                            (click)="!isProcessingDownload() && downloadSong()" [disabled]="isProcessingDownload()"
-                            [class.opacity-50]="isProcessingDownload()"
-                            [class.cursor-not-allowed]="isProcessingDownload()"
-                            class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
-
-                            <ng-container *ngIf="!isProcessingDownload()">
-                                <app-svg-icon name="download" width="20" height="20"></app-svg-icon>
-                                DESCARGAR AHORA
-                            </ng-container>
-
-                            <ng-container *ngIf="isProcessingDownload()">
-                                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin">
-                                </div>
-                                Descargando...
-                            </ng-container>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Songs List Compacta -->
         <div *ngIf="!isLoading() && songs().length > 0">
@@ -228,14 +166,12 @@
                         <!-- Offline Download -->
                         <button (click)="downloadForOffline(song, $event)" [disabled]="isDownloadingOffline()[song.id]"
                             class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center transition-all border border-white/5 relative hover:scale-110 active:scale-90"
-                            [class.text-blue-400]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
+                            [class.text-blue-500]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
                             title="Guardar Offline">
                             <app-svg-icon *ngIf="!isOffline(song.id) && !isDownloadingOffline()[song.id]"
-                                name="cloud-download" width="16" height="16" md:width="20"
-                                md:height="20"></app-svg-icon>
+                                name="cloud-download" width="16" height="16"></app-svg-icon>
                             <app-svg-icon *ngIf="isOffline(song.id) && !isDownloadingOffline()[song.id]" name="check"
-                                width="16" height="16" md:width="20" md:height="20"
-                                class="text-blue-400"></app-svg-icon>
+                                width="18" height="18" class="text-blue-500"></app-svg-icon>
 
                             <div *ngIf="isDownloadingOffline()[song.id]"
                                 class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin">

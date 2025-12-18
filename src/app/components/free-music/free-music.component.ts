@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
@@ -26,6 +26,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 })
 export class FreeMusicComponent implements OnInit {
   networkService = inject(NetworkService);
+  private router = inject(Router);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private seoService = inject(SeoService);
@@ -53,11 +54,7 @@ export class FreeMusicComponent implements OnInit {
   isLoading = signal(false);
   searchQuery = signal('');
 
-  // Sistema de descarga con anuncios
-  showDownloadModal = signal(false);
-  selectedDownloadSong = signal<Song | null>(null);
-  downloadCountdown = signal(0); // Sin countdown
-  canDownload = signal(true); // Puede descargar inmediatamente
+  // Descarga redirigida a página global
   isProcessingDownload = signal(false);
 
   // Smartlink configuration
@@ -189,49 +186,24 @@ export class FreeMusicComponent implements OnInit {
   }
 
   openDownloadModal(song: Song) {
-    this.selectedDownloadSong.set(song);
-    this.showDownloadModal.set(true);
-
-    // Sin delay en Free Music (Inmediato)
-    this.canDownload.set(true);
-    this.downloadCountdown.set(0);
-
-    this.isProcessingDownload.set(false);
-
-    // Scroll al modal
-    setTimeout(() => {
-      const element = document.getElementById('download-section');
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: song.artist,
+        downloadUrl: song.url,
+        mode: 'default',
+        songData: song
       }
-    }, 100);
+    });
   }
 
   closeDownloadModal() {
-    this.showDownloadModal.set(false);
-    this.selectedDownloadSong.set(null);
-    this.canDownload.set(false);
-    this.isProcessingDownload.set(false);
+    // Ya no se usa modal inline
   }
 
   private openSmartlinkIfAllowed(): void {
     console.log('🔗 Abriendo Smartlink:', this.SMARTLINK_URL);
     window.open(this.SMARTLINK_URL, '_blank');
-  }
-
-  private startCountdown() {
-    const interval = setInterval(() => {
-      const current = this.downloadCountdown();
-      if (current > 0) {
-        this.downloadCountdown.set(current - 1);
-      } else {
-        this.canDownload.set(true);
-        clearInterval(interval);
-      }
-    }, 1000);
   }
 
   // Manejar error de imagen con fallback
@@ -266,59 +238,7 @@ export class FreeMusicComponent implements OnInit {
   }
 
   downloadSong() {
-    const song = this.selectedDownloadSong();
-    if (!song || !this.canDownload()) return;
-
-    // 1. Abrir Smartlink inmediatamente (Prioridad Monetización)
-    this.openSmartlinkIfAllowed();
-
-    // 2. Mostrar notificación visual persistente
-    this.downloadingSong.set(song);
-    this.showDownloadNotification.set(true);
-    this.downloadSuccess.set(false);
-
-    this.isProcessingDownload.set(true);
-    // this.toastService.info('⏳ Iniciando descarga...'); // Comentado para no duplicar mensajes
-
-    // 3. Esperar 1 segundo para procesar la descarga
-    setTimeout(() => {
-      // Intentamos descargar como blob para evitar abrir nueva pestaña
-      this.http.get(song.url, { responseType: 'blob' }).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          // Limpiamos el nombre del archivo
-          const safeTitle = (song.title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-          link.download = `${safeTitle}.mp3`;
-
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          // Limpieza
-          setTimeout(() => window.URL.revokeObjectURL(url), 100);
-
-          this.isProcessingDownload.set(false);
-          // this.closeDownloadModal(); // Mantenemos abierto para mostrar éxito
-          this.downloadSuccess.set(true); // ✅ Marcar como éxito
-          this.downloadingSong.set(null); // Limpiamos la canción en descarga para notificación
-          this.showDownloadNotification.set(false); // Ocultamos la notificación flotante si existiera
-        },
-        error: (error) => {
-          console.warn('Error en descarga directa (posible CORS), usando fallback', error);
-
-          // Fallback: Si falla (CORS), abrimos en nueva pestaña
-          window.open(song.url, '_blank');
-
-          this.isProcessingDownload.set(false);
-          // this.closeDownloadModal(); // Mantenemos abierto para mostrar éxito
-          this.downloadSuccess.set(true);
-          this.downloadingSong.set(null);
-          this.showDownloadNotification.set(false);
-        }
-      });
-    }, 1000);
+    // Ya no se usa descarga directa aquí, se hace en DownloadPageComponent
   }
 
   // Métodos para descarga offline
@@ -333,12 +253,14 @@ export class FreeMusicComponent implements OnInit {
       return;
     }
 
-    const success = await this.offlineService.downloadSong(song);
-    if (success) {
-      this.toastService.success('Canción descargada para uso offline');
-    } else {
-      this.toastService.error('Error al descargar la canción');
-    }
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: song.artist,
+        mode: 'offline',
+        songData: song
+      }
+    });
   }
 
   isOffline(songId: string | number): boolean {

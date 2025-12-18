@@ -7,9 +7,11 @@ section {
     /* Slightly wider for larger icons */
     color: white;
     z-index: 100000;
+    pointer-events: none;
 }
 
 section a {
+    pointer-events: auto;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     cursor: pointer;

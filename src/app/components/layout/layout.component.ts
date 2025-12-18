@@ -134,6 +134,10 @@ export class LayoutComponent implements OnInit {
     return this.router.url.startsWith('/artists') || this.router.url.startsWith('/artist/');
   }
 
+  isBrowseActive(): boolean {
+    return this.router.url.startsWith('/browse');
+  }
+
   isMoreActive(): boolean {
     const routes = ['/playlists', '/blog', '/saved-lyrics', '/offline-music', '/upload-music', '/tools', '/sin-copyright', '/radio'];
     return routes.some(r => this.router.url.startsWith(r));
@@ -215,6 +219,9 @@ export class LayoutComponent implements OnInit {
   scrollToTop() {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Fallback para casos donde window.scrollTo no sea suficiente
+      document.body.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 

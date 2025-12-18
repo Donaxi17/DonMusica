@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MusicApiService } from '../../../services/music-api.service';
 import { PlayerService } from '../../../services/player.service';
@@ -25,6 +25,7 @@ import { OnDestroy } from '@angular/core';
 })
 export class SearchComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
+    private router = inject(Router);
     private musicApi = inject(MusicApiService);
     private playerService = inject(PlayerService);
     private lyricsService = inject(LyricsService);
@@ -178,6 +179,19 @@ export class SearchComponent implements OnInit, OnDestroy {
     downloadProgress = this.offlineService.downloadProgress;
     isDownloadingOffline = this.offlineService.isDownloading;
 
+    openDownload(song: Song, event: Event) {
+        event.stopPropagation();
+        this.router.navigate(['/download'], {
+            state: {
+                songTitle: song.title,
+                artistName: song.artist,
+                downloadUrl: song.url,
+                mode: 'default',
+                songData: song
+            }
+        });
+    }
+
     async downloadForOffline(song: Song, event: Event) {
         event.stopPropagation();
 
@@ -186,12 +200,14 @@ export class SearchComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const success = await this.offlineService.downloadSong(song);
-        if (success) {
-            this.toastService.success('Canción descargada para uso offline');
-        } else {
-            this.toastService.error('Error al descargar la canción');
-        }
+        this.router.navigate(['/download'], {
+            state: {
+                songTitle: song.title,
+                artistName: song.artist,
+                mode: 'offline',
+                songData: song
+            }
+        });
     }
 
     isOffline(songId: string | number): boolean {
