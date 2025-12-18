@@ -7,10 +7,12 @@ import { PlayerService } from '../../../services/player.service';
 import { Song } from '../../../services/playlist.service';
 import { SeoService } from '../../../services/seo.service';
 
+import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
+
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent], // Add to imports
+    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent], // Add to imports
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {
@@ -37,11 +39,6 @@ export class TrendsComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        // FORCE PAUSE: Stop any playback immediately when entering trends
-        setTimeout(() => {
-            this.playerService.pause();
-        }, 100);
-
         // SEO optimization
         this.seoService.setSeoData(
             'Tendencias Globales | DonMusica',

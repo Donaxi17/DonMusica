@@ -13,10 +13,12 @@ import { ShareService } from '../../../services/share.service';
 import { Song } from '../../../services/playlist.service';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 
+import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
+
 @Component({
     selector: 'app-search',
     standalone: true,
-    imports: [CommonModule, FormsModule, AdsContainerComponent],
+    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent],
     templateUrl: './search.component.html',
     styleUrl: './search.component.css'
 })

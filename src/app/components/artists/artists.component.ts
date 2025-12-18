@@ -14,10 +14,12 @@ import { ItunesService } from '../../services/itunes.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
+import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
+
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })

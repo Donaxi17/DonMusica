@@ -330,7 +330,14 @@ export class MusicApiService {
     }
 
     private convertITunesToSong(track: iTunesTrack): Song {
-        const artwork = track.artworkUrl100 ? track.artworkUrl100.replace('100x100', '600x600') : 'https://placehold.co/300x300/18181b/10b981?text=Music';
+        let artwork = track.artworkUrl100 ? track.artworkUrl100.replace('100x100', '600x600') : 'https://placehold.co/300x300/18181b/10b981?text=Music';
+
+        // Filtro para evitar errores 403 (Forbidden) de dominios que bloquean hotlinking
+        // Detectamos dominios problemáticos conocidos como staticld.com (RCN/La Mega)
+        if (artwork.includes('staticld.com')) {
+            artwork = 'https://placehold.co/600x600/18181b/10b981?text=DonMusica';
+        }
+
         return {
             id: track.trackId.toString(),
             artistId: 0,

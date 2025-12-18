@@ -1,5 +1,5 @@
-import { Component, OnInit, signal, HostListener, ViewChild, ElementRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, HostListener, ViewChild, ElementRef, inject, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
 import { Song, PlaylistService } from '../../services/playlist.service';
@@ -19,262 +19,271 @@ import { VideoPlayerComponent } from '../shared/video-player/video-player.compon
 export class LayoutComponent implements OnInit {
   @ViewChild('progressBarRef') progressBarRef!: ElementRef<HTMLElement>;
 
-  // Inject PlaylistService
-  private playlistService = inject(PlaylistService);
-
-  currentSong: Song | null = null;
-  isPlaying = false;
-  isFavoritesPlaying = false;
-  showMoreMenu = false;
-  showMobileMoreMenu = false;
+  // UI State (Regular properties as used in template)
   showHistory = false;
+  showMobileMoreMenu = false;
+  showBackToTop = false;
+  scrollProgress = 0;
+  currentLanguage = 'ES';
   showLanguageMenu = false;
-  currentLanguage: 'ES' | 'EN' = 'EN';
-  progress = 0;
+  showMoreMenu = false;
   imageLoadError = false;
+  isMenuOpen = false;
 
-  isDragging = false;
+  // Player State
+  currentSong: any = null;
+  isPlaying = false;
+  currentTime = '0:00';
+  duration = '0:00';
+  progress = 0;
+  isMuted = false;
+  volume = 1;
+  isFavoritesPlaying = false;
 
-  private previousRoute: string = '/';
+  private router = inject(Router);
+  public playerService = inject(PlayerService);
+  private playlistService = inject(PlaylistService);
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
 
-  constructor(
-    public playerService: PlayerService,
-    public router: Router
-  ) { }
-
-  // Rest of code...
-
-  isFavorite(songId: string | number): boolean {
-    return this.playlistService.isFavorite(String(songId));
-  }
-
-
-  ngOnInit(): void {
-    // Load saved language from localStorage
-    if (typeof localStorage !== 'undefined') {
-      const savedLanguage = localStorage.getItem('appLanguage') as 'ES' | 'EN';
-      if (savedLanguage) {
-        this.currentLanguage = savedLanguage;
+  constructor() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.isMenuOpen = false;
+      this.showMobileMoreMenu = false;
+      this.showMoreMenu = false;
+      this.showLanguageMenu = false;
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo(0, 0);
       }
-    }
+      this.cdr.markForCheck();
+    });
 
-    if (typeof document !== 'undefined') {
+    // Listener for history panel
+    if (isPlatformBrowser(this.platformId)) {
+      document.addEventListener('openHistory', () => {
+        this.showHistory = true;
+        this.cdr.detectChanges();
+      });
       document.addEventListener('closeHistory', () => {
         this.showHistory = false;
+        this.cdr.detectChanges();
       });
     }
+  }
 
+  ngOnInit() {
     this.playerService.currentSong$.subscribe(song => {
       this.currentSong = song;
       this.imageLoadError = false;
+      this.cdr.markForCheck();
     });
 
     this.playerService.isPlaying$.subscribe(playing => {
       this.isPlaying = playing;
+      this.cdr.markForCheck();
     });
 
-    this.playerService.isFavoritesPlaying$.subscribe(isFav => {
-      this.isFavoritesPlaying = isFav;
+    this.playerService.currentTime$.subscribe(time => {
+      this.currentTime = this.formatTime(time);
+      this.cdr.markForCheck();
+    });
+
+    this.playerService.duration$.subscribe(dur => {
+      this.duration = this.formatTime(dur);
+      this.cdr.markForCheck();
     });
 
     this.playerService.progress$.subscribe(prog => {
-      // Only update local progress if not dragging
-      if (!this.isDragging) {
-        this.progress = prog;
-      }
+      this.progress = prog;
+      this.cdr.markForCheck();
     });
 
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      if (!event.url.startsWith('/player')) {
-        this.previousRoute = event.url;
-      }
-      this.showMobileMoreMenu = false;
-      this.showMoreMenu = false;
-      this.showLanguageMenu = false;
+    this.playerService.isMuted$.subscribe(muted => {
+      this.isMuted = muted;
+      this.cdr.markForCheck();
+    });
+
+    this.playerService.volume$.subscribe(vol => {
+      this.volume = vol / 100;
+      this.cdr.markForCheck();
+    });
+
+    this.playerService.isFavoritesPlaying$.subscribe(fav => {
+      this.isFavoritesPlaying = fav;
+      this.cdr.markForCheck();
     });
   }
 
-  // --- Drag & Seek Logic ---
-  startDrag(event: MouseEvent | TouchEvent): void {
-    if (event.cancelable) {
-      event.preventDefault(); // Prevent text selection/scroll
-    }
-    event.stopPropagation();
-    this.isDragging = true;
-    this.updateProgressFromEvent(event);
+  // --- Navigation & UI ---
+
+  navigateTo(route: string) {
+    this.router.navigate([route]);
+    this.isMenuOpen = false;
+    this.showMobileMoreMenu = false;
+    this.showMoreMenu = false;
+    this.cdr.markForCheck();
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onDragMove(event: MouseEvent | TouchEvent): void {
-    if (this.isDragging) {
-      this.updateProgressFromEvent(event);
-    }
+  isActive(route: string): boolean {
+    return this.router.url === route;
   }
 
-  @HostListener('document:mouseup')
-  @HostListener('document:touchend')
-  stopDrag(): void {
-    if (this.isDragging) {
-      this.isDragging = false;
-      this.playerService.seekTo(this.progress);
-    }
-  }
-
-  private updateProgressFromEvent(event: MouseEvent | TouchEvent): void {
-    if (!this.progressBarRef) return;
-
-    const progressBar = this.progressBarRef.nativeElement;
-    const rect = progressBar.getBoundingClientRect();
-
-    let clientX: number;
-    if (event instanceof MouseEvent) {
-      clientX = event.clientX;
-    } else {
-      clientX = event.touches[0].clientX;
-    }
-
-    // Calculate position
-    const clickPosition = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const percentage = (clickPosition / rect.width) * 100;
-
-    // Update locally for smooth UI
-    this.progress = percentage;
-  }
-
-  seekTo(event: MouseEvent): void {
-    // Legacy click seek (fallback)
-    this.startDrag(event);
-    this.stopDrag();
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    // Avoid closing if dragging
-    if (this.isDragging) return;
-
-    // Cerrar menú desktop si se hace clic fuera
-    if (this.showMoreMenu) {
-      this.showMoreMenu = false;
-    }
-    // Cerrar menú de idioma si se hace clic fuera
-    if (this.showLanguageMenu) {
-      this.showLanguageMenu = false;
-    }
-    // Cerrar menú móvil si se hace clic fuera
-    if (this.showMobileMoreMenu) {
-      this.showMobileMoreMenu = false;
-    }
+  isArtistActive(): boolean {
+    return this.router.url.startsWith('/artists') || this.router.url.startsWith('/artist/');
   }
 
   isMoreActive(): boolean {
-    const moreRoutes = ['/tools', '/sin-copyright', '/radio', '/playlists', '/blog', '/saved-lyrics', '/about', '/contact'];
-    return moreRoutes.some(route => this.isActive(route));
+    const routes = ['/playlists', '/blog', '/saved-lyrics', '/offline-music', '/upload-music', '/tools', '/sin-copyright', '/radio'];
+    return routes.some(r => this.router.url.startsWith(r));
   }
 
-  toggleMoreMenu(event?: Event) {
-    if (event) event.stopPropagation();
-    this.showMoreMenu = !this.showMoreMenu;
-    if (this.showMoreMenu) {
-      this.showLanguageMenu = false;
-    }
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    this.cdr.markForCheck();
   }
 
-  closeMoreMenu() {
-    this.showMoreMenu = false;
+  toggleHistory() {
+    this.showHistory = !this.showHistory;
+    this.cdr.markForCheck();
+  }
+
+  shouldHideFooter(): boolean {
+    const hiddenRoutes = ['/player', '/videos'];
+    return hiddenRoutes.some(route => this.router.url.startsWith(route));
   }
 
   toggleMobileMoreMenu(event?: Event) {
     if (event) event.stopPropagation();
     this.showMobileMoreMenu = !this.showMobileMoreMenu;
+    this.cdr.markForCheck();
   }
 
   closeMobileMoreMenu() {
     this.showMobileMoreMenu = false;
+    this.cdr.markForCheck();
   }
 
-  toggleHistory() {
-    this.showHistory = !this.showHistory;
+  toggleMoreMenu(event: Event) {
+    event.stopPropagation();
+    this.showMoreMenu = !this.showMoreMenu;
+    this.showLanguageMenu = false;
+    this.cdr.markForCheck();
   }
 
-  navigateTo(route: string): void {
-    this.router.navigate([route]);
+  closeMoreMenu() {
+    this.showMoreMenu = false;
+    this.cdr.markForCheck();
   }
 
-  isActive(route: string): boolean {
-    const urlTree = this.router.parseUrl(this.router.url);
-    const urlSegmentGroup = urlTree.root.children['primary'];
-    const urlSegments = urlSegmentGroup ? urlSegmentGroup.segments : [];
-    const currentPath = '/' + urlSegments.map(s => s.path).join('/');
-
-    if (route === '/') {
-      return currentPath === '/';
-    }
-
-    return currentPath.startsWith(route);
-  }
-
-  shouldHideFooter(): boolean {
-    return this.router.url.includes('/biography');
-  }
-
-  togglePlayPause(): void {
-    if (this.currentSong) {
-      if (this.isPlaying) {
-        this.playerService.pause();
-      } else {
-        this.playerService.play();
-      }
-    }
-  }
-
-  previousTrack(): void {
-    this.playerService.previousTrack();
-  }
-
-  nextTrack(): void {
-    this.playerService.nextTrack();
-  }
-
-  closePlayer(): void {
-    this.playerService.stop();
-  }
-
-  openPlayer(): void {
-    // If dragging, do nothing
-    if (this.isDragging) return;
-
-    if (this.playerService.playbackContext === 'artist' && this.currentSong?.artistId) {
-      this.router.navigate(['/artist', this.currentSong.artistId]);
-    } else {
-      this.router.navigate(['/player']);
-    }
-  }
-
-  toggleLanguageMenu(event?: Event) {
-    if (event) event.stopPropagation();
+  toggleLanguageMenu(event: Event) {
+    event.stopPropagation();
     this.showLanguageMenu = !this.showLanguageMenu;
-    if (this.showLanguageMenu) {
-      this.showMoreMenu = false;
-    }
-  }
-
-  changeLanguage(language: 'ES' | 'EN') {
-    this.currentLanguage = language;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('appLanguage', language);
-    }
-    // Aquí puedes agregar lógica adicional para cambiar el idioma de la app
-    // Por ejemplo, usando un servicio de traducción
+    this.showMoreMenu = false;
+    this.cdr.markForCheck();
   }
 
   closeLanguageMenu() {
     this.showLanguageMenu = false;
+    this.cdr.markForCheck();
+  }
+
+  changeLanguage(lang: string) {
+    this.currentLanguage = lang;
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    if (isPlatformBrowser(this.platformId)) {
+      const scroll = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      this.scrollProgress = (scroll / (docHeight || 1)) * 100;
+      this.showBackToTop = scroll > 300;
+      this.cdr.detectChanges();
+    }
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.showMoreMenu = false;
+    this.showLanguageMenu = false;
+    this.cdr.markForCheck();
+  }
+
+  scrollToTop() {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // --- Player Controls ---
+
+  togglePlayPause() {
+    this.playerService.togglePlay();
+  }
+
+  previousTrack() {
+    this.playerService.previousTrack();
+  }
+
+  nextTrack() {
+    this.playerService.nextTrack();
+  }
+
+  openPlayer() {
+    this.router.navigate(['/player']);
+  }
+
+  closePlayer() {
+    this.playerService.stop();
   }
 
   onImageError(event: any) {
     this.imageLoadError = true;
+    this.cdr.markForCheck();
+  }
+
+  isFavorite(id: string): boolean {
+    return this.playlistService.isFavorite(id);
+  }
+
+  formatTime(seconds: number): string {
+    if (isNaN(seconds) || seconds === 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // --- Progress Bar Dragging ---
+
+  startDrag(event: MouseEvent | TouchEvent) {
+    this.handleDrag(event);
+
+    if (isPlatformBrowser(this.platformId)) {
+      const moveHandler = (e: MouseEvent | TouchEvent) => this.handleDrag(e);
+      const endHandler = () => {
+        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mouseup', endHandler);
+        document.removeEventListener('touchmove', moveHandler);
+        document.removeEventListener('touchend', endHandler);
+      };
+
+      document.addEventListener('mousemove', moveHandler);
+      document.addEventListener('mouseup', endHandler);
+      document.addEventListener('touchmove', moveHandler, { passive: false });
+      document.addEventListener('touchend', endHandler);
+    }
+  }
+
+  private handleDrag(event: MouseEvent | TouchEvent) {
+    if (this.progressBarRef) {
+      const rect = this.progressBarRef.nativeElement.getBoundingClientRect();
+      const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
+      const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      this.playerService.seekTo(pos * 100);
+      this.cdr.detectChanges();
+    }
   }
 }

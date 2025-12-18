@@ -8,10 +8,12 @@ import { SpotifyService } from '../../services/spotify.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
+import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
+
 @Component({
   selector: 'app-artist-biography',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, AdsContainerComponent],
+  imports: [CommonModule, RouterModule, SvgIconComponent, AdsContainerComponent, SkeletonComponent],
   templateUrl: './artist-biography.component.html',
   styles: [`
     :host {

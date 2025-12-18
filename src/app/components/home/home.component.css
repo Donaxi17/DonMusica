@@ -1,0 +1,111 @@
+/* Page Load Animation (Global) */
+.page-load-fade {
+    animation: pageFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Hero Specific Animations (Fast, on load) */
+.animate-hero-up {
+    opacity: 0;
+    animation: heroUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes heroUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reveal Base Styles (For scroll triggered items) */
+.reveal {
+    opacity: 0;
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+/* Vertical Transitions */
+.reveal-up {
+    transform: translateY(60px);
+}
+
+.reveal-down {
+    transform: translateY(-60px);
+}
+
+/* Horizontal Transitions */
+.reveal-left {
+    transform: translateX(60px);
+}
+
+.reveal-right {
+    transform: translateX(-60px);
+}
+
+/* Scale Transitions */
+.reveal-scale {
+    transform: scale(0.9);
+}
+
+/* Active State (Visible) */
+.reveal.active {
+    opacity: 1 !important;
+    transform: translate(0, 0) scale(1) !important;
+}
+
+/* Staggered Delays for grid items */
+.delay-100 {
+    transition-delay: 100ms;
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    transition-delay: 200ms;
+    animation-delay: 200ms;
+}
+
+.delay-300 {
+    transition-delay: 300ms;
+    animation-delay: 300ms;
+}
+
+.delay-400 {
+    transition-delay: 400ms;
+    animation-delay: 400ms;
+}
+
+.delay-500 {
+    transition-delay: 500ms;
+    animation-delay: 500ms;
+}
+
+/* Mobile optimization: simpler animations on small screens */
+@media (max-width: 768px) {
+    .reveal {
+        transition-duration: 0.8s;
+        transition-timing-function: ease-out;
+    }
+
+    .reveal-up,
+    .reveal-down,
+    .reveal-left,
+    .reveal-right {
+        transform: translateY(30px) translateX(0) !important;
+        /* Uniform fade up for all on mobile */
+    }
+}

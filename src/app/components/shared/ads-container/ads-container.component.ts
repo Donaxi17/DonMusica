@@ -12,6 +12,8 @@ import { DonMusicaProService } from '../../../services/don-musica-pro.service';
 export class AdsContainerComponent implements OnInit, AfterViewInit {
   @Input() index: number = 0; // To generate unique IDs if multiple ads on page
   @Input() forceIframe: boolean = false; // Force iframe version (useful for multiple ads or modals)
+  @Input() smallOnly: boolean = false; // Force 320x50 format (useful for sidebars/history)
+  @Input() noPadding: boolean = false; // Disable default padding
 
   isBrowser: boolean;
   mobileContainerId: string = '';
@@ -45,7 +47,7 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
       const container = document.getElementById(this.mobileContainerId);
       if (container && !container.hasChildNodes()) {
         const width = window.innerWidth;
-        const isDesktop = width >= 768;
+        const isDesktop = width >= 768 && !this.smallOnly;
 
         const iframe = document.createElement('iframe');
         iframe.title = 'Anuncio publicitario';

@@ -6,6 +6,7 @@ export interface HistoryItem {
     title: string;
     artist: string;
     img: string;
+    url?: string;
     timestamp: number;
     type: 'video' | 'audio';
 }
@@ -39,21 +40,37 @@ export class HistoryService {
         if (!song || !song.title) return;
 
         const newItem: HistoryItem = {
-            id: song.videoId || song.id || 'unknown',
+            id: String(song.id || song.videoId || Date.now()),
             title: song.title,
             artist: song.artist || 'Desconocido',
             img: song.img || song.thumbnail || 'assets/images/default-music.png',
+            url: song.url || '',
             timestamp: Date.now(),
             type: song.videoId ? 'video' : 'audio'
         };
 
         let current = this.historySubject.value;
-        current = current.filter(item => item.title !== newItem.title); // Evitar duplicados
+        current = current.filter(item =>
+            item.id !== newItem.id &&
+            !(item.title === newItem.title && item.artist === newItem.artist)
+        );
         current.unshift(newItem);
-        if (current.length > 20) current = current.slice(0, 20);
+        if (current.length > 30) current = current.slice(0, 30);
 
         this.historySubject.next(current);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(current));
+        this.saveHistory(current);
+    }
+
+    removeFromHistory(id: string) {
+        const current = this.historySubject.value.filter(item => item.id !== id);
+        this.historySubject.next(current);
+        this.saveHistory(current);
+    }
+
+    private saveHistory(history: HistoryItem[]) {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+        }
     }
 
     clearHistory() {

@@ -1,38 +1,49 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, ElementRef, Renderer2, ChangeDetectionStrategy, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgOptimizedImage } from '@angular/common';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 
 import { NetworkService } from '../../services/network.service';
+
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { PlayerService } from '../../services/player.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NgOptimizedImage, NoConnectionComponent],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NoConnectionComponent, SkeletonComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit {
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
   private router = inject(Router);
   private seoService = inject(SeoService);
   private musicApi = inject(MusicApiService);
   public networkService = inject(NetworkService);
+  private playerService = inject(PlayerService);
 
   requestArtist = '';
   requestSong = '';
   requestMessage = '';
 
-  trendingSongs: Song[] = [];
+  trendingSongs = signal<Song[]>([]);
+  loadingTrends = signal(true);
 
   deferredPrompt: any;
   canInstall = false;    // For the Hero button
   showInstallBanner = false; // For the bottom banner
+
+  // Parallax tracking (Signals for OnPush)
+  mouseX = signal(0);
+  mouseY = signal(0);
 
   ngOnInit() {
     // Enhanced SEO with rich meta tags
@@ -44,16 +55,58 @@ export class HomeComponent implements OnInit {
     // Initial check for PWA install capability
     this.listenForInstallPrompt();
 
+    // Load initial data
+    this.loadTrends();
+  }
+
+  loadTrends() {
+    this.loadingTrends.set(true);
     // Load trending songs from the same source as the Trends page
     this.musicApi.getTrending('CO').subscribe({
       next: (songs) => {
         // Show only the first 6 songs for the home preview
-        this.trendingSongs = songs.slice(0, 6);
+        this.trendingSongs.set(songs.slice(0, 6));
+        this.loadingTrends.set(false);
+        // After data is loaded, re-scan for reveal elements if needed
+        setTimeout(() => this.initScrollAnimations(), 100);
       },
       error: (err) => {
         console.error('Error loading trending songs for home:', err);
+        this.loadingTrends.set(false);
+        this.trendingSongs.set([]);
       }
     });
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(e: MouseEvent) {
+    this.mouseX.set((e.clientX / window.innerWidth - 0.5) * 20);
+    this.mouseY.set((e.clientY / window.innerHeight - 0.5) * 20);
+  }
+
+  ngAfterViewInit() {
+    this.initScrollAnimations();
+  }
+
+  private initScrollAnimations() {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px 0px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.renderer.addClass(entry.target, 'active');
+        } else {
+          // Re-enable removal to make animations "infinite" (scrolling up/down)
+          this.renderer.removeClass(entry.target, 'active');
+        }
+      });
+    }, observerOptions);
+
+    const elements = this.el.nativeElement.querySelectorAll('.reveal');
+    elements.forEach((element: HTMLElement) => observer.observe(element));
   }
 
   listenForInstallPrompt() {
@@ -85,6 +138,8 @@ export class HomeComponent implements OnInit {
     this.canInstall = false;
     this.showInstallBanner = false;
   }
+
+
 
   navigateToArtists(): void {
     this.router.navigate(['/artists']);
@@ -124,5 +179,10 @@ export class HomeComponent implements OnInit {
       this.requestSong = '';
       this.requestMessage = '';
     }, 1000);
+  }
+
+  playSong(song: Song): void {
+    this.playerService.setPlaylist(this.trendingSongs(), false, 'home-trends');
+    this.playerService.playSong(song);
   }
 }

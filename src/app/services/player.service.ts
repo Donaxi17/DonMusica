@@ -5,22 +5,26 @@ import { MusicApiService } from './music-api.service';
 import { ToastService } from './toast.service';
 import { VideoPlayerService } from './video-player.service';
 import { OfflineService } from './offline.service';
+import { HistoryService } from './history.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlayerService {
   private audio = new Audio();
+  private router = inject(Router);
   private toastService = inject(ToastService);
   private injector = inject(Injector);
   private offlineService = inject(OfflineService);
+  private historyService = inject(HistoryService);
 
   // Lazy getter to avoid circular dependency
   private get videoPlayerService() {
     return this.injector.get(VideoPlayerService);
   }
 
-  // Estado del reproductor (observables para que los componentes se suscriban)
+  // Estado del reproductor
   private currentSongSubject = new BehaviorSubject<Song | null>(null);
   private isPlayingSubject = new BehaviorSubject<boolean>(false);
   private playlistSubject = new BehaviorSubject<Song[]>([]);
@@ -31,9 +35,11 @@ export class PlayerService {
   private isShuffleSubject = new BehaviorSubject<boolean>(false);
   private repeatModeSubject = new BehaviorSubject<'off' | 'all' | 'one'>('off');
   private isFavoritesPlayingSubject = new BehaviorSubject<boolean>(false);
-  private playbackContextSubject = new BehaviorSubject<string>('unknown'); // 'artist', 'playlist', 'album', etc.
+  private playbackContextSubject = new BehaviorSubject<string>('unknown');
+  private isMutedSubject = new BehaviorSubject<boolean>(false);
+  private lastVolume = 100;
 
-  // Exponer como observables públicos
+  // Observables públicos
   currentSong$ = this.currentSongSubject.asObservable();
   isPlaying$ = this.isPlayingSubject.asObservable();
   playlist$ = this.playlistSubject.asObservable();
@@ -41,12 +47,11 @@ export class PlayerService {
   duration$ = this.durationSubject.asObservable();
   progress$ = this.progressSubject.asObservable();
   volume$ = this.volumeSubject.asObservable();
+  isMuted$ = this.isMutedSubject.asObservable();
   isShuffle$ = this.isShuffleSubject.asObservable();
   repeatMode$ = this.repeatModeSubject.asObservable();
   isFavoritesPlaying$ = this.isFavoritesPlayingSubject.asObservable();
   playbackContext$ = this.playbackContextSubject.asObservable();
-
-  // ... existing code ...
 
   constructor(private musicApi: MusicApiService) {
     this.initializeAudioListeners();
@@ -54,7 +59,6 @@ export class PlayerService {
   }
 
   private initializeAudioListeners(): void {
-    // Actualizar progreso
     this.audio.addEventListener('timeupdate', () => {
       this.currentTimeSubject.next(this.audio.currentTime);
       this.durationSubject.next(this.audio.duration || 0);
@@ -64,7 +68,6 @@ export class PlayerService {
       this.progressSubject.next(progress);
     });
 
-    // Auto-play siguiente canción
     this.audio.addEventListener('ended', () => {
       if (this.repeatModeSubject.value === 'one') {
         this.audio.currentTime = 0;
@@ -74,11 +77,9 @@ export class PlayerService {
       }
     });
 
-    // Configurar volumen inicial
     this.audio.volume = this.volumeSubject.value / 100;
   }
 
-  // ========== MEDIA SESSION API (Lock Screen Controls) ==========
   private setupMediaSession() {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('play', () => this.resume());
@@ -105,49 +106,40 @@ export class PlayerService {
     }
   }
 
-  // ========== PLAYBACK CONTROLS ==========
+  // ========== CONTROLES DE REPRODUCCIÓN ==========
 
   playSong(song: Song): void {
-    // 1. One King Rule: Close Video if open
     try {
       this.videoPlayerService.closeVideo();
-    } catch (e) {
-      // Ignore if service not ready
-    }
+    } catch (e) { }
 
     const currentSong = this.currentSongSubject.value;
 
     if (currentSong?.id === song.id) {
-      // Toggle play/pause si es la misma canción
-      if (this.isPlayingSubject.value) {
-        this.pause();
-      } else {
-        this.play();
-      }
+      this.togglePlay();
     } else {
-      // Reproducir nueva canción
       this.currentSongSubject.next(song);
       this.updateMediaSessionMetadata(song);
 
-      // Check if song is downloaded (Offline Mode)
-      // We check the OfflineService to see if we have a blob URL for this song
-      const offlineSong = this.offlineService.getOfflineSong(String(song.id || ''));
+      const currentUrl = this.router.url;
+      const isBrowseContext = currentUrl.includes('/browse');
 
+      if (!isBrowseContext) {
+        this.historyService.addToHistory(song);
+      }
+
+      const offlineSong = this.offlineService.getOfflineSong(String(song.id || ''));
       let finalUrl = song.url;
 
       if (offlineSong && offlineSong.audioUrl) {
-        console.log('PlayerService: Reproduciendo desde Caché Offline (Blob)', offlineSong.audioUrl);
         finalUrl = offlineSong.audioUrl;
       } else if (song.url) {
-        // Hotfix: Limpiar y Estanarizar URLs de Dropbox
         if (finalUrl.includes('dropbox.com')) {
-          // Replace dl=0 or dl=1 with raw=1
           finalUrl = finalUrl.replace(/dl=[01]/g, 'raw=1');
           if (!finalUrl.includes('raw=1')) {
-            finalUrl = (finalUrl.includes('?') ? '&' : '?') + 'raw=1';
+            finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'raw=1';
           }
         }
-        console.log('PlayerService: Cargando URL Remota:', finalUrl);
       }
 
       if (finalUrl) {
@@ -170,12 +162,10 @@ export class PlayerService {
       .catch(error => {
         console.error('Error al reproducir:', error);
         this.isPlayingSubject.next(false);
-
-        // Handle corrupt offline files
         if (this.audio.src.startsWith('blob:') && error.name === 'NotSupportedError') {
-          this.toastService.error('Archivo dañado. Elimínelo y descárguelo de nuevo.');
+          this.toastService.error('Archivo dañado. Re-descárgalo.');
         } else {
-          this.toastService.error('Error al reproducir la canción.');
+          this.toastService.error('Error al reproducir.');
         }
       });
   }
@@ -184,6 +174,18 @@ export class PlayerService {
     this.audio.pause();
     this.isPlayingSubject.next(false);
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  }
+
+  resume(): void {
+    this.play();
+  }
+
+  togglePlay(): void {
+    if (this.isPlayingSubject.value) {
+      this.pause();
+    } else {
+      this.resume();
+    }
   }
 
   stop(): void {
@@ -203,24 +205,16 @@ export class PlayerService {
     this.playbackContextSubject.next(context);
   }
 
-  resume(): void {
-    this.play();
-  }
-
   nextTrack(): void {
     const playlist = this.playlistSubject.value;
     const currentSong = this.currentSongSubject.value;
-
     if (playlist.length === 0 || !currentSong) return;
-
     const currentIndex = playlist.findIndex(s => s.id === currentSong.id);
 
     if (this.isShuffleSubject.value) {
       let nextIndex;
-      do {
-        nextIndex = Math.floor(Math.random() * playlist.length);
-      } while (nextIndex === currentIndex && playlist.length > 1);
-
+      do { nextIndex = Math.floor(Math.random() * playlist.length); }
+      while (nextIndex === currentIndex && playlist.length > 1);
       this.playSong(playlist[nextIndex]);
     } else if (currentIndex < playlist.length - 1) {
       this.playSong(playlist[currentIndex + 1]);
@@ -232,9 +226,7 @@ export class PlayerService {
   previousTrack(): void {
     const playlist = this.playlistSubject.value;
     const currentSong = this.currentSongSubject.value;
-
     if (playlist.length === 0 || !currentSong) return;
-
     const currentIndex = playlist.findIndex(s => s.id === currentSong.id);
 
     if (currentIndex > 0) {
@@ -244,8 +236,14 @@ export class PlayerService {
     }
   }
 
+  seek(time: number): void {
+    if (this.audio && !isNaN(time)) {
+      this.audio.currentTime = time;
+    }
+  }
+
   seekTo(percentage: number): void {
-    const duration = this.durationSubject.value;
+    const duration = this.audio.duration;
     if (duration > 0) {
       this.audio.currentTime = (percentage / 100) * duration;
     }
@@ -256,40 +254,37 @@ export class PlayerService {
     this.audio.volume = value / 100;
   }
 
+  toggleMute(): void {
+    const currentlyMuted = this.isMutedSubject.value;
+    if (currentlyMuted) {
+      this.setVolume(this.lastVolume);
+      this.isMutedSubject.next(false);
+    } else {
+      this.lastVolume = this.volumeSubject.value;
+      this.setVolume(0);
+      this.isMutedSubject.next(true);
+    }
+  }
+
   toggleShuffle(): void {
     this.isShuffleSubject.next(!this.isShuffleSubject.value);
   }
 
   toggleRepeat(): void {
     const current = this.repeatModeSubject.value;
-    if (current === 'off') {
-      this.repeatModeSubject.next('all');
-    } else {
-      this.repeatModeSubject.next('off');
-    }
+    this.repeatModeSubject.next(current === 'off' ? 'all' : 'off');
   }
 
   formatTime(seconds: number): string {
     if (isNaN(seconds) || seconds === 0) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  // Getters para valores actuales (sin suscripción)
-  get currentSong(): Song | null {
-    return this.currentSongSubject.value;
-  }
-
-  get isPlaying(): boolean {
-    return this.isPlayingSubject.value;
-  }
-
-  get playbackContext(): string {
-    return this.playbackContextSubject.value;
-  }
-
-  get playlist(): Song[] {
-    return this.playlistSubject.value;
-  }
+  // Getters
+  get currentSong(): Song | null { return this.currentSongSubject.value; }
+  get isPlaying(): boolean { return this.isPlayingSubject.value; }
+  get playbackContext(): string { return this.playbackContextSubject.value; }
+  get playlist(): Song[] { return this.playlistSubject.value; }
 }

@@ -111,9 +111,9 @@
         <div class="mb-24">
             @if (loading()) {
             <!-- Skeleton Loading -->
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 animate-pulse">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 @for (item of [1,2,3,4,5,6,7,8,9,10]; track item) {
-                <div class="aspect-square bg-zinc-800/50 rounded-2xl"></div>
+                <app-skeleton type="card"></app-skeleton>
                 }
             </div>
             } @else if (filteredArtists().length === 0) {

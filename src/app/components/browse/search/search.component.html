@@ -33,18 +33,26 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="isSearching()" class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-t-2 border-b-2 border-pink-500"></div>
+    <div *ngIf="isSearching()" class="space-y-3">
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <app-skeleton type="list-item"></app-skeleton>
+        }
     </div>
 
     <!-- Results Grid -->
     <div *ngIf="!isSearching()" class="grid gap-2 w-full">
         <div *ngFor="let song of searchResults()" (click)="viewLyrics(song)"
             class="flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all group w-full overflow-hidden cursor-pointer">
-            <!-- Cover (No Click Play) -->
+            <!-- Cover With Play Overlay -->
             <div
-                class="w-10 h-10 md:w-14 md:h-14 bg-zinc-800 rounded-md overflow-hidden shadow-sm relative group-hover:shadow-pink-500/20 transition-all flex-shrink-0">
+                class="w-10 h-10 md:w-14 md:h-14 bg-zinc-800 rounded-md overflow-hidden shadow-sm relative group/cover group-hover:shadow-pink-500/20 transition-all flex-shrink-0">
                 <img [src]="song.img" alt="Cover" loading="lazy" class="w-full h-full object-cover">
+                <div (click)="playSong(song); $event.stopPropagation()"
+                    class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/cover:opacity-100 transition-opacity">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </div>
             </div>
 
             <!-- Info -->
@@ -57,6 +65,14 @@
 
             <!-- Actions -->
             <div class="flex items-center flex-shrink-0 gap-2">
+                <!-- 0. Play Button (Explicit) -->
+                <button (click)="playSong(song); $event.stopPropagation()"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-pink-500/10 hover:bg-pink-500 text-pink-500 hover:text-white transition-all flex items-center justify-center group/play"
+                    title="Reproducir">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </button>
                 <!-- 1. View Button (Eye) -->
                 <button (click)="viewLyrics(song); $event.stopPropagation()"
                     class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors flex items-center justify-center relative"
@@ -162,22 +178,15 @@
             <!-- Modal Content -->
             <div class="flex-1 overflow-y-auto p-4 md:p-6">
                 <!-- Loading Skeleton -->
-                <div *ngIf="loadingLyrics()" class="space-y-4 mb-8 animate-pulse px-2">
-                    <div class="space-y-2">
-                        <div class="h-4 bg-zinc-800 rounded w-3/4"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-5/6"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-2/3"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-4/5"></div>
-                    </div>
-                    <div class="space-y-2 pt-4">
-                        <div class="h-4 bg-zinc-800 rounded w-1/2"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-3/4"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-2/3"></div>
-                    </div>
-                    <div class="space-y-2 pt-4">
-                        <div class="h-4 bg-zinc-800 rounded w-5/6"></div>
-                        <div class="h-4 bg-zinc-800 rounded w-4/5"></div>
-                    </div>
+                <div *ngIf="loadingLyrics()" class="space-y-6 py-4">
+                    <app-skeleton type="text" width="100%"></app-skeleton>
+                    <app-skeleton type="text" width="95%"></app-skeleton>
+                    <app-skeleton type="text" width="90%"></app-skeleton>
+                    <app-skeleton type="text" width="100%"></app-skeleton>
+                    <app-skeleton type="text" width="85%"></app-skeleton>
+                    <div class="h-4"></div>
+                    <app-skeleton type="text" width="98%"></app-skeleton>
+                    <app-skeleton type="text" width="92%"></app-skeleton>
                 </div>
 
                 <!-- Content (Success) -->

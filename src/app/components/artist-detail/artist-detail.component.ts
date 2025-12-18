@@ -10,13 +10,14 @@ import { OfflineService } from '../../services/offline.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LastFmService } from '../../services/lastfm.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
 @Component({
   selector: 'app-artist-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, AdsContainerComponent],
+  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent],
   templateUrl: './artist-detail.component.html',
   styleUrl: './artist-detail.component.css'
 })
@@ -202,74 +203,73 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   loadData(id: string) {
     this.loading.set(true);
 
+    const normalize = (str: string) => {
+      if (!str) return '';
+      return str.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    };
+
     // 1. Get Artist Details first
     this.dbService.getArtists().pipe(
       switchMap(artists => {
         const found = artists.find(a => a.id === id);
         if (found) {
-          // Check image and stats logic
+          const searchName = normalize(found.name);
+
+          // Fetch real-time stats (Spotify)
           this.spotifyService.getArtistStats(found.name).then(stats => {
             if (stats) {
-              this.listeners.set(stats.followers.toLocaleString()); // Set Reat Stats
+              this.listeners.set(stats.followers.toLocaleString());
               if ((!found.image || found.image.includes('default')) && stats.image) {
                 found.image = stats.image;
-                this.artist.set(found);
+                this.artist.set({ ...found });
               }
             }
           });
 
-          // Fetch Biography from Last.fm
+          // Fetch Biography (Last.fm)
           this.lastFmService.getArtistInfo(found.name).subscribe(info => {
-            if (info && info.bio && info.bio.content) {
+            if (info?.bio?.content) {
               this.biography.set(info.bio.summary);
             }
           });
 
+          // Fallback image (iTunes)
           if (!found.image || found.image.includes('default')) {
             this.itunesService.getArtistImageBestEffort(found.name).subscribe(img => {
-              if (img && (!found.image || found.image.includes('default'))) {
+              if (img && (!this.artist()?.image || this.artist()?.image?.includes('default'))) {
                 found.image = img;
-                this.artist.set(found);
+                this.artist.set({ ...found });
               }
             });
           }
+
           this.artist.set(found);
-          // Only if artist is found, fetch songs
-          return this.dbService.getSongs();
+          return this.dbService.getSongs().pipe(
+            switchMap(allSongs => {
+              const artistSongs = allSongs.filter(s => {
+                if (!s.artist) return false;
+                const songArtist = normalize(s.artist);
+                // Robust matching: exact, containing, or contained
+                return songArtist === searchName ||
+                  songArtist.includes(searchName) ||
+                  (searchName.length > 2 && searchName.includes(songArtist));
+              });
+              return of(artistSongs);
+            })
+          );
         } else {
           this.artist.set(null);
-          return of([]); // Return empty if artist not found
+          return of([]);
         }
       })
-    ).subscribe(allSongs => {
-      const currentArtist = this.artist();
-
-      if (!currentArtist) {
-        this.songs.set([]);
-        this.loading.set(false);
-        return;
-      }
-
-      const artistName = currentArtist.name.toLowerCase().trim();
-
-      const artistSongs = allSongs.filter(s => {
-        if (!s.artist) return false;
-        const songArtist = s.artist.toLowerCase().trim();
-
-        // Match by Name (Exact or Includes)
-        // Check if song artist is exactly the artist name, or contains it (e.g. "Feid" in "Feid ft...")
-        // OR if artist name contains song artist (but only if song artist is significant length to avoid "The" matching "The Weeknd")
-        const nameMatch = songArtist === artistName ||
-          songArtist.includes(artistName) ||
-          (songArtist.length > 2 && artistName.includes(songArtist));
-
-        return nameMatch;
-      });
-
+    ).subscribe(artistSongs => {
       this.songs.set(artistSongs);
       this.loading.set(false);
 
-      // Background Artwork Fetcher
+      // Fetch metadata/artwork only for songs that need it
       if (artistSongs.length > 0) {
         this.fetchArtworkForSongs(artistSongs);
       }
