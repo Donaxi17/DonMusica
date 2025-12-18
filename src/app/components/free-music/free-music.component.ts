@@ -14,13 +14,15 @@ import { OfflineService } from '../../services/offline.service';
 import { ToastService } from '../../services/toast.service';
 import { ShareService } from '../../services/share.service';
 import { CacheService } from '../../services/cache.service';
-import { AdBannerComponent } from '../shared/ad-banner/ad-banner.component';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { VoiceRecognitionService } from '../../services/voice-recognition.service';
+import { HapticService } from '../../services/haptic.service';
+import { VoiceWaveformComponent } from '../shared/voice-waveform/voice-waveform.component';
 
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, VoiceWaveformComponent],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
@@ -36,6 +38,8 @@ export class FreeMusicComponent implements OnInit {
   private toastService = inject(ToastService);
   private shareService = inject(ShareService);
   private cacheService = inject(CacheService);
+  private voiceService = inject(VoiceRecognitionService);
+  private hapticService = inject(HapticService);
 
   // Géneros modernos
   latinGenres = [
@@ -53,13 +57,12 @@ export class FreeMusicComponent implements OnInit {
   songs = signal<Song[]>([]);
   isLoading = signal(false);
   searchQuery = signal('');
+  isListening = signal(false);
 
   // Descarga redirigida a página global
   isProcessingDownload = signal(false);
 
   // Smartlink configuration
-  // Smartlink configuration
-  // Active Monetag Smartlink
   private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
 
   // Custom Download Notification
@@ -93,6 +96,15 @@ export class FreeMusicComponent implements OnInit {
       this.isPlayerPlaying.set(isPlaying);
     });
 
+    // Voice recognition listener
+    this.voiceService.text$.subscribe(text => {
+      if (text) {
+        this.searchQuery.set(text);
+        this.isListening.set(false);
+        this.searchMusic();
+      }
+    });
+
     // Detectar búsqueda desde URL (para enlaces compartidos)
     this.route.queryParams.subscribe(params => {
       if (params['q']) {
@@ -103,70 +115,52 @@ export class FreeMusicComponent implements OnInit {
   }
 
   isSongActive(song: Song): boolean {
-    // Comparación flexible (string vs number)
     return String(this.playingSongId()) === String(song.id);
   }
 
   loadMusicByGenre(genre: string) {
+    this.hapticService.light();
     this.selectedGenre.set(genre);
-
-    // Clave de caché única para este género
     const cacheKey = `music_genre_${genre}`;
-
-    // 1. Intentar cargar desde caché primero (especialmente si está offline)
     const cachedSongs = this.cacheService.get<Song[]>(cacheKey);
 
     if (cachedSongs && !this.networkService.isOnline()) {
-      // Si está offline y hay caché, usar caché
-      console.log('📦 Usando música en caché (offline)');
       this.songs.set(cachedSongs);
       this.isLoading.set(false);
       this.toastService.info('📦 Mostrando contenido en caché');
       return;
     }
 
-    // 2. Si está online o no hay caché, cargar desde API
     this.isLoading.set(true);
-
-    // Actualizar SEO dinámicamente según el género con keywords potentes
     const genreName = this.latinGenres.find(g => g.id === genre)?.name || 'Música';
     this.seoService.setSeoData(
       `${genreName} Sin Copyright Gratis (Royalty Free) | DonMusica`,
       `Descarga música ${genreName} sin copyright para tus videos de YouTube, Twitch o Instagram. Audio de alta calidad, gratis y seguro para monetizar.`
     );
 
-    // Usar getJamendoByGenre para obtener música por género con mejor variedad
     this.musicApi.getJamendoByGenre(genre, 50).subscribe({
       next: (songs) => {
         this.songs.set(songs);
         this.isLoading.set(false);
-
-        // 3. Guardar en caché (expira en 60 minutos)
         this.cacheService.set(cacheKey, songs, 60);
       },
       error: (err) => {
         console.error('Error cargando música:', err);
-
-        // 4. Si falla la API pero hay caché, usar caché como fallback
         if (cachedSongs) {
-          console.log('⚠️ API falló, usando caché como fallback');
           this.songs.set(cachedSongs);
           this.toastService.warning('Mostrando contenido en caché');
         } else {
           this.songs.set([]);
         }
-
         this.isLoading.set(false);
       }
     });
   }
 
   searchMusic() {
+    this.hapticService.medium();
     if (!this.searchQuery()) return;
-
     this.isLoading.set(true);
-
-    // Actualizar SEO para búsqueda
     this.seoService.setSeoData(
       `Buscar "${this.searchQuery()}" - Música Sin Copyright | DonMusica`,
       `Resultados de búsqueda para "${this.searchQuery()}". Música sin copyright.`
@@ -186,6 +180,7 @@ export class FreeMusicComponent implements OnInit {
   }
 
   openDownloadModal(song: Song) {
+    this.hapticService.light();
     this.router.navigate(['/download'], {
       state: {
         songTitle: song.title,
@@ -202,11 +197,9 @@ export class FreeMusicComponent implements OnInit {
   }
 
   private openSmartlinkIfAllowed(): void {
-    console.log('🔗 Abriendo Smartlink:', this.SMARTLINK_URL);
     window.open(this.SMARTLINK_URL, '_blank');
   }
 
-  // Manejar error de imagen con fallback
   handleImageError(event: Event, songTitle: string) {
     const img = event.target as HTMLImageElement;
     if (img) {
@@ -215,13 +208,10 @@ export class FreeMusicComponent implements OnInit {
   }
 
   playSong(song: Song) {
-    // Si la playlist actual no es la lista de canciones mostrada, actualizarla
-    // para permitir reproducción continua
+    this.hapticService.light();
     const currentPlaylist = this.playerService.playlist;
     const currentSongs = this.songs();
 
-    // Compara si la playlist actual es diferente (por longitud o ID del primer elemento)
-    // Esto es una verificación simple pero efectiva
     if (currentPlaylist.length !== currentSongs.length ||
       (currentPlaylist.length > 0 && currentSongs.length > 0 && currentPlaylist[0].id !== currentSongs[0].id)) {
       this.playerService.setPlaylist(currentSongs);
@@ -231,6 +221,7 @@ export class FreeMusicComponent implements OnInit {
   }
 
   playAll() {
+    this.hapticService.medium();
     if (this.songs().length > 0) {
       this.playerService.setPlaylist(this.songs());
       this.playerService.playSong(this.songs()[0]);
@@ -238,7 +229,7 @@ export class FreeMusicComponent implements OnInit {
   }
 
   downloadSong() {
-    // Ya no se usa descarga directa aquí, se hace en DownloadPageComponent
+    // Ya no se usa descarga directa aquí
   }
 
   // Métodos para descarga offline
@@ -246,8 +237,8 @@ export class FreeMusicComponent implements OnInit {
   isDownloadingOffline = this.offlineService.isDownloading;
 
   async downloadForOffline(song: Song, event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
-
     if (this.isOffline(song.id)) {
       this.toastService.info('Esta canción ya está descargada');
       return;
@@ -269,13 +260,20 @@ export class FreeMusicComponent implements OnInit {
 
   // Método para compartir
   async shareSong(song: Song, event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
+    await this.shareService.shareSong(song, 'free-music');
+  }
 
-    const success = await this.shareService.shareSong(song, 'free-music');
-    if (success) {
-      this.toastService.success('Enlace copiado al portapapeles');
+  toggleVoiceSearch() {
+    this.hapticService.light();
+    if (this.isListening()) {
+      this.voiceService.stop();
+      this.isListening.set(false);
     } else {
-      this.toastService.info('Compartir cancelado');
+      this.searchQuery.set('');
+      this.isListening.set(true);
+      this.voiceService.start();
     }
   }
 }

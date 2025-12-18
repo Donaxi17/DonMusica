@@ -54,7 +54,7 @@ export class LyricsService {
             // Check if already saved
             const exists = lyrics.some(l => l.title === title && l.artist === artist);
             if (exists) {
-                console.log('Letra ya existe:', title, artist);
+                // console.log('Letra ya existe:', title, artist);
                 return true;
             }
 
@@ -68,7 +68,7 @@ export class LyricsService {
 
             lyrics.unshift(newLyric);
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(lyrics));
-            console.log('Letra guardada exitosamente:', title, artist);
+            // console.log('Letra guardada exitosamente:', title, artist);
             return true;
         } catch (error) {
             console.error('Error al guardar letra:', error);

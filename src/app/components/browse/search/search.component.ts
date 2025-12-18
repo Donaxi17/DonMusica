@@ -10,16 +10,19 @@ import { ToastService } from '../../../services/toast.service';
 import { SeoService } from '../../../services/seo.service';
 import { OfflineService } from '../../../services/offline.service';
 import { ShareService } from '../../../services/share.service';
+import { HapticService } from '../../../services/haptic.service';
 import { Song } from '../../../services/playlist.service';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
-
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
-import { OnDestroy } from '@angular/core';
+import { OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { VoiceRecognitionService } from '../../../services/voice-recognition.service';
+import { VoiceWaveformComponent } from '../../shared/voice-waveform/voice-waveform.component';
+import { SvgIconComponent } from '../../shared/svg-icon/svg-icon.component';
 
 @Component({
     selector: 'app-search',
     standalone: true,
-    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent],
+    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent, VoiceWaveformComponent, SvgIconComponent],
     templateUrl: './search.component.html',
     styleUrl: './search.component.css'
 })
@@ -33,9 +36,13 @@ export class SearchComponent implements OnInit, OnDestroy {
     private seoService = inject(SeoService);
     private offlineService = inject(OfflineService);
     private shareService = inject(ShareService);
+    private hapticService = inject(HapticService);
+    private voiceService = inject(VoiceRecognitionService);
+    private cdr = inject(ChangeDetectorRef);
 
     searchQuery = signal('');
     isSearching = signal(false);
+    isListening = false;
     showLyrics = signal(false);
     selectedSongArtist = signal('');
     selectedSongTitle = signal('');
@@ -49,41 +56,57 @@ export class SearchComponent implements OnInit, OnDestroy {
             'Encuentra y guarda las letras de tus canciones favoritas en DonMusica. Buscador musical global for lyrics, canciones, artistas y álbumes. ¡Crea tu colección de letras hoy en donmusica.online!'
         );
 
-        // Detectar búsqueda desde URL (ej. enlaces compartidos)
         this.route.queryParams.subscribe(params => {
             if (params['q']) {
                 this.searchQuery.set(params['q']);
                 this.onSearch();
             }
         });
+
+        this.voiceService.text$.subscribe(text => {
+            if (text) {
+                this.searchQuery.set(text);
+                this.isListening = false;
+                this.onSearch();
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     ngOnDestroy() {
-        // Restore scroll in case modal was open
+        this.voiceService.stop();
         if (typeof document !== 'undefined') {
             document.body.style.overflow = 'auto';
         }
     }
 
+    toggleVoiceSearch() {
+        this.hapticService.light();
+        if (this.isListening) {
+            this.voiceService.stop();
+            this.isListening = false;
+        } else {
+            this.searchQuery.set('');
+            this.isListening = true;
+            this.voiceService.start();
+        }
+    }
+
     onSearch() {
         if (!this.searchQuery()) return;
+        this.hapticService.medium();
         this.isSearching.set(true);
         this.searchResults.set([]);
 
-        // Búsqueda unificada: Mainstream + Jamendo (Sin Copyright)
         forkJoin({
             mainstream: this.musicApi.search(this.searchQuery()),
             free: this.musicApi.searchJamendo(this.searchQuery())
         }).subscribe({
             next: (results) => {
-                // Combinar priorizando mainstream, pero mostrando ambos
                 const combined = [...results.mainstream, ...results.free];
-
-                // Eliminar duplicados si los hubiera
                 const unique = combined.filter((s, i, self) =>
                     i === self.findIndex(t => t.id === s.id || (t.title === s.title && t.artist === s.artist))
                 );
-
                 this.searchResults.set(unique);
                 this.isSearching.set(false);
             },
@@ -95,17 +118,18 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
 
     playSong(song: Song) {
+        this.hapticService.medium();
         this.playerService.playSong(song);
     }
 
     viewLyrics(song: Song) {
+        this.hapticService.light();
         this.selectedSongTitle.set(song.title);
         this.selectedSongArtist.set(song.artist);
         this.selectedSongLyrics.set('');
         this.loadingLyrics.set(true);
         this.showLyrics.set(true);
 
-        // Bloquear scroll del fondo
         if (typeof document !== 'undefined') {
             document.body.style.overflow = 'hidden';
         }
@@ -116,19 +140,18 @@ export class SearchComponent implements OnInit, OnDestroy {
                 if (lyrics && lyrics.length > 50) {
                     this.selectedSongLyrics.set(lyrics);
                 } else {
-                    this.selectedSongLyrics.set(''); // Empty indicates not found
+                    this.selectedSongLyrics.set('');
                 }
             },
             error: () => {
                 this.loadingLyrics.set(false);
-                this.selectedSongLyrics.set(''); // Error also treated as empty/not found for simplicity
+                this.selectedSongLyrics.set('');
             }
         });
     }
 
     closeLyrics() {
         this.showLyrics.set(false);
-        // Restaurar scroll
         if (typeof document !== 'undefined') {
             document.body.style.overflow = 'auto';
         }
@@ -140,10 +163,12 @@ export class SearchComponent implements OnInit, OnDestroy {
         const content = this.selectedSongLyrics();
 
         if (this.lyricsService.isSaved(title, artist)) {
+            this.hapticService.light();
             this.toastService.info('Esta letra ya está guardada');
             return;
         }
 
+        this.hapticService.success();
         this.lyricsService.saveLyric(title, artist, content);
         this.toastService.success('Letra guardada en tu colección');
     }
@@ -158,24 +183,24 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     toggleSaveLyrics(song: Song, event: Event) {
         event.stopPropagation();
-
         if (this.isSongLyricsSaved(song)) {
+            this.hapticService.light();
             this.toastService.info('Esta letra ya está guardada');
             return;
         }
-
-        // Necesitamos obtener las letras primero
+        this.hapticService.light();
         this.musicApi.getLyrics(song.artist, song.title).subscribe(lyrics => {
             if (lyrics && lyrics.length > 50) {
+                this.hapticService.success();
                 this.lyricsService.saveLyric(song.title, song.artist, lyrics);
                 this.toastService.success('Letra guardada en tu colección');
             } else {
+                this.hapticService.error();
                 this.toastService.error('No se pudo obtener la letra para guardar');
             }
         });
     }
 
-    // Métodos para descarga offline
     downloadProgress = this.offlineService.downloadProgress;
     isDownloadingOffline = this.offlineService.isDownloading;
 
@@ -197,12 +222,10 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     async downloadForOffline(song: Song, event: Event) {
         event.stopPropagation();
-
         if (this.isOffline(song.id)) {
             this.toastService.info('Esta canción ya está descargada');
             return;
         }
-
         if (!song.url) {
             this.toastService.info('Buscando fuente offline...');
             this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
@@ -214,7 +237,6 @@ export class SearchComponent implements OnInit, OnDestroy {
             });
             return;
         }
-
         this.navigateToDownload(song, song.url, 'offline');
     }
 
@@ -235,28 +257,17 @@ export class SearchComponent implements OnInit, OnDestroy {
         return this.offlineService.isOffline(String(songId));
     }
 
-    // Métodos para compartir
     async shareSong(song: Song, event: Event) {
+        this.hapticService.medium();
         event.stopPropagation();
-
-        const success = await this.shareService.shareSong(song);
-        if (success) {
-            this.toastService.success('Enlace copiado al portapapeles');
-        } else {
-            this.toastService.info('Compartir cancelado');
-        }
+        await this.shareService.shareSong(song);
     }
 
     async shareLyrics() {
+        this.hapticService.medium();
         const title = this.selectedSongTitle();
         const artist = this.selectedSongArtist();
         const lyrics = this.selectedSongLyrics();
-
-        const success = await this.shareService.shareLyrics(title, artist, lyrics);
-        if (success) {
-            this.toastService.success('Letra compartida');
-        } else {
-            this.toastService.info('Compartir cancelado');
-        }
+        await this.shareService.shareLyrics(title, artist, lyrics);
     }
 }

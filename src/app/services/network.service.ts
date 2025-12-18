@@ -49,10 +49,10 @@ export class NetworkService {
             this.isOnline.set(status);
 
             if (status) {
-                console.log('🌐 Connection restored');
+                // console.log('🌐 Connection restored');
                 this.toastService.success('✅ Conexión restaurada');
             } else {
-                console.log('📡 Connection lost');
+                // console.log('📡 Connection lost');
                 this.toastService.warning('⚠️ Sin conexión a internet');
             }
         }

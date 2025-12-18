@@ -4,9 +4,8 @@
         <div
             class="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-purple-900/40 to-black z-10 animate-gradient">
         </div>
-        <img [ngSrc]="'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070'"
-            alt="Fondo de artistas musicales" fill priority
-            class="absolute inset-0 w-full h-full object-cover bg-center opacity-30">
+        <img [src]="'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070'"
+            alt="Fondo de artistas musicales" class="absolute inset-0 w-full h-full object-cover bg-center opacity-30">
 
         <div class="absolute inset-0 flex flex-col justify-center text-center px-4 md:px-12 z-20 max-w-7xl mx-auto">
             <h1 class="text-4xl md:text-7xl font-black text-white mb-3 md:mb-4 tracking-tight">
@@ -57,11 +56,12 @@
                 </button>
             </div>
 
-            <!-- Listening Indicator -->
-            <div *ngIf="isListening"
-                class="absolute -bottom-6 left-0 right-0 text-center flex items-center justify-center gap-2 text-red-400 text-sm font-bold animate-pulse z-20">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                Escuchando...
+            <!-- Waveform Indicator -->
+            <div *ngIf="isListening" class="mt-4 animate-fade-in relative z-20">
+                <app-voice-waveform></app-voice-waveform>
+                <p
+                    class="text-center text-red-500 text-xs md:text-sm font-bold animate-pulse mt-1 tracking-widest uppercase">
+                    Escuchando voz...</p>
             </div>
         </div>
 
@@ -129,13 +129,42 @@
             } @else {
             <!-- Grid Real -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                <!-- Smart Shuffle Card -->
+                <div (click)="toggleSmartShuffle()"
+                    class="group relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-500 to-green-700 cursor-pointer shadow-xl border border-white/10 hover:shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-1">
+
+                    <div
+                        class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20">
+                    </div>
+
+                    <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                        <div
+                            class="w-16 h-16 mb-4 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-inner">
+                            <app-svg-icon name="shuffle" width="32" height="32" class="text-white"></app-svg-icon>
+                        </div>
+                        <h3 class="text-white font-black text-xl md:text-2xl tracking-tighter uppercase italic">
+                            Aleatorio
+                        </h3>
+                        <p class="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">
+                            Mezcla inteligente
+                        </p>
+                    </div>
+
+                    <!-- Glowing Border Effect -->
+                    <div
+                        class="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 rounded-3xl transition-colors">
+                    </div>
+
+                </div>
+
                 @for (artist of filteredArtists(); track artist.id) {
                 <a [routerLink]="['/artist', artist.id]"
                     class="group relative aspect-square rounded-3xl overflow-hidden bg-zinc-900 cursor-pointer shadow-xl border border-white/5 hover:border-emerald-500/50 transition-all duration-300 transform hover:-translate-y-1">
 
                     <!-- Image Optimized -->
-                    <img [ngSrc]="artist.image || '/assets/img/default-artist.jpg'" [alt]="artist.name"
-                        (error)="artist.image = '/assets/img/default-artist.jpg'" width="300" height="300"
+                    <img [src]="artist.image || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
+                        [alt]="artist.name"
+                        (error)="artist.image = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
 
                     <!-- Gradient Overlay -->
@@ -176,3 +205,7 @@
         <app-ads-container [index]="2"></app-ads-container>
     </div>
 </div>
+
+<app-smart-shuffle *ngIf="showSmartShuffle()" [artists]="filteredArtists()" [genreName]="getGenreName(selectedGenre())"
+    (close)="toggleSmartShuffle()">
+</app-smart-shuffle>

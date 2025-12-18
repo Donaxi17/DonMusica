@@ -11,14 +11,12 @@ export class ShareService {
      * Comparte una canción usando la Web Share API (si está disponible)
      * o copia el enlace al portapapeles como fallback
      */
-    async shareSong(song: Song, source: 'default' | 'free-music' = 'default'): Promise<boolean> {
+    async shareSong(song: Song, source: 'default' | 'free-music' = 'default'): Promise<void> {
         let deepLink = '';
 
         if (source === 'free-music') {
-            // Enlace directo al componente de música sin copyright
             deepLink = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
         } else {
-            // Enlace al buscador global
             deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
         }
 
@@ -28,28 +26,24 @@ export class ShareService {
             url: deepLink
         };
 
-        // Verificar si Web Share API está disponible
-        if (navigator.share && this.isMobile()) {
+        if (navigator.share) {
             try {
                 await navigator.share(shareData);
-                return true;
             } catch (error: any) {
-                // Usuario canceló o error
                 if (error.name !== 'AbortError') {
                     console.error('Error sharing:', error);
+                    this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
                 }
-                return false;
             }
         } else {
-            // Fallback: copiar al portapapeles
-            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
+            this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
     /**
      * Comparte letras de una canción
      */
-    async shareLyrics(title: string, artist: string, lyrics: string): Promise<boolean> {
+    async shareLyrics(title: string, artist: string, lyrics: string): Promise<void> {
         const preview = lyrics.length > 150 ? lyrics.substring(0, 150) + '...' : lyrics;
         const deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(title + ' ' + artist)}`;
 
@@ -59,43 +53,41 @@ export class ShareService {
             url: deepLink
         };
 
-        if (navigator.share && this.isMobile()) {
+        if (navigator.share) {
             try {
                 await navigator.share(shareData);
-                return true;
             } catch (error: any) {
                 if (error.name !== 'AbortError') {
                     console.error('Error sharing lyrics:', error);
+                    this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
                 }
-                return false;
             }
         } else {
-            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
+            this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
     /**
      * Comparte una playlist
      */
-    async sharePlaylist(playlistName: string, songCount: number): Promise<boolean> {
+    async sharePlaylist(playlistName: string, songCount: number): Promise<void> {
         const shareData = {
             title: `Playlist: ${playlistName}`,
             text: `🎵 He creado la playlist "${playlistName}" con ${songCount} canciones en DonMusica.\n\n¡Escúchala gratis!`,
             url: `${this.BASE_URL}/playlists`
         };
 
-        if (navigator.share && this.isMobile()) {
+        if (navigator.share) {
             try {
                 await navigator.share(shareData);
-                return true;
             } catch (error: any) {
                 if (error.name !== 'AbortError') {
                     console.error('Error sharing playlist:', error);
+                    this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
                 }
-                return false;
             }
         } else {
-            return this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
+            this.copyToClipboard(`${shareData.text}\n${shareData.url}`);
         }
     }
 
@@ -125,12 +117,6 @@ export class ShareService {
         }
     }
 
-    /**
-     * Detecta si es un dispositivo móvil
-     */
-    private isMobile(): boolean {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
 
     /**
      * Comparte en redes sociales específicas

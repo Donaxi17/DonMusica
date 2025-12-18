@@ -43,7 +43,7 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
         this.musicApi.getNewReleases('CO', 29).subscribe({
             next: (data) => {
                 this.allReleases = data;
-                console.log(`[API START] Loaded ${data.length} songs. Target PC: 29, Mobile: 28.`);
+                // console.log(`[API START] Loaded ${data.length} songs. Target PC: 29, Mobile: 28.`);
                 this.updateVisibleItems(); // Calculate initial view immediately
                 this.loading.set(false);
             },
@@ -91,7 +91,7 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
             }
         }
 
-        console.log(`[Resize Live] Width: ${width}px. Available: ${this.allReleases.length}. Limit calculated: ${limit}.`);
+        // console.log(`[Resize Live] Width: ${width}px. Available: ${this.allReleases.length}. Limit calculated: ${limit}.`);
 
         if (this.allReleases.length > 0) {
             this.releases.set(this.allReleases.slice(0, limit));

@@ -32,6 +32,7 @@ body {
     margin: 0;
     box-sizing: border-box;
     font-family: "Ubuntu", sans-serif;
+    overscroll-behavior-y: contain;
 }
 
 /* Focus visible for accessibility - Modern glow */
@@ -60,6 +61,15 @@ body {
         border-width: 0;
     }
 
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+
     .animate-pulse-slow {
         animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -74,5 +84,86 @@ body {
         50% {
             opacity: .6;
         }
+    }
+
+    /* Skeleton Loading System */
+    .skeleton-base {
+        background-color: rgba(39, 39, 42, 0.5);
+        /* bg-zinc-800/50 fallback */
+        overflow: hidden;
+        position: relative;
+    }
+
+    .skeleton-shimmer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                transparent);
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .skeleton-circle {
+        border-radius: 9999px;
+    }
+
+    .skeleton-rect {
+        border-radius: 1rem;
+    }
+
+    .skeleton-text {
+        border-radius: 0.375rem;
+        height: 1rem;
+        width: 100%;
+    }
+}
+
+/* View Transitions API Animations */
+::view-transition-group(root) {
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+    animation: fade-out 0.3s forwards;
+}
+
+::view-transition-new(root) {
+    animation: fade-in 0.5s forwards;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 }

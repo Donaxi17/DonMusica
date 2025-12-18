@@ -8,6 +8,8 @@ import { FooterComponent } from '../shared/footer/footer.component';
 import { RecentlyPlayedComponent } from '../shared/recently-played/recently-played.component';
 import { RedesSocialesComponent } from '../redes-sociales/redes-sociales.component';
 import { VideoPlayerComponent } from '../shared/video-player/video-player.component';
+import { SettingsService } from '../../services/settings.service';
+import { HapticService } from '../../services/haptic.service';
 
 @Component({
   selector: 'app-layout',
@@ -45,6 +47,8 @@ export class LayoutComponent implements OnInit {
   private playlistService = inject(PlaylistService);
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  public settingsService = inject(SettingsService);
+  private hapticService = inject(HapticService);
 
   constructor() {
     this.router.events.pipe(
@@ -119,6 +123,7 @@ export class LayoutComponent implements OnInit {
   // --- Navigation & UI ---
 
   navigateTo(route: string) {
+    this.hapticService.light();
     this.router.navigate([route]);
     this.isMenuOpen = false;
     this.showMobileMoreMenu = false;
@@ -149,6 +154,7 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleHistory() {
+    this.hapticService.medium();
     this.showHistory = !this.showHistory;
     this.cdr.markForCheck();
   }
@@ -160,6 +166,7 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleMobileMoreMenu(event?: Event) {
+    this.hapticService.light();
     if (event) event.stopPropagation();
     this.showMobileMoreMenu = !this.showMobileMoreMenu;
     this.cdr.markForCheck();
@@ -171,6 +178,7 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleMoreMenu(event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
     this.showMoreMenu = !this.showMoreMenu;
     this.showLanguageMenu = false;
@@ -183,6 +191,7 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleLanguageMenu(event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
     this.showLanguageMenu = !this.showLanguageMenu;
     this.showMoreMenu = false;
@@ -195,8 +204,14 @@ export class LayoutComponent implements OnInit {
   }
 
   changeLanguage(lang: string) {
+    this.hapticService.medium();
     this.currentLanguage = lang;
     this.cdr.markForCheck();
+  }
+
+  toggleDataSaver() {
+    this.hapticService.medium();
+    this.settingsService.toggleDataSaver();
   }
 
   @HostListener('window:scroll')
@@ -237,18 +252,33 @@ export class LayoutComponent implements OnInit {
   }
 
   nextTrack() {
+    this.hapticService.medium();
     this.playerService.nextTrack();
   }
 
   openPlayer() {
-    this.router.navigate(['/player']);
+    this.hapticService.light();
+    if (this.playerService.playbackContext?.startsWith('smart-shuffle')) {
+      this.router.navigate(['/smart-shuffle']);
+    } else {
+      this.router.navigate(['/player']);
+    }
   }
 
   closePlayer() {
+    this.hapticService.light();
     this.playerService.stop();
   }
 
   onImageError(event: any) {
+    if (this.currentSong && !this.imageLoadError) {
+      const artistImg = this.playerService.getArtistImageForSong(this.currentSong);
+      if (artistImg && event.target.src !== artistImg) {
+        event.target.src = artistImg;
+        this.currentSong = { ...this.currentSong, img: artistImg };
+        return;
+      }
+    }
     this.imageLoadError = true;
     this.cdr.markForCheck();
   }
@@ -267,6 +297,7 @@ export class LayoutComponent implements OnInit {
   // --- Progress Bar Dragging ---
 
   startDrag(event: MouseEvent | TouchEvent) {
+    this.hapticService.light();
     this.handleDrag(event);
 
     if (isPlatformBrowser(this.platformId)) {

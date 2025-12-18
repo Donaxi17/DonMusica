@@ -102,7 +102,7 @@ export class VideoPlayerService {
 
         for (const instance of fastInstances) {
             try {
-                console.log(`🔍 Trying Piped: ${instance.split('//')[1]}`);
+                // console.log(`🔍 Trying Piped: ${instance.split('//')[1]}`);
 
                 // Race between fetch and timeout (3 seconds max per instance)
                 const response: any = await Promise.race([
@@ -119,7 +119,7 @@ export class VideoPlayerService {
                 if (response && response.videoStreams && response.videoStreams.length > 0) {
                     // Get the best quality stream
                     const stream = response.videoStreams[0];
-                    console.log(`✅ Piped OK: ${stream.quality}`);
+                    // console.log(`✅ Piped OK: ${stream.quality}`);
                     return stream.url;
                 }
             } catch (error: any) {
@@ -129,7 +129,7 @@ export class VideoPlayerService {
             }
         }
 
-        console.log('⚠️ Piped unavailable, using YouTube iframe');
+        // console.log('⚠️ Piped unavailable, using YouTube iframe');
         return null;
     }
 

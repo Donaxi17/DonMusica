@@ -50,11 +50,11 @@ export class ItunesService {
                     // Truco: Reemplazar '100x100' por '600x600' para HD
                     return artwork.replace('100x100bb', '600x600bb');
                 }
-                return '/assets/img/default-artist.jpg'; // Fallback
+                return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Fallback
             }),
             catchError(err => {
                 console.warn(`Error fetching image for ${artistName}`, err);
-                return of('/assets/img/default-artist.jpg');
+                return of('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
             })
         );
     }

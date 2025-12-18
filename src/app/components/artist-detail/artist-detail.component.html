@@ -5,10 +5,10 @@
         <!-- Background Layer (Visible but Soft) -->
         <div class="absolute inset-0 z-0">
             @if (loading()) {
-            <app-skeleton type="rectangle" width="100%" height="100%"></app-skeleton>
+            <app-skeleton type="hero"></app-skeleton>
             } @else if (artist()) {
-            <img [ngSrc]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Fondo artista'"
-                fill class="w-full h-full object-cover blur-md scale-150">
+            <img [src]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Fondo artista'"
+                class="w-full h-full object-cover blur-md scale-150">
             <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"></div>
             }
         </div>
@@ -19,10 +19,10 @@
             <!-- Circular Artist Profile -->
             <div class="relative mb-6">
                 @if (loading()) {
-                <app-skeleton type="circle" size="160px"></app-skeleton>
+                <app-skeleton type="circle" size="160px" class="md:hidden"></app-skeleton>
+                <app-skeleton type="circle" size="192px" class="hidden md:block"></app-skeleton>
                 } @else if (artist()) {
-                <img [ngSrc]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Perfil'"
-                    width="192" height="192" priority
+                <img [src]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Perfil'"
                     class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-zinc-900 shadow-2xl">
                 }
             </div>
@@ -46,7 +46,10 @@
             <!-- Stats & Genre (Organized) -->
             <div class="flex flex-col items-center gap-3 w-full">
                 @if (loading()) {
-                <app-skeleton type="rectangle" width="200px" height="40px" class="rounded-2xl"></app-skeleton>
+                <div class="space-y-3 flex flex-col items-center">
+                    <app-skeleton type="text" width="280px" class="h-10 md:h-14"></app-skeleton>
+                    <app-skeleton type="text" width="180px"></app-skeleton>
+                </div>
                 } @else if (artist()) {
                 <!-- Monthly Listeners Pill (Smaller) -->
                 <div
@@ -107,9 +110,9 @@
 
                 <!-- Title and Actions: Column on mobile, Row on desktop -->
                 <div
-                    class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 md:gap-4 mb-3 w-full">
+                    class="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-6 mb-4 w-full">
                     <h2
-                        class="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-lg leading-tight md:max-w-[70%]">
+                        class="text-2xl md:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-lg leading-tight md:max-w-[75%] text-center md:text-left break-words">
                         {{currentlyPlayingSong()?.title}}
                     </h2>
 
@@ -131,6 +134,15 @@
                                 <path
                                     d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
                             </svg>
+                        </button>
+
+                        <!-- Share Button -->
+                        <button (click)="$event.stopPropagation(); shareSong()"
+                            class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all group/share"
+                            title="Compartir">
+                            <app-svg-icon name="share"
+                                class="text-zinc-400 group-hover/share:text-emerald-400 transition-colors" width="20"
+                                height="20"></app-svg-icon>
                         </button>
 
                         <!-- Normal Download -->
@@ -168,7 +180,7 @@
                         </button>
                     </div>
                 </div>
-                <p class="text-zinc-400 text-lg md:text-xl font-medium mb-5 truncate px-2 md:px-0">
+                <p class="text-zinc-400 text-lg md:text-xl font-medium mb-5 px-2 md:px-0 text-center md:text-left">
                     {{currentlyPlayingSong()?.artist}}
                 </p>
 
@@ -209,7 +221,7 @@
                             d="M17 17h-1.559l-9.7-10.673A1 1 0 0 0 5.001 6H2v2h2.559l4.09 4.5-4.09 4.501H2v2h3.001a1 1 0 0 0 .74-.327L10 13.987l4.259 4.686a1 1 0 0 0 .74.327H17v3l5-4-5-4v3z" />
                     </svg>
                 </button>
-                <button (click)="toggleRepeat()"
+                <button (click)="toggleRepeat($event)"
                     [class.text-red-400]="repeatMode !== 'off' && isFavorite(currentlyPlayingSong()?.id || '')"
                     [class.text-emerald-400]="repeatMode !== 'off' && !isFavorite(currentlyPlayingSong()?.id || '')"
                     [class.text-zinc-400]="repeatMode === 'off'"
@@ -353,8 +365,8 @@
 
             @if (loading()) {
             <!-- Skeletons -->
-            <div class="flex flex-col gap-2">
-                @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="flex flex-col gap-3">
+                @for (i of [1,2,3,4,5,6,7,8]; track i) {
                 <app-skeleton type="list-item"></app-skeleton>
                 }
             </div>
@@ -413,8 +425,8 @@
 
                     <!-- Image -->
                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 relative">
-                        <img [ngSrc]="song.img || artist()?.image || '/assets/icons/icon-512x512.png'" width="40"
-                            height="40" class="w-full h-full object-cover"
+                        <img [src]="song.img || artist()?.image || '/assets/icons/icon-512x512.png'"
+                            class="w-full h-full object-cover"
                             (error)="$any($event.target).src = '/assets/icons/icon-512x512.png'">
                         <!-- Offline Indicator -->
                         <div *ngIf="isOffline(song.id || '')"

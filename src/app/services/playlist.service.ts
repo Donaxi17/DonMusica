@@ -3,7 +3,7 @@ import { ToastService } from './toast.service';
 
 export interface Song {
   id: number | string; // Permitir string para IDs de API
-  artistId: number | string;
+  artistId?: number | string;
   img: string;
   title: string;
   artist: string;

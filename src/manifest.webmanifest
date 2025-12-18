@@ -68,5 +68,31 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Favoritos",
+      "short_name": "Favoritos",
+      "description": "Ver mis canciones favoritas",
+      "url": "/playlists",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Explorar",
+      "short_name": "Explorar",
+      "description": "Descubrir nueva música",
+      "url": "/browse",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

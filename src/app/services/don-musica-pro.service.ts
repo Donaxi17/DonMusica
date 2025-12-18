@@ -66,7 +66,7 @@ export class DonMusicaProService {
 
   private persist() {
     localStorage.setItem(this.STORAGE_KEY, String(this.isPro()));
-    console.log('[ProService] Status changed:', this.isPro() ? 'PRO' : 'FREE');
+    // console.log('[ProService] Status changed:', this.isPro() ? 'PRO' : 'FREE');
   }
 
   // Helpers to check specific limits

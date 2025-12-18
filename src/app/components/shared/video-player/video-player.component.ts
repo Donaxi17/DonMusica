@@ -100,7 +100,7 @@ export class VideoPlayerComponent {
 
       // Only log every 30 seconds to reduce console noise
       if (seconds % 30 === 0 || seconds < 10) {
-        console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
+        // console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
       }
     }
 
@@ -111,15 +111,15 @@ export class VideoPlayerComponent {
       this.hasShownWarning = true;
       const nextVideo = this.videos()[this.currentVideoIndex() + 1];
       if (nextVideo) {
-        console.log(`⏰ Próximo video en 10 segundos: "${nextVideo.title}" - ${nextVideo.artist}`);
+        // console.log(`⏰ Próximo video en 10 segundos: "${nextVideo.title}" - ${nextVideo.artist}`);
       } else {
-        console.log(`⏰ Último video de la lista, avanzará en 10 segundos`);
+        // console.log(`⏰ Último video de la lista, avanzará en 10 segundos`);
       }
     }
 
     // Auto-advance after 4 minutes of ACTUAL playing time
     if (this.actualPlayingTime > 240000 && !this.hasAutoAdvanced) {
-      console.log(`⏭️ Video timeout (4m 0s), advancing to next...`);
+      // console.log(`⏭️ Video timeout (4m 0s), advancing to next...`);
       this.handleVideoEnd();
     }
   }
@@ -171,7 +171,7 @@ export class VideoPlayerComponent {
 
         // State 0 = Video ended
         if (state === 0) {
-          console.log('✅ Video ended, advancing to next...');
+          // console.log('✅ Video ended, advancing to next...');
           this.isCurrentlyPlaying = false;
           this.handleVideoEnd();
         }
@@ -204,7 +204,7 @@ export class VideoPlayerComponent {
           this.playerState = state;
 
           if (state === 0) {
-            console.log('✅ Video ended, advancing to next...');
+            // console.log('✅ Video ended, advancing to next...');
             this.isCurrentlyPlaying = false;
             this.handleVideoEnd();
           } else if (state === 1) {

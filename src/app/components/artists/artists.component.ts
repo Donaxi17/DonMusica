@@ -1,5 +1,5 @@
 ﻿import { Component, inject, signal, OnInit, ChangeDetectorRef, computed } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
@@ -13,13 +13,16 @@ import { combineLatest } from 'rxjs';
 import { ItunesService } from '../../services/itunes.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { HapticService } from '../../services/haptic.service';
 
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
+import { SmartShuffleComponent } from '../shared/smart-shuffle/smart-shuffle.component';
+import { VoiceWaveformComponent } from '../shared/voice-waveform/voice-waveform.component';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, NgOptimizedImage],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, SmartShuffleComponent, VoiceWaveformComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })
@@ -31,6 +34,7 @@ export class ArtistsComponent implements OnInit {
   private dbService = inject(DatabaseService);
   private itunesService = inject(ItunesService);
   private spotifyService = inject(SpotifyService);
+  private hapticService = inject(HapticService);
 
   searchQuery = signal<string>('');
   isListening = false;
@@ -39,6 +43,7 @@ export class ArtistsComponent implements OnInit {
   // Artists Data
   artists = signal<Artist[]>([]);
   loading = signal<boolean>(true);
+  showSmartShuffle = signal<boolean>(false);
 
   genres = [
     { id: 'all', name: 'Todos', icon: 'grid', color: 'emerald' },
@@ -90,6 +95,7 @@ export class ArtistsComponent implements OnInit {
   }
 
   toggleVoiceSearch() {
+    this.hapticService.light();
     if (this.isListening) {
       this.voiceService.stop();
       this.isListening = false;
@@ -101,6 +107,7 @@ export class ArtistsComponent implements OnInit {
   }
 
   onGenreChange(genreId: string, event?: Event): void {
+    this.hapticService.light();
     this.selectedGenre.set(genreId);
 
     if (event) {
@@ -109,6 +116,15 @@ export class ArtistsComponent implements OnInit {
         target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
     }
+  }
+
+  toggleSmartShuffle() {
+    this.hapticService.medium();
+    this.showSmartShuffle.update(v => !v);
+  }
+
+  getGenreName(id: string): string {
+    return this.genres.find(g => g.id === id)?.name || 'Todos';
   }
 
   loadArtists() {

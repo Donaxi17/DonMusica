@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { DatabaseService, Artist, Song } from '../../services/database.service';
 import { PlayerService } from '../../services/player.service';
@@ -10,15 +10,17 @@ import { OfflineService } from '../../services/offline.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LastFmService } from '../../services/lastfm.service';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
+import { ShareService } from '../../services/share.service';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { MusicApiService } from '../../services/music-api.service';
+import { HapticService } from '../../services/haptic.service';
 
 @Component({
   selector: 'app-artist-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent, NgOptimizedImage],
+  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent],
   templateUrl: './artist-detail.component.html',
   styleUrl: './artist-detail.component.css'
 })
@@ -34,6 +36,8 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private spotifyService = inject(SpotifyService);
   private lastFmService = inject(LastFmService);
   private musicApi = inject(MusicApiService);
+  private shareService = inject(ShareService);
+  private hapticService = inject(HapticService);
 
 
   artistId = signal<string>('');
@@ -330,6 +334,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   playSong(song: Song, index: number) {
+    this.hapticService.medium();
     if (!song.url) {
       this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
       return;
@@ -365,7 +370,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
         this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
         return;
       }
-      console.log('PlayAll: Reproduciendo primera canción:', firstSong.title, firstSong.url);
+      // console.log('PlayAll: Reproduciendo primera canción:', firstSong.title, firstSong.url);
       this.playSong(firstSong, 0);
     } else {
       console.warn('PlayAll: No hay canciones disponibles');
@@ -378,6 +383,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   toggleSongMenu(songId: string, event: Event) {
+    this.hapticService.light();
     event.stopPropagation(); // Evitar reproducir al abrir menú
     if (this.activeSongMenu() === songId) {
       this.activeSongMenu.set(null);
@@ -410,18 +416,11 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   shareSong(song?: Song) {
-    const title = song ? song.title : this.artist()?.name;
-    const text = `Escucha ${title} en DonMusic!`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'DonMusic',
-        text: text,
-        url: window.location.href
-      });
+    const target = song || this.currentlyPlayingSong() as any;
+    if (target) {
+      this.shareService.shareSong(target as any);
     } else {
-      this.toastService.info('Enlace copiado al portapapeles');
-      navigator.clipboard.writeText(window.location.href);
+      this.toastService.warning('No hay canción para compartir');
     }
 
     this.showMenu.set(false);
@@ -490,6 +489,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   toggleFavorite(song: Song, event: Event): void {
+    this.hapticService.medium();
     event.stopPropagation();
 
     if (!song.id) return;
@@ -516,6 +516,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   // --- Player Controls (matching PlayerComponent) ---
 
   togglePlayPause(): void {
+    this.hapticService.light();
     if (this.isPlaying) {
       this.playerService.pause();
     } else {
@@ -533,10 +534,12 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   previousTrack(): void {
+    this.hapticService.medium();
     this.playerService.previousTrack();
   }
 
   nextTrack(): void {
+    this.hapticService.medium();
     this.playerService.nextTrack();
   }
 
@@ -545,10 +548,16 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   toggleShuffle(): void {
+    this.hapticService.light();
     this.playerService.toggleShuffle();
   }
 
-  toggleRepeat(): void {
+  toggleRepeat(event?: Event): void {
+    this.hapticService.light();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.playerService.toggleRepeat();
   }
 
@@ -588,6 +597,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   // --- Seek Bar Logic ---
 
   startDrag(event: MouseEvent | TouchEvent) {
+    this.hapticService.light();
     this.isDragging = true;
     this.drag(event);
     document.addEventListener('mousemove', this.boundDrag);

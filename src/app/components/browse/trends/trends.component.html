@@ -71,7 +71,7 @@
                     <!-- Image -->
                     <div
                         class="relative w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-800 shadow-lg">
-                        <img [ngSrc]="song.img" [alt]="song.title" (error)="onImageError($event)" width="64" height="64"
+                        <img [src]="song.img" [alt]="song.title" (error)="onImageError($event)"
                             class="w-full h-full object-cover">
                     </div>
 

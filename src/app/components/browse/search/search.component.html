@@ -23,13 +23,27 @@
                 </svg>
             </div>
             <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                class="block w-full pl-9 md:pl-10 pr-3 py-3 md:py-3 border border-zinc-700 rounded-full leading-5 bg-zinc-900 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:bg-black focus:border-pink-500 focus:ring-1 focus:ring-pink-500 text-base transition-all shadow-lg"
+                class="block w-full pl-9 md:pl-10 pr-12 py-3 md:py-3 border border-zinc-700 rounded-full leading-5 bg-zinc-900 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:bg-black focus:border-pink-500 focus:ring-1 focus:ring-pink-500 text-base transition-all shadow-lg"
                 placeholder="¿Qué quieres leer?">
-            <button *ngIf="searchQuery()" (click)="onSearch()"
-                class="absolute inset-y-1 right-1 px-4 bg-pink-600 hover:bg-pink-500 text-white rounded-full text-sm font-bold transition-colors">
-                Buscar
+
+            <!-- Voice Button -->
+            <button (click)="toggleVoiceSearch()"
+                class="absolute inset-y-1.5 right-1.5 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-90 shadow-lg shrink-0"
+                [ngClass]="{
+                    'bg-red-500 text-white shadow-red-500/50 animate-pulse': isListening,
+                    'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700': !isListening
+                }">
+                <app-svg-icon name="microphone" width="20" height="20"></app-svg-icon>
             </button>
         </div>
+    </div>
+
+    <!-- Waveform Indicator -->
+    <div *ngIf="isListening"
+        class="mb-4 animate-fade-in text-center p-4 bg-zinc-900/50 rounded-2xl border border-white/5">
+        <app-voice-waveform></app-voice-waveform>
+        <p class="text-red-500 text-xs md:text-sm font-bold animate-pulse mt-1 tracking-widest uppercase">Escuchando
+            voz...</p>
     </div>
 
     <!-- Loading State -->

@@ -31,7 +31,7 @@ export class CacheService {
                 JSON.stringify(cacheItem)
             );
 
-            console.log(`💾 Cached: ${key} (expires in ${expiresInMinutes}min)`);
+            // console.log(`💾 Cached: ${key} (expires in ${expiresInMinutes}min)`);
         } catch (error) {
             console.error('Error saving to cache:', error);
         }
@@ -56,12 +56,12 @@ export class CacheService {
 
             // Verificar si ha expirado
             if (age > cacheItem.expiresIn) {
-                console.log(`🗑️ Cache expired: ${key}`);
+                // console.log(`🗑️ Cache expired: ${key}`);
                 this.remove(key);
                 return null;
             }
 
-            console.log(`✅ Cache hit: ${key} (age: ${Math.round(age / 1000)}s)`);
+            // console.log(`✅ Cache hit: ${key} (age: ${Math.round(age / 1000)}s)`);
             return cacheItem.data;
         } catch (error) {
             console.error('Error reading from cache:', error);
@@ -86,7 +86,7 @@ export class CacheService {
                 localStorage.removeItem(key);
             }
         });
-        console.log('🧹 Cache cleared');
+        // console.log('🧹 Cache cleared');
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 declare var webkitSpeechRecognition: any;
@@ -12,6 +12,13 @@ export class VoiceRecognitionService {
     isListening = false;
     text$ = new Subject<string>();
     isSupported = true;
+    volume = signal<number>(0);
+
+    private audioContext: AudioContext | null = null;
+    private analyser: AnalyserNode | null = null;
+    private microphone: MediaStreamAudioSourceNode | null = null;
+    private javascriptNode: ScriptProcessorNode | null = null;
+    private stream: MediaStream | null = null;
 
     constructor() {
         if (typeof window !== 'undefined') {
@@ -47,12 +54,63 @@ export class VoiceRecognitionService {
     start() {
         if (!this.isSupported || !this.recognition) return;
         this.isListening = true;
-        try { this.recognition.start(); } catch (e) { }
+        try {
+            this.recognition.start();
+            this.startVolumeTracking();
+        } catch (e) { }
+    }
+
+    private async startVolumeTracking() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.audioContext = new AudioContext();
+            this.analyser = this.audioContext.createAnalyser();
+            this.microphone = this.audioContext.createMediaStreamSource(this.stream);
+            this.javascriptNode = this.audioContext.createScriptProcessor(2048, 1, 1);
+
+            this.analyser.smoothingTimeConstant = 0.8;
+            this.analyser.fftSize = 1024;
+
+            this.microphone.connect(this.analyser);
+            this.analyser.connect(this.javascriptNode);
+            this.javascriptNode.connect(this.audioContext.destination);
+
+            this.javascriptNode.onaudioprocess = () => {
+                const array = new Uint8Array(this.analyser!.frequencyBinCount);
+                this.analyser!.getByteFrequencyData(array);
+                let values = 0;
+
+                const length = array.length;
+                for (let i = 0; i < length; i++) {
+                    values += array[i];
+                }
+
+                const average = values / length;
+                this.volume.set(Math.round(average));
+            };
+        } catch (e) {
+            console.error('Error tracking voice volume', e);
+        }
     }
 
     stop() {
         if (!this.isSupported || !this.recognition) return;
         this.isListening = false;
         this.recognition.stop();
+        this.stopVolumeTracking();
+    }
+
+    private stopVolumeTracking() {
+        if (this.javascriptNode) {
+            this.javascriptNode.onaudioprocess = null;
+            this.javascriptNode.disconnect();
+        }
+        if (this.microphone) this.microphone.disconnect();
+        if (this.analyser) this.analyser.disconnect();
+        if (this.audioContext) this.audioContext.close();
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+        }
+        this.volume.set(0);
     }
 }

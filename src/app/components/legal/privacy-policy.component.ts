@@ -1,120 +1,114 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-zinc-950 text-zinc-300 py-12 px-4 md:px-8">
-      <div class="max-w-4xl mx-auto bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800">
-        <h1 class="text-3xl md:text-4xl font-bold text-white mb-8">Política de Privacidad</h1>
-        
-        <div class="space-y-6 text-sm md:text-base leading-relaxed">
-          <p class="text-zinc-400">Última actualización: 11 de Diciembre de 2025</p>
+    <div class="min-h-screen bg-black text-zinc-300 py-12 px-4 md:px-8 relative selection:bg-purple-500/30">
+      <!-- Background Ambient Glow -->
+      <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/10 blur-[120px] rounded-full"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full"></div>
+      </div>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">1. Introducción</h2>
-            <p>Bienvenido a DonMusica ("nosotros", "nuestro" o "el sitio"). Respetamos su privacidad y nos comprometemos a proteger sus datos personales. Esta política de privacidad le informará sobre cómo cuidamos sus datos personales cuando visita nuestro sitio web y le informará sobre sus derechos de privacidad.</p>
-          </section>
+      <div class="max-w-4xl mx-auto relative z-10">
+        <!-- Back Button -->
+        <button (click)="goBack()" 
+          class="group flex items-center gap-2 mb-8 text-zinc-500 hover:text-white transition-all duration-300 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:-translate-x-1 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          <span class="text-sm font-bold uppercase tracking-widest">Regresar</span>
+        </button>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">2. Información que Recopilamos</h2>
-            <p>Podemos recopilar, usar, almacenar y transferir diferentes tipos de datos personales:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Datos de Identidad:</strong> nombre de usuario (si se registra).</li>
-              <li><strong>Datos de Contacto:</strong> dirección de correo electrónico (si se suscribe).</li>
-              <li><strong>Datos Técnicos:</strong> dirección IP, tipo de navegador, sistema operativo, zona horaria.</li>
-              <li><strong>Datos de Uso:</strong> información sobre cómo usa nuestro sitio web, páginas visitadas, tiempo de permanencia.</li>
-              <li><strong>Datos de Marketing:</strong> sus preferencias para recibir comunicaciones de marketing.</li>
-            </ul>
-          </section>
+        <div class="bg-zinc-900/40 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] border border-white/5 shadow-2xl">
+          <h1 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter">
+            Política de <span class="text-purple-500">Privacidad</span>
+          </h1>
+          <p class="text-zinc-500 mb-12 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            Última actualización: 11 de Diciembre de 2025
+          </p>
+          
+          <div class="space-y-12 text-sm md:text-base leading-relaxed">
+            <section class="group">
+              <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-black transition-all">01</span>
+                Introducción
+              </h2>
+              <div class="pl-11 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Bienvenido a DonMusica. Respetamos su privacidad y nos comprometemos a proteger sus datos personales. Esta política le informará sobre cómo cuidamos sus datos cuando visita nuestro sitio.</p>
+              </div>
+            </section>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">3. Cookies y Tecnologías Similares</h2>
-            <p>Utilizamos cookies y tecnologías similares para:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>Mejorar la funcionalidad del sitio</li>
-              <li>Analizar el tráfico del sitio</li>
-              <li>Personalizar su experiencia</li>
-              <li>Mostrar publicidad relevante</li>
-            </ul>
-            <p class="mt-2">Puede configurar su navegador para rechazar todas o algunas cookies, pero esto puede afectar la funcionalidad del sitio.</p>
-          </section>
+            <section class="group">
+              <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-black transition-all">02</span>
+                Información que Recopilamos
+              </h2>
+              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Podemos recopilar los siguientes tipos de datos:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                  <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <span class="text-purple-400 font-bold block mb-1">Técnicos</span>
+                    IP, navegador, sistema operativo.
+                  </div>
+                  <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <span class="text-purple-400 font-bold block mb-1">De Uso</span>
+                    Páginas visitadas, tiempo de sesión.
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">4. Publicidad de Terceros (Google AdSense)</h2>
-            <p>Utilizamos Google AdSense para mostrar anuncios en nuestro sitio. Google utiliza cookies para mostrar anuncios basados en sus visitas anteriores a este u otros sitios web.</p>
-            <p class="mt-2">Los usuarios pueden inhabilitar la publicidad personalizada visitando la <a href="https://www.google.com/settings/ads" target="_blank" class="text-emerald-400 hover:underline">Configuración de Anuncios de Google</a>.</p>
-            <p class="mt-2">Para más información sobre cómo Google utiliza los datos, visite la <a href="https://policies.google.com/technologies/partner-sites" target="_blank" class="text-emerald-400 hover:underline">Política de Privacidad de Google</a>.</p>
-          </section>
+            <section class="group">
+              <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-black transition-all">03</span>
+                Google AdSense
+              </h2>
+              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Google utiliza cookies para mostrar anuncios basados en sus visitas a este u otros sitios. Puede inhabilitar la publicidad personalizada en su cuenta de Google.</p>
+              </div>
+            </section>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">5. Contenido de Terceros</h2>
-            <p>Nuestro sitio puede contener enlaces a sitios web de terceros, incluyendo:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>YouTube:</strong> Reproducimos videos musicales alojados en YouTube mediante su API oficial.</li>
-              <li><strong>iTunes:</strong> Mostramos información de música disponible en iTunes.</li>
-              <li><strong>Redes Sociales:</strong> Enlaces a perfiles de redes sociales.</li>
-            </ul>
-            <p class="mt-2">No somos responsables del contenido o las políticas de privacidad de estos sitios de terceros.</p>
-          </section>
+            <section class="group">
+              <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-black transition-all">04</span>
+                Seguridad
+              </h2>
+              <div class="pl-11 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Implementamos medidas de seguridad avanzadas para proteger su información contra pérdida, uso indebido o acceso no autorizado.</p>
+              </div>
+            </section>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">6. Derechos de Autor</h2>
-            <p>Todo el contenido musical (videos, canciones, imágenes) mostrado en DonMusica es propiedad de sus respectivos dueños. Nosotros:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>NO alojamos ningún archivo de música o video en nuestros servidores</li>
-              <li>Solo proporcionamos enlaces a contenido alojado en plataformas legítimas (YouTube, iTunes)</li>
-              <li>Respetamos todos los derechos de autor y propiedad intelectual</li>
-              <li>Eliminaremos cualquier contenido si se nos notifica una infracción de derechos de autor</li>
-            </ul>
-          </section>
+            <section class="group border-t border-white/5 pt-12">
+              <h2 class="text-xl font-black text-white mb-4">Preguntas de Privacidad</h2>
+              <p class="mb-6">Para cualquier solicitud relacionada con sus datos personales:</p>
+              <a href="mailto:contacto&#64;donmusica.online" 
+                class="inline-flex items-center gap-4 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-purple-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+                Privacidad DonMusica
+              </a>
+            </section>
+          </div>
+        </div>
 
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">7. Cómo Usamos sus Datos</h2>
-            <p>Solo utilizaremos sus datos personales cuando la ley lo permita. Principalmente para:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>Proporcionar y mejorar nuestros servicios</li>
-              <li>Personalizar su experiencia en el sitio</li>
-              <li>Enviar comunicaciones de marketing (solo si ha dado su consentimiento)</li>
-              <li>Cumplir con obligaciones legales</li>
-              <li>Mostrar publicidad relevante</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">8. Seguridad de Datos</h2>
-            <p>Hemos implementado medidas de seguridad apropiadas para prevenir que sus datos personales sean accidentalmente perdidos, usados o accedidos de manera no autorizada.</p>
-          </section>
-
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">9. Sus Derechos Legales</h2>
-            <p>Bajo ciertas circunstancias, usted tiene derechos bajo las leyes de protección de datos, incluyendo el derecho a:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>Solicitar acceso a sus datos personales</li>
-              <li>Solicitar corrección de sus datos personales</li>
-              <li>Solicitar eliminación de sus datos personales</li>
-              <li>Objetar el procesamiento de sus datos personales</li>
-              <li>Solicitar la restricción del procesamiento de sus datos personales</li>
-              <li>Solicitar la transferencia de sus datos personales</li>
-              <li>Retirar el consentimiento</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">10. Cambios a esta Política</h2>
-            <p>Podemos actualizar esta política de privacidad de vez en cuando. Le notificaremos de cualquier cambio publicando la nueva política en esta página y actualizando la fecha de "Última actualización".</p>
-          </section>
-
-          <section>
-            <h2 class="text-xl font-bold text-emerald-400 mb-3">11. Contacto</h2>
-            <p>Si tiene preguntas sobre esta política de privacidad o desea ejercer sus derechos, contáctenos en:</p>
-            <p class="mt-2"><a href="mailto:contacto&#64;donmusica.online" class="text-emerald-400 hover:underline">contacto&#64;donmusica.online</a></p>
-          </section>
+        <div class="mt-12 text-center text-zinc-600 text-sm font-medium">
+          Confianza & Transparencia &bull; DonMusica
         </div>
       </div>
     </div>
   `
 })
-export class PrivacyPolicyComponent { }
+export class PrivacyPolicyComponent {
+  private location = inject(Location);
+
+  goBack() {
+    this.location.back();
+  }
+}

@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { SettingsService } from './settings.service';
 
 interface SpotifyToken {
     access_token: string;
@@ -21,17 +22,15 @@ interface SpotifyTrack {
 export class SpotifyService {
     private accessToken: string | null = null;
     private tokenExpiry: number = 0;
+    private settingsService = inject(SettingsService);
 
     constructor() { }
 
     private async getAccessToken(): Promise<string> {
         // Check if we have a valid token
         if (this.accessToken && Date.now() < this.tokenExpiry) {
-            console.log('🔑 Using cached Spotify token');
             return this.accessToken;
         }
-
-        console.log('🔑 Getting new Spotify access token...');
 
         // Get new token
         const credentials = btoa(`${environment.spotify.clientId}:${environment.spotify.clientSecret}`);
@@ -53,14 +52,11 @@ export class SpotifyService {
         const data: SpotifyToken = await response.json();
         this.accessToken = data.access_token;
         this.tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000; // Refresh 1 min before expiry
-
-        console.log('✅ Spotify token obtained successfully');
         return this.accessToken;
     }
 
     async searchTrack(title: string, artist: string): Promise<string | null> {
         try {
-            console.log(`🎵 Spotify search: "${title}" by "${artist}"`);
 
             // Check if title contains artist name (format: "Artist - Song")
             let searchArtist = artist;
@@ -71,7 +67,6 @@ export class SpotifyService {
                 if (parts.length >= 2) {
                     searchArtist = parts[0].trim();
                     searchTitle = parts.slice(1).join(' - ').trim();
-                    console.log(`📝 Extracted from title: "${searchTitle}" by "${searchArtist}"`);
                 }
             }
 
@@ -131,6 +126,10 @@ export class SpotifyService {
                 if (bestMatch && bestScore >= 10) {
                     const images = bestMatch.album.images;
                     if (images && images.length > 0) {
+                        // Data Saver optimization
+                        if (this.settingsService.dataSaver()) {
+                            return images[1]?.url || images[0].url; // Try 300x300 first
+                        }
                         return images[0].url;
                     }
                 }
@@ -159,8 +158,15 @@ export class SpotifyService {
 
             if (data.tracks?.items?.length > 0) {
                 const track = data.tracks.items[0];
+                const images = track.album.images;
+                let image = images[0]?.url;
+
+                if (this.settingsService.dataSaver() && images && images.length > 1) {
+                    image = images[1]?.url || images[0]?.url;
+                }
+
                 return {
-                    image: track.album.images[0]?.url,
+                    image,
                     duration_ms: track.duration_ms
                 };
             }
@@ -193,10 +199,17 @@ export class SpotifyService {
 
             if (data.artists && data.artists.items && data.artists.items.length > 0) {
                 const artist = data.artists.items[0];
+                const images = artist.images;
+                let image = images[0]?.url;
+
+                if (this.settingsService.dataSaver() && images && images.length > 1) {
+                    image = images[1]?.url || images[0]?.url;
+                }
+
                 return {
                     followers: artist.followers.total,
                     popularity: artist.popularity,
-                    image: artist.images[0]?.url
+                    image
                 };
             }
             return null;

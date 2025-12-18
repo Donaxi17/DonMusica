@@ -9,6 +9,7 @@ import { ARTISTS_DATA, Artist } from '../../models/artists.data';
 import { Subscription } from 'rxjs';
 import { MusicApiService } from '../../services/music-api.service';
 import { ToastService } from '../../services/toast.service';
+import { HapticService } from '../../services/haptic.service';
 
 @Component({
   selector: 'app-player',
@@ -49,7 +50,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     public playlistService: PlaylistService,
     private musicApi: MusicApiService,
     private toastService: ToastService,
-    private offlineService: OfflineService
+    private offlineService: OfflineService,
+    private hapticService: HapticService
   ) { }
 
   ngOnInit(): void {
@@ -138,6 +140,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   togglePlayPause(): void {
+    this.hapticService.light();
     if (this.isPlaying) {
       this.playerService.pause();
     } else {
@@ -146,16 +149,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   previousTrack(): void {
+    this.hapticService.medium();
     this.playerService.previousTrack();
   }
 
   nextTrack(): void {
+    this.hapticService.medium();
     this.playerService.nextTrack();
   }
 
   // --- Drag & Seek Logic ---
 
   startDrag(event: MouseEvent | TouchEvent): void {
+    this.hapticService.light();
     this.isDragging = true;
     this.updateProgressFromEvent(event);
   }
@@ -206,14 +212,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   toggleShuffle(): void {
+    this.hapticService.light();
     this.playerService.toggleShuffle();
   }
 
-  toggleRepeat(): void {
+  toggleRepeat(event?: Event): void {
+    this.hapticService.light();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.playerService.toggleRepeat();
   }
 
   toggleFavorite(song: Song): void {
+    this.hapticService.medium();
     if (this.playlistService.isFavorite(song.id)) {
       this.playlistService.removeFromFavorites(song.id);
     } else {

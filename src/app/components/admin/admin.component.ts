@@ -180,7 +180,7 @@ export class AdminComponent implements OnInit {
       const newArtist: Artist = {
         name: this.newArtistName.trim(),
         genre: this.newArtistGenre,
-        image: '/assets/img/default-artist.jpg', // Imagen por defecto
+        image: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // Imagen por defecto
         bio: ''
       };
 
