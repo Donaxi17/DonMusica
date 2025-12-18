@@ -220,6 +220,12 @@ export class PlayerService {
       this.playSong(playlist[currentIndex + 1]);
     } else if (this.repeatModeSubject.value === 'all') {
       this.playSong(playlist[0]);
+    } else {
+      // Fin de la lista y no hay repetición: detener estado "reproduciendo"
+      this.isPlayingSubject.next(false);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
     }
   }
 

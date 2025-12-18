@@ -50,14 +50,24 @@ export class SavedLyricsComponent implements OnInit {
     this.savedLyrics.set(this.lyricsService.getSavedLyrics());
   }
 
+  ngOnDestroy() {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
   viewLyric(lyric: SavedLyric) {
     this.selectedLyric.set(lyric);
-    document.body.style.overflow = 'hidden'; // Stop background scrolling
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden'; // Stop background scrolling
+    }
   }
 
   closeLyric() {
     this.selectedLyric.set(null);
-    document.body.style.overflow = 'auto'; // Restore background scrolling
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'auto'; // Restore background scrolling
+    }
   }
 
   deleteLyric(id: string, event: Event) {

@@ -320,7 +320,7 @@
                         <span class="group-hover:hidden" *ngIf="currentlyPlayingSong()?.id !== song.id">{{i + 1}}</span>
 
                         <!-- Playing Equalizer Icon -->
-                        <div *ngIf="currentlyPlayingSong()?.id === song.id"
+                        <div *ngIf="currentlyPlayingSong()?.id === song.id && (playerService.isPlaying$ | async)"
                             class="flex gap-0.5 items-end h-3 group-hover:hidden">
                             <div class="w-0.5 animate-music-bar"
                                 [ngClass]="isFavorite(song.id || '') ? 'bg-rose-500' : 'bg-emerald-500'"></div>

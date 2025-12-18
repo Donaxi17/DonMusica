@@ -26,7 +26,7 @@
 
     <!-- Sub-Navigation (Sticky & Premium Pills) -->
     <div
-        class="sticky top-[60px] md:top-[70px] z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 py-2 shadow-lg shadow-black/20">
+        class="sticky top-[60px] md:top-[70px] z-10 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 py-2 shadow-lg shadow-black/20">
         <div class="max-w-7xl mx-auto px-4">
             <nav #navContainer class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
 
@@ -84,7 +84,7 @@
     @if (!networkService.isOnline()) {
     <app-no-connection></app-no-connection>
     } @else {
-    <div class="max-w-7xl mx-auto px-4 pt-4 pb-16 md:pt-8 md:pb-10 animate-fade-in">
+    <div class="max-w-7xl mx-auto px-4 pt-4 pb-16 md:pt-8 md:pb-10 relative">
         <router-outlet></router-outlet>
     </div>
     }

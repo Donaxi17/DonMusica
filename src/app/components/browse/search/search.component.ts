@@ -14,6 +14,7 @@ import { Song } from '../../../services/playlist.service';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
+import { OnDestroy } from '@angular/core';
 
 @Component({
     selector: 'app-search',
@@ -22,7 +23,7 @@ import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
     templateUrl: './search.component.html',
     styleUrl: './search.component.css'
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private musicApi = inject(MusicApiService);
     private playerService = inject(PlayerService);
@@ -54,6 +55,13 @@ export class SearchComponent implements OnInit {
                 this.onSearch();
             }
         });
+    }
+
+    ngOnDestroy() {
+        // Restore scroll in case modal was open
+        if (typeof document !== 'undefined') {
+            document.body.style.overflow = 'auto';
+        }
     }
 
     onSearch() {
@@ -96,6 +104,11 @@ export class SearchComponent implements OnInit {
         this.loadingLyrics.set(true);
         this.showLyrics.set(true);
 
+        // Bloquear scroll del fondo
+        if (typeof document !== 'undefined') {
+            document.body.style.overflow = 'hidden';
+        }
+
         this.musicApi.getLyrics(song.artist, song.title).subscribe({
             next: (lyrics) => {
                 this.loadingLyrics.set(false);
@@ -114,6 +127,10 @@ export class SearchComponent implements OnInit {
 
     closeLyrics() {
         this.showLyrics.set(false);
+        // Restaurar scroll
+        if (typeof document !== 'undefined') {
+            document.body.style.overflow = 'auto';
+        }
     }
 
     saveLyrics() {

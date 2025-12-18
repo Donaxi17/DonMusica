@@ -24,16 +24,14 @@
 }
 
 /* Global styles */
-* {
+html,
+body {
+    overflow-x: hidden;
+    scroll-behavior: smooth;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
     font-family: "Ubuntu", sans-serif;
-}
-
-/* Smooth scroll behavior */
-html {
-    scroll-behavior: smooth;
 }
 
 /* Focus visible for accessibility - Modern glow */
