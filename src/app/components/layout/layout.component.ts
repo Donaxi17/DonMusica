@@ -155,7 +155,8 @@ export class LayoutComponent implements OnInit {
 
   shouldHideFooter(): boolean {
     const hiddenRoutes = ['/player', '/videos'];
-    return hiddenRoutes.some(route => this.router.url.startsWith(route));
+    const isBiography = this.router.url.includes('/biography');
+    return isBiography || hiddenRoutes.some(route => this.router.url.startsWith(route));
   }
 
   toggleMobileMoreMenu(event?: Event) {

@@ -117,12 +117,28 @@
                         <app-skeleton type="text" width="88%"></app-skeleton>
                     </div>
                     } @else if (biography()) {
-                    <div class="relative text-center mb-16">
-                        <!-- Centered text, no drop-cap -->
-                        <div class="prose prose-xl prose-invert max-w-none text-zinc-300 leading-relaxed font-serif tracking-wide biography-content"
-                            [innerHTML]="biography()">
+                    <!-- Premium Styled Container for Biography -->
+                    <div
+                        class="relative p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-emerald-500/20 via-zinc-900/60 to-black/60 border border-emerald-500/40 backdrop-blur-2xl shadow-2xl mb-20 overflow-hidden group animate-fade-in-up">
+                        <!-- Decorative Glows -->
+                        <div
+                            class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-emerald-500/40 transition-colors duration-700">
+                        </div>
+                        <div
+                            class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
                         </div>
 
+                        <div class="relative z-10 flex flex-col items-center">
+                            <!-- Centered text, explicit styles for guaranteed visibility -->
+                            <div class="text-zinc-200 leading-[2] text-center text-lg md:text-2xl font-medium tracking-wide biography-content max-w-4xl mx-auto drop-shadow-sm"
+                                [innerHTML]="biography()">
+                            </div>
+                        </div>
+
+                        <!-- Bottom accent line -->
+                        <div
+                            class="absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent">
+                        </div>
                     </div>
                     } @else {
                     <div class="p-12 rounded-3xl bg-zinc-900/30 border border-white/5 text-center">
