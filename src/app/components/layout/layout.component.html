@@ -2,6 +2,18 @@
     <div class="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-150 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
         [style.width.%]="scrollProgress"></div>
 </div>
+
+<!-- Route Loading Overlay -->
+<div *ngIf="isLoadingRoute"
+    class="fixed inset-0 bg-[#09090b]/80 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center animate-fade-in">
+    <div class="relative w-16 h-16 mb-4">
+        <div class="absolute inset-0 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin">
+        </div>
+        <div class="absolute inset-4 bg-emerald-500/10 rounded-full animate-pulse">
+        </div>
+    </div>
+    <span class="text-emerald-400 font-bold text-sm tracking-widest uppercase animate-pulse">Cargando...</span>
+</div>
 <div class="min-h-screen bg-zinc-950 text-white flex flex-col">
 
     <!-- Skip Links for Accessibility -->

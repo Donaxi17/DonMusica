@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, HostListener, ViewChild, ElementRef, inject, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { Router, RouterModule, NavigationEnd, NavigationStart, NavigationCancel, NavigationError } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
 import { Song, PlaylistService } from '../../services/playlist.service';
 import { filter } from 'rxjs/operators';
@@ -31,6 +31,7 @@ export class LayoutComponent implements OnInit {
   showMoreMenu = false;
   imageLoadError = false;
   isMenuOpen = false;
+  isLoadingRoute = false;
 
   // Player State
   currentSong: any = null;
@@ -51,15 +52,22 @@ export class LayoutComponent implements OnInit {
   private hapticService = inject(HapticService);
 
   constructor() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.isMenuOpen = false;
-      this.showMobileMoreMenu = false;
-      this.showMoreMenu = false;
-      this.showLanguageMenu = false;
-      if (isPlatformBrowser(this.platformId)) {
-        window.scrollTo(0, 0);
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.isLoadingRoute = true;
+      } else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.isLoadingRoute = false;
+        this.isMenuOpen = false;
+        this.showMobileMoreMenu = false;
+        this.showMoreMenu = false;
+        this.showLanguageMenu = false;
+        if (isPlatformBrowser(this.platformId)) {
+          window.scrollTo(0, 0);
+        }
       }
       this.cdr.markForCheck();
     });

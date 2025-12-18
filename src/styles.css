@@ -26,6 +26,8 @@
 /* Global styles */
 html,
 body {
+    background-color: #09090b;
+    color: white;
     overflow-x: hidden;
     scroll-behavior: smooth;
     padding: 0;
