@@ -39,6 +39,10 @@ export class PlayerService {
   private isMutedSubject = new BehaviorSubject<boolean>(false);
   private lastVolume = 100;
 
+  // Sleep Timer
+  private sleepTimerRemainingSubject = new BehaviorSubject<number>(0);
+  private sleepTimerInterval: any = null;
+
   // Observables públicos
   currentSong$ = this.currentSongSubject.asObservable();
   isPlaying$ = this.isPlayingSubject.asObservable();
@@ -52,10 +56,64 @@ export class PlayerService {
   repeatMode$ = this.repeatModeSubject.asObservable();
   isFavoritesPlaying$ = this.isFavoritesPlayingSubject.asObservable();
   playbackContext$ = this.playbackContextSubject.asObservable();
+  sleepTimerRemaining$ = this.sleepTimerRemainingSubject.asObservable();
 
   constructor(private musicApi: MusicApiService) {
     this.initializeAudioListeners();
     this.setupMediaSession();
+    this.initSleepTimer();
+  }
+
+  private initSleepTimer(): void {
+    const sleepEndTime = localStorage.getItem('sleepTimerEndTime');
+    if (sleepEndTime) {
+      const endTime = parseInt(sleepEndTime, 10);
+      const now = Date.now();
+      if (endTime > now) {
+        const remaining = Math.round((endTime - now) / 60000);
+        this.sleepTimerRemainingSubject.next(remaining);
+        this.startTimerInterval(endTime);
+      } else {
+        localStorage.removeItem('sleepTimerEndTime');
+      }
+    }
+  }
+
+  setSleepTimer(minutes: number): void {
+    this.cancelSleepTimer();
+    if (minutes <= 0) return;
+
+    const endTime = Date.now() + minutes * 60 * 1000;
+    localStorage.setItem('sleepTimerEndTime', endTime.toString());
+    this.sleepTimerRemainingSubject.next(minutes);
+    this.startTimerInterval(endTime);
+    this.toastService.info(`Temporizador configurado para ${minutes} minutos`);
+  }
+
+  cancelSleepTimer(): void {
+    if (this.sleepTimerInterval) {
+      clearInterval(this.sleepTimerInterval);
+      this.sleepTimerInterval = null;
+    }
+    localStorage.removeItem('sleepTimerEndTime');
+    this.sleepTimerRemainingSubject.next(0);
+  }
+
+  private startTimerInterval(endTime: number): void {
+    if (this.sleepTimerInterval) clearInterval(this.sleepTimerInterval);
+
+    this.sleepTimerInterval = setInterval(() => {
+      const now = Date.now();
+      if (now >= endTime) {
+        this.pause();
+        this.cancelSleepTimer();
+      } else {
+        const remaining = Math.ceil((endTime - now) / 60000);
+        if (remaining !== this.sleepTimerRemainingSubject.value) {
+          this.sleepTimerRemainingSubject.next(remaining);
+        }
+      }
+    }, 1000); // Check every second for accuracy
   }
 
   private initializeAudioListeners(): void {
@@ -135,9 +193,17 @@ export class PlayerService {
         finalUrl = offlineSong.audioUrl;
       } else if (song.url) {
         if (finalUrl.includes('dropbox.com')) {
-          finalUrl = finalUrl.replace(/dl=[01]/g, 'raw=1');
-          if (!finalUrl.includes('raw=1')) {
-            finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'raw=1';
+          // Asegurar host directo para evitar problemas de CORS y redirects en localhost
+          finalUrl = finalUrl.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+
+          if (finalUrl.includes('?')) {
+            finalUrl = finalUrl.replace(/dl=[01]/g, 'dl=1');
+            finalUrl = finalUrl.replace(/raw=[01]/g, 'dl=1');
+            if (!finalUrl.includes('dl=1')) {
+              finalUrl += '&dl=1';
+            }
+          } else {
+            finalUrl += '?dl=1';
           }
         }
       }

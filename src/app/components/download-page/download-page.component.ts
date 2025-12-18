@@ -72,18 +72,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Initialize AdSense ads
-    try {
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      // Initialize top ad
-      (window as any).adsbygoogle.push({});
-      // Initialize bottom ad
-      setTimeout(() => {
-        (window as any).adsbygoogle.push({});
-      }, 100);
-    } catch (e) {
-      console.error('AdSense error:', e);
-    }
+    // AdSense is now handled by AdsContainerComponent or removed in favor of Adsterra
   }
 
   ngOnDestroy(): void {
@@ -103,39 +92,68 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
     // Wait 1 second before processing
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (this.mode === 'offline' && this.songData) {
-      // Mode Offline
-      try {
+    try {
+      if (this.mode === 'offline' && this.songData) {
+        // Mode Offline
         const success = await this.offlineService.downloadSong(this.songData);
         if (success) {
           this.toastService.success('¡Canción guardada correctamente!');
           this.goBack();
         } else {
-          this.toastService.error('Hubo un problema al guardar. Posible error de conexión o límites.');
+          this.toastService.error('Error al guardar. Intenta con otra canción.');
           this.goBack();
         }
-      } catch (error) {
-        console.error('Error downloading offline', error);
-        this.toastService.error('Error de red al intentar guardar offline.');
-        this.goBack();
+      } else if (this.downloadUrl) {
+        // Mode File (Default) - Using Blob approach for better compatibility with cross-origin Piped/Dropbox
+        this.toastService.info('Iniciando descarga...');
+
+        try {
+          let urlToFetch = this.downloadUrl;
+          if (urlToFetch.includes('dropbox.com')) {
+            urlToFetch = urlToFetch.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+            if (urlToFetch.includes('?')) {
+              urlToFetch = urlToFetch.replace(/dl=[01]/g, 'dl=1');
+              urlToFetch = urlToFetch.replace(/raw=[01]/g, 'dl=1');
+              if (!urlToFetch.includes('dl=1')) urlToFetch += '&dl=1';
+            } else {
+              urlToFetch += '?dl=1';
+            }
+          }
+
+          const response = await fetch(urlToFetch);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${this.songTitle} - ${this.artistName}.mp3`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          this.toastService.success('Descarga iniciada');
+          setTimeout(() => this.goBack(), 1000);
+        } catch (fetchError) {
+          console.error('Fetch download failed, falling back to direct link', fetchError);
+          // Fallback to direct link if fetch fails
+          const link = document.createElement('a');
+          link.href = this.downloadUrl;
+          link.target = '_blank';
+          link.download = `${this.songTitle} - ${this.artistName}.mp3`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => this.goBack(), 1000);
+        }
       }
-
-    } else if (this.downloadUrl) {
-      // Mode File (Default)
-      const link = document.createElement('a');
-      link.href = this.downloadUrl;
-      link.download = `${this.songTitle} - ${this.artistName}.mp3`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Go back after download starts
-      setTimeout(() => {
-        this.goBack();
-      }, 1000);
+    } catch (error) {
+      console.error('General download error', error);
+      this.toastService.error('Error al procesar la descarga.');
+      this.goBack();
+    } finally {
+      this.isDownloading = false;
     }
-
-    this.isDownloading = false;
   }
 
   goBack(): void {

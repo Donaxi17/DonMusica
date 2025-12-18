@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
+import { ToastService } from '../../services/toast.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
@@ -29,6 +30,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private musicApi = inject(MusicApiService);
   public networkService = inject(NetworkService);
   private playerService = inject(PlayerService);
+  private toastService = inject(ToastService);
 
   requestArtist = '';
   requestSong = '';
@@ -122,7 +124,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   async installPwa() {
     if (!this.deferredPrompt) {
-      alert('Para instalar la App: Presiona "Añadir a pantalla de inicio" en las opciones de tu navegador o "Instalar Aplicación" en la barra de búsqueda.');
+      this.toastService.info('Para instalar la App: Presiona "Añadir a pantalla de inicio" en las opciones de tu navegador o "Instalar Aplicación" en la barra de búsqueda.');
       return;
     }
 
@@ -158,7 +160,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   submitRequest(): void {
     if (!this.requestArtist || !this.requestSong) {
-      alert('Por favor completa el nombre del artista y la canción/álbum');
+      this.toastService.warning('Por favor completa el nombre del artista y la canción/álbum');
       return;
     }
 

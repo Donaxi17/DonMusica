@@ -12,10 +12,13 @@ export class PlaylistDetailComponent {
     @Input() playlist!: Playlist;
     @Input() currentSongId: number | string | null = null;
     @Input() isPlaying: boolean = false;
+    @Input() offlineSongIds: Set<string> = new Set();
 
     @Output() playPlaylist = new EventEmitter<Playlist>();
     @Output() playSong = new EventEmitter<Song>();
     @Output() removeSong = new EventEmitter<{ playlistId: string, songId: number | string }>();
+    @Output() downloadSong = new EventEmitter<Song>();
+    @Output() downloadOffline = new EventEmitter<Song>();
     @Output() deletePlaylist = new EventEmitter<string>();
     @Output() share = new EventEmitter<Playlist>();
     @Output() back = new EventEmitter<void>();
@@ -31,6 +34,20 @@ export class PlaylistDetailComponent {
     onRemoveSong(songId: number | string, event: Event) {
         event.stopPropagation();
         this.removeSong.emit({ playlistId: this.playlist.id, songId });
+    }
+
+    onDownloadSong(song: Song, event: Event) {
+        event.stopPropagation();
+        this.downloadSong.emit(song);
+    }
+
+    onDownloadOffline(song: Song, event: Event) {
+        event.stopPropagation();
+        this.downloadOffline.emit(song);
+    }
+
+    isOffline(songId: number | string): boolean {
+        return this.offlineSongIds.has(String(songId));
     }
 
     onDeletePlaylist() {

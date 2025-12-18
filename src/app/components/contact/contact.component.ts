@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { ToastService } from '../../services/toast.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
@@ -162,6 +163,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 })
 export class ContactComponent implements OnInit {
   private seoService = inject(SeoService);
+  private toastService = inject(ToastService);
 
   // Configuración para envío gratuito
   // Reemplaza esto con tu email real para recibir correos vía mailto
@@ -184,7 +186,7 @@ export class ContactComponent implements OnInit {
 
   submitForm() {
     if (!this.formData.name || !this.formData.email || !this.formData.subject || !this.formData.message) {
-      alert('Por favor completa todos los campos');
+      this.toastService.warning('Por favor completa todos los campos');
       return;
     }
 

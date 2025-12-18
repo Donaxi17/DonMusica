@@ -131,19 +131,53 @@
 
             <!-- Song Info -->
             <div class="flex-1 min-w-0">
-                <h4 class="text-white font-bold text-sm md:text-base truncate leading-tight mb-0.5"
-                    [class.text-emerald-500]="currentSongId === song.id">{{ song.title }}</h4>
+                <div class="flex items-center gap-2">
+                    <h4 class="text-white font-bold text-sm md:text-base truncate leading-tight mb-0.5"
+                        [class.text-emerald-500]="currentSongId === song.id">{{ song.title }}</h4>
+                    <!-- Offline Badge -->
+                    <span *ngIf="isOffline(song.id)"
+                        class="flex-shrink-0 w-4 h-4 bg-emerald-500 text-black rounded-full flex items-center justify-center"
+                        title="Disponible offline">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                        </svg>
+                    </span>
+                </div>
                 <p class="text-zinc-500 text-xs md:text-sm truncate">{{ song.artist }}</p>
             </div>
 
-            <!-- Remove Button -->
-            <button (click)="onRemoveSong(song.id, $event)" title="Quitar de playlist"
-                class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors active:scale-95 group/btn">
-                <svg class="w-5 h-5 md:w-6 md:h-6 text-zinc-600 group-hover/btn:text-red-500 transition-colors"
-                    fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-                </svg>
-            </button>
+            <!-- Actions -->
+            <div class="flex items-center gap-1 md:gap-2">
+                <!-- 1. Normal Download Button (To device) -->
+                <button (click)="onDownloadSong(song, $event)" title="Descargar archivo MP3"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors group/dl">
+                    <svg class="w-5 h-5 text-zinc-500 group-hover/dl:text-emerald-400" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+
+                <!-- 2. Offline Download Button (To app) -->
+                <button (click)="onDownloadOffline(song, $event)" title="Guardar para escuchar offline en la app"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors group/off"
+                    *ngIf="!isOffline(song.id)">
+                    <svg class="w-5 h-5 text-zinc-500 group-hover/off:text-cyan-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                </button>
+
+                <!-- 3. Remove Button -->
+                <button (click)="onRemoveSong(song.id, $event)" title="Quitar de playlist"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors active:scale-95 group/btn">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-zinc-600 group-hover/btn:text-red-500 transition-colors"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
     <div *ngIf="playlist.songs.length === 0"

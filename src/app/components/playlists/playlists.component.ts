@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,8 @@ import { PlayerService } from '../../services/player.service';
 
 import { PlaylistDetailComponent } from '../playlist-detail/playlist-detail.component';
 import { ToastService } from '../../services/toast.service';
+import { OfflineService } from '../../services/offline.service';
+import { MusicApiService } from '../../services/music-api.service';
 
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 
@@ -18,22 +20,26 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
   styleUrl: './playlists.component.css'
 })
 export class PlaylistsComponent implements OnInit {
+  private playlistService = inject(PlaylistService);
+  private playerService = inject(PlayerService);
+  private offlineService = inject(OfflineService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
+  private musicApi = inject(MusicApiService);
+
   userPlaylists: Playlist[] = [];
   favorites: Song[] = [];
   selectedPlaylist: Playlist | null = null;
   currentSongId: number | string | null = null;
   isPlaying = false;
 
+  offlineSongIds = computed(() => new Set(this.offlineService.offlineSongs().map(s => String(s.id))));
+
   showCreateModal: boolean = false;
   newPlaylistName: string = '';
   newPlaylistDescription: string = '';
 
-  constructor(
-    private playlistService: PlaylistService,
-    private playerService: PlayerService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  constructor() { }
 
   ngOnInit(): void {
     this.loadData();
@@ -141,6 +147,58 @@ export class PlaylistsComponent implements OnInit {
     this.playerService.playSong(song);
     // Navigate to player
     this.router.navigate(['/player']);
+  }
+
+  downloadSong(song: Song): void {
+    // Default to normal download for the cloud icon if not specified, 
+    // but the user might want both. Let's provide separate methods.
+    this.downloadNormal(song);
+  }
+
+  downloadNormal(song: Song): void {
+    if (!song.url) {
+      this.toastService.info('Buscando enlace de descarga...');
+      this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'default');
+        } else {
+          this.toastService.error('No se pudo encontrar un enlace válido para esta canción');
+        }
+      });
+      return;
+    }
+
+    this.navigateToDownload(song, song.url, 'default');
+  }
+
+  downloadOffline(song: Song): void {
+    if (!song.url) {
+      this.toastService.info('Buscando fuente offline...');
+      this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'offline');
+        } else {
+          this.toastService.error('No se pudo encontrar una fuente para guardar offline');
+        }
+      });
+      return;
+    }
+    this.navigateToDownload(song, song.url, 'offline');
+  }
+
+  private navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline'): void {
+    // Aseguramos que el objeto song tenga la URL descubierta
+    const songWithUrl = { ...song, url: url || song.url };
+
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: song.artist,
+        downloadUrl: url,
+        mode: mode,
+        songData: songWithUrl
+      }
+    });
   }
 
   backToList(): void {

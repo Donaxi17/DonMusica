@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
     selector: 'app-vocal-fx',
@@ -101,7 +102,7 @@ export class VocalFxComponent implements OnDestroy {
     audioData: Blob | null = null;
     audioContext: AudioContext | null = null;
 
-    constructor(private router: Router) { }
+    constructor(private router: Router, private toastService: ToastService) { }
 
     goBack() {
         this.router.navigate(['/tools']);
@@ -136,7 +137,7 @@ export class VocalFxComponent implements OnDestroy {
                 this.mediaRecorder.start();
                 this.isRecording = true;
             } catch (err) {
-                alert('Necesitamos acceso al micrófono para grabar.');
+                this.toastService.error('Necesitamos acceso al micrófono para grabar.');
             }
         }
     }

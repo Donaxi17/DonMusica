@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { ToastService } from './toast.service';
 
 export interface Song {
   id: number | string; // Permitir string para IDs de API
@@ -30,6 +31,8 @@ export interface Playlist {
 export class PlaylistService {
   private readonly PLAYLISTS_KEY = 'donmusic_playlists';
   private readonly FAVORITES_KEY = 'donmusic_favorites';
+
+  private toastService = inject(ToastService);
 
   constructor() { }
 
@@ -132,8 +135,8 @@ export class PlaylistService {
     } else {
       // Fallback: Copy to clipboard
       navigator.clipboard.writeText(`${text}\n${url}`)
-        .then(() => alert('¡Link copiado al portapapeles!'))
-        .catch(() => alert('No se pudo copiar el link'));
+        .then(() => this.toastService.info('¡Link copiado al portapapeles!'))
+        .catch(() => this.toastService.error('No se pudo copiar el link'));
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Song } from './playlist.service';
 import { DonMusicaProService } from './don-musica-pro.service';
+import { ToastService } from './toast.service';
 
 export interface OfflineSong extends Song {
     downloadedAt: number;
@@ -19,6 +20,7 @@ export class OfflineService {
     private readonly STORE_NAME = 'offlineSongs';
     private db: IDBDatabase | null = null;
     private proService = inject(DonMusicaProService);
+    private toastService = inject(ToastService);
 
     offlineSongs = signal<OfflineSong[]>([]);
     downloadProgress = signal<{ [songId: string]: number }>({});
@@ -52,7 +54,7 @@ export class OfflineService {
     async downloadSong(song: Song): Promise<boolean> {
         // Check Pro Limits
         if (!this.proService.canDownloadSong(this.offlineSongs().length)) {
-            alert('¡Límite de descargas alcanzado! Actualiza a DonMusica PRO para descargas ilimitadas.');
+            this.toastService.error('¡Límite de descargas alcanzado! Actualiza a DonMusica PRO para descargas ilimitadas.');
             return false;
         }
 
@@ -171,6 +173,18 @@ export class OfflineService {
     }
 
     private async downloadFile(url: string, onProgress?: (progress: number) => void, fileType: 'audio' | 'image' = 'audio'): Promise<Blob> {
+        // Transformar Dropbox para descarga directa si es necesario
+        if (url.includes('dropbox.com')) {
+            url = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+            if (url.includes('?')) {
+                url = url.replace(/dl=[01]/g, 'dl=1');
+                url = url.replace(/raw=[01]/g, 'dl=1');
+                if (!url.includes('dl=1')) url += '&dl=1';
+            } else {
+                url += '?dl=1';
+            }
+        }
+
         const response = await fetch(url);
 
         if (!response.ok) {

@@ -18,6 +18,31 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     inject();
     this.loadAdsterraSocialBar();
+    this.trackPwaInstallation();
+  }
+
+  private trackPwaInstallation() {
+    if (typeof window === 'undefined') return;
+
+    // Track when the install prompt appears
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // @ts-ignore
+      window.gtag?.('event', 'pwa_install_available', {
+        event_category: 'PWA',
+        event_label: 'Prompt shown'
+      });
+    });
+
+    // Track when the app is successfully installed
+    window.addEventListener('appinstalled', (e) => {
+      // @ts-ignore
+      window.gtag?.('event', 'app_installed', {
+        event_category: 'PWA',
+        event_label: 'Installation successful',
+        value: 1
+      });
+      console.log('DonMusic was installed');
+    });
   }
 
   private loadAdsterraSocialBar() {

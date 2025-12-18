@@ -181,15 +181,18 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     openDownload(song: Song, event: Event) {
         event.stopPropagation();
-        this.router.navigate(['/download'], {
-            state: {
-                songTitle: song.title,
-                artistName: song.artist,
-                downloadUrl: song.url,
-                mode: 'default',
-                songData: song
-            }
-        });
+        if (!song.url) {
+            this.toastService.info('Buscando enlace de descarga...');
+            this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+                if (url) {
+                    this.navigateToDownload(song, url, 'default');
+                } else {
+                    this.toastService.error('No se pudo encontrar un enlace para descargar');
+                }
+            });
+            return;
+        }
+        this.navigateToDownload(song, song.url, 'default');
     }
 
     async downloadForOffline(song: Song, event: Event) {
@@ -200,12 +203,30 @@ export class SearchComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (!song.url) {
+            this.toastService.info('Buscando fuente offline...');
+            this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+                if (url) {
+                    this.navigateToDownload(song, url, 'offline');
+                } else {
+                    this.toastService.error('No se pudo encontrar fuente para modo offline');
+                }
+            });
+            return;
+        }
+
+        this.navigateToDownload(song, song.url, 'offline');
+    }
+
+    private navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline'): void {
+        const songWithUrl = { ...song, url: url || song.url };
         this.router.navigate(['/download'], {
             state: {
                 songTitle: song.title,
                 artistName: song.artist,
-                mode: 'offline',
-                songData: song
+                downloadUrl: url,
+                mode: mode,
+                songData: songWithUrl
             }
         });
     }

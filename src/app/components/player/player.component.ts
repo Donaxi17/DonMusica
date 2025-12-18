@@ -3,9 +3,12 @@ import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayerService } from '../../services/player.service';
 import { PlaylistService, Song } from '../../services/playlist.service';
+import { OfflineService } from '../../services/offline.service';
 import { ALL_SONGS } from '../../models/songs.data';
 import { ARTISTS_DATA, Artist } from '../../models/artists.data';
 import { Subscription } from 'rxjs';
+import { MusicApiService } from '../../services/music-api.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-player',
@@ -43,10 +46,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private router: Router,
     private location: Location,
     public playerService: PlayerService,
-    public playlistService: PlaylistService
+    public playlistService: PlaylistService,
+    private musicApi: MusicApiService,
+    private toastService: ToastService,
+    private offlineService: OfflineService
   ) { }
 
   ngOnInit(): void {
+    // ... (rest of ngOnInit)
     // Suscribirse a los cambios de query params
     this.subscriptions.push(
       this.route.queryParams.subscribe(params => {
@@ -68,6 +75,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }),
       this.playerService.playlist$.subscribe(playlist => {
         this.playlist = playlist;
+        // Si la lista está vacía y estamos en la ruta /player, volver atrás
+        if (playlist.length === 0 && this.router.url.includes('/player')) {
+          this.goBack();
+        }
       }),
       this.playerService.currentTime$.subscribe(time => {
         // Only update current time if not dragging to prevent stutter
@@ -95,6 +106,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }),
       this.playerService.isFavoritesPlaying$.subscribe(isFav => {
         this.isFavoritesPlaying = isFav;
+      }),
+      this.playerService.sleepTimerRemaining$.subscribe(mins => {
+        this.timerMinutes = mins;
       })
     );
   }
@@ -211,12 +225,49 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return this.playlistService.isFavorite(songId);
   }
 
+  isOffline(songId: number | string): boolean {
+    return this.offlineService.offlineSongs().some(s => s.id === songId);
+  }
+
   downloadMusic(song: Song): void {
+    if (!song.url) {
+      this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'default');
+        } else {
+          this.toastService.error('No se pudo encontrar una fuente de descarga para esta canción');
+        }
+      });
+      return;
+    }
+    this.navigateToDownload(song, song.url, 'default');
+  }
+
+  downloadOffline(song: Song): void {
+    if (!song.url) {
+      this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'offline');
+        } else {
+          this.toastService.error('No se pudo encontrar una fuente para guardar offline');
+        }
+      });
+      return;
+    }
+    this.navigateToDownload(song, song.url, 'offline');
+  }
+
+  private navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline'): void {
+    // Create a copy of the song with the correct URL for the download page
+    const songWithUrl = { ...song, url: url || song.url };
+
     this.router.navigate(['/download'], {
       state: {
         songTitle: song.title,
         artistName: song.artist,
-        downloadUrl: song.url
+        downloadUrl: url,
+        mode: mode,
+        songData: songWithUrl
       }
     });
   }
@@ -244,26 +295,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   setSleepTimer(minutes: number): void {
-    this.cancelTimer();
-    this.timerMinutes = minutes;
+    this.playerService.setSleepTimer(minutes);
     this.showTimerMenu = false;
-
-    if (minutes > 0) {
-      this.sleepTimer = setTimeout(() => {
-        this.playerService.pause();
-        this.timerMinutes = 0;
-        this.sleepTimer = null;
-      }, minutes * 60 * 1000);
-    }
   }
 
   cancelTimer(): void {
-    if (this.sleepTimer) {
-      clearTimeout(this.sleepTimer);
-      this.sleepTimer = null;
-    }
-    this.timerMinutes = 0;
-    this.timerMinutes = 0;
+    this.playerService.cancelSleepTimer();
     this.showTimerMenu = false;
   }
 

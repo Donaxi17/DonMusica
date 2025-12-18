@@ -13,6 +13,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { MusicApiService } from '../../services/music-api.service';
 
 @Component({
   selector: 'app-artist-detail',
@@ -32,6 +33,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   public offlineService = inject(OfflineService);
   private spotifyService = inject(SpotifyService);
   private lastFmService = inject(LastFmService);
+  private musicApi = inject(MusicApiService);
 
 
   artistId = signal<string>('');
@@ -109,6 +111,10 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.playerService.sleepTimerRemaining$.subscribe(mins => {
+      this.timerMinutes = mins;
+    });
+
     this.sub = this.route.params.subscribe(params => {
       // ... existing code ...
 
@@ -151,39 +157,60 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let url = target.url || '';
-    // Force direct download for Dropbox (Offline Context)
-    // Use dl.dropboxusercontent.com for direct blob fetching (CORS friendly)
-    if (url.includes('dropbox.com')) {
-      url = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
-      url = url.replace('dropbox.com', 'dl.dropboxusercontent.com'); // Catch-all if www is missing
-      // Remove dl parameters if present to avoid confusion, though usually ignored by dl. domain
-      url = url.replace(/[?&]dl=[01]/g, '');
-      url = url.replace(/[?&]raw=1/g, '');
+    if (!target.url) {
+      this.toastService.info('Buscando fuente offline...');
+      this.musicApi.getBestAudioStream(target.title || '', target.artist || this.artist()?.name || '').subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(target, url, 'offline');
+        } else {
+          this.toastService.error('No se pudo encontrar una fuente para modo offline');
+        }
+      });
+      return;
     }
 
-    const songToDownload = {
-      ...target,
-      id: target.id || '', // Ensure ID is string
+    this.navigateToDownload(target, target.url, 'offline');
+  }
+
+  private navigateToDownload(song: Song, url: string, mode: 'default' | 'offline') {
+    let finalUrl = url;
+    // Force direct download for Dropbox (Offline Context)
+    // Use dl.dropboxusercontent.com for direct blob fetching (CORS friendly)
+    if (finalUrl.includes('dropbox.com')) {
+      if (mode === 'offline') {
+        finalUrl = finalUrl.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+        finalUrl = finalUrl.replace('dropbox.com', 'dl.dropboxusercontent.com');
+        finalUrl = finalUrl.replace(/[?&]dl=[01]/g, '');
+        finalUrl = finalUrl.replace(/[?&]raw=1/g, '');
+      } else {
+        // Normal download: use dl=1
+        finalUrl = finalUrl.replace(/dl=0|raw=1/g, 'dl=1');
+        if (!finalUrl.includes('dl=1')) {
+          finalUrl = (finalUrl.includes('?') ? '&' : '?') + 'dl=1';
+        }
+      }
+    }
+
+    const songData = {
+      ...song,
+      id: song.id || '',
       artistId: this.artistId(),
-      img: target.img || this.artist()?.image || '/assets/img/default-music.png',
-      url: url,
-      artist: target.artist || this.artist()?.name || '',
-      title: target.title || '',
-      duration: target.duration || ''
+      img: song.img || this.artist()?.image || '/assets/img/default-music.png',
+      url: finalUrl,
+      artist: song.artist || this.artist()?.name || '',
+      title: song.title || '',
+      duration: song.duration || ''
     };
 
-    // Navigate to Download Page with Offline Mode
     this.router.navigate(['/download'], {
       state: {
-        songTitle: songToDownload.title,
-        artistName: songToDownload.artist,
-        downloadUrl: url,
-        mode: 'offline',
-        songData: songToDownload
+        songTitle: songData.title,
+        artistName: songData.artist,
+        downloadUrl: finalUrl,
+        mode: mode,
+        songData: songData
       }
     });
-
   }
 
   isOffline(songId: string): boolean {
@@ -361,30 +388,25 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
 
   downloadSong(song?: Song) {
     const target = song || this.songs()[0];
-    if (!target || !target.url) return;
-
-    let url = target.url;
-    // Force direct download for Dropbox
-    if (url.includes('dropbox.com')) {
-      // For file downloads, we MUST use dl=1 to valid 'Content-Disposition: attachment'
-      url = url.replace(/dl=0|raw=1/g, 'dl=1');
-      if (!url.includes('dl=1')) {
-        url = (url.includes('?') ? '&' : '?') + 'dl=1';
-      }
-    }
+    if (!target) return;
 
     // Close Menu
     this.showMenu.set(false);
     this.activeSongMenu.set(null);
 
-    // Navigate to Download Page
-    this.router.navigate(['/download'], {
-      state: {
-        songTitle: target.title,
-        artistName: target.artist || this.artist()?.name,
-        downloadUrl: url
-      }
-    });
+    if (!target.url) {
+      this.toastService.info('Buscando enlace de descarga...');
+      this.musicApi.getBestAudioStream(target.title || '', target.artist || this.artist()?.name || '').subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(target, url, 'default');
+        } else {
+          this.toastService.error('No se pudo encontrar un enlace para descargar');
+        }
+      });
+      return;
+    }
+
+    this.navigateToDownload(target, target.url, 'default');
   }
 
   shareSong(song?: Song) {
@@ -398,7 +420,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
         url: window.location.href
       });
     } else {
-      alert('Enlace copiado al portapapeles');
+      this.toastService.info('Enlace copiado al portapapeles');
       navigator.clipboard.writeText(window.location.href);
     }
 
@@ -540,25 +562,12 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   }
 
   setSleepTimer(minutes: number): void {
-    this.cancelTimer();
-    this.timerMinutes = minutes;
+    this.playerService.setSleepTimer(minutes);
     this.showTimerMenu = false;
-
-    if (minutes > 0) {
-      this.sleepTimer = setTimeout(() => {
-        this.playerService.pause();
-        this.timerMinutes = 0;
-        this.sleepTimer = null;
-      }, minutes * 60 * 1000);
-    }
   }
 
   cancelTimer(): void {
-    if (this.sleepTimer) {
-      clearTimeout(this.sleepTimer);
-      this.sleepTimer = null;
-    }
-    this.timerMinutes = 0;
+    this.playerService.cancelSleepTimer();
     this.showTimerMenu = false;
   }
 

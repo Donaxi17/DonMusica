@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DatabaseService, Song, Artist } from '../../services/database.service';
 import { MusicApiService } from '../../services/music-api.service';
+import { ToastService } from '../../services/toast.service';
 import { Storage, ref, uploadBytesResumable, getDownloadURL } from '@angular/fire/storage';
 
 interface UploadProgress {
@@ -33,6 +34,7 @@ export class AdminComponent implements OnInit {
   private musicApi = inject(MusicApiService);
   private storage = inject(Storage);
   private zone = inject(NgZone);
+  private toastService = inject(ToastService);
 
   // Lists from Firebase
   artists = signal<Artist[]>([]);
@@ -165,12 +167,12 @@ export class AdminComponent implements OnInit {
 
   async createNewArtist() {
     if (!this.newArtistName.trim()) {
-      alert('Por favor ingresa el nombre del artista');
+      this.toastService.warning('Por favor ingresa el nombre del artista');
       return;
     }
 
     if (!this.newArtistGenre) {
-      alert('Por favor selecciona el género del artista');
+      this.toastService.warning('Por favor selecciona el género del artista');
       return;
     }
 
@@ -192,10 +194,10 @@ export class AdminComponent implements OnInit {
       this.newArtistGenre = '';
       this.showNewArtistForm.set(false);
 
-      alert('✅ Artista creado exitosamente');
+      this.toastService.success('Artista creado exitosamente');
     } catch (error) {
       console.error('Error al crear artista:', error);
-      alert('❌ Error al crear artista');
+      this.toastService.error('Error al crear artista');
     }
   }
 
@@ -229,12 +231,12 @@ export class AdminComponent implements OnInit {
 
   createNewAlbum() {
     if (!this.newAlbumName.trim()) {
-      alert('Por favor ingresa el nombre del álbum');
+      this.toastService.warning('Por favor ingresa el nombre del álbum');
       return;
     }
 
     if (!this.songData.artistId) {
-      alert('Por favor selecciona un artista primero');
+      this.toastService.warning('Por favor selecciona un artista primero');
       return;
     }
 
@@ -259,7 +261,7 @@ export class AdminComponent implements OnInit {
     this.newAlbumName = '';
     this.showNewAlbumForm.set(false);
 
-    alert('✅ Álbum creado exitosamente');
+    this.toastService.success('Álbum creado exitosamente');
   }
 
   cancelNewAlbum() {
@@ -290,7 +292,7 @@ export class AdminComponent implements OnInit {
 
   createNewGenre() {
     if (!this.newGenre.trim()) {
-      alert('Por favor ingresa el nombre del género');
+      this.toastService.warning('Por favor ingresa el nombre del género');
       return;
     }
 
@@ -312,7 +314,7 @@ export class AdminComponent implements OnInit {
     this.newGenre = '';
     this.showNewGenreForm.set(false);
 
-    alert('✅ Género creado exitosamente');
+    this.toastService.success('Género creado exitosamente');
   }
 
   // Helper methods for bulk upload
@@ -346,7 +348,7 @@ export class AdminComponent implements OnInit {
       );
 
       if (files.length === 0) {
-        alert('Por favor selecciona archivos de audio válidos (MP3, WAV, M4A)');
+        this.toastService.warning('Por favor selecciona archivos de audio válidos (MP3, WAV, M4A)');
         return;
       }
 
@@ -405,18 +407,18 @@ export class AdminComponent implements OnInit {
         if (artist) {
           this.songData.artistName = artist.name;
         } else {
-          alert('Por favor selecciona un artista válido');
+          this.toastService.warning('Por favor selecciona un artista válido');
           return;
         }
       } else {
-        alert('Por favor selecciona un artista');
+        this.toastService.warning('Por favor selecciona un artista');
         return;
       }
     }
 
     // Validación simplificada: solo requerimos título y URL
     if (!this.songData.title || !this.songData.externalUrl) {
-      alert('Por favor ingresa el título y la URL de la canción');
+      this.toastService.warning('Por favor ingresa el título y la URL de la canción');
       return;
     }
 
@@ -431,20 +433,22 @@ export class AdminComponent implements OnInit {
       const artist = this.artists().find(a => a.id === this.songData.artistId);
       const imageUrl = artist?.image || '/assets/img/default-music.png';
 
-      // 2. Procesar URL (Convertir Dropbox DL=0 a DL=1)
+      // 2. Procesar URL (Convertir Dropbox a URL directa compatible con localhost)
       let finalAudioUrl = this.songData.externalUrl;
 
       if (finalAudioUrl.includes('dropbox.com')) {
-        // Reemplazar dl=0 o dl=1 por raw=1 para asegurar streaming directo
-        if (finalAudioUrl.includes('dl=0')) {
-          finalAudioUrl = finalAudioUrl.replace('dl=0', 'raw=1');
-        } else if (finalAudioUrl.includes('dl=1')) {
-          finalAudioUrl = finalAudioUrl.replace('dl=1', 'raw=1');
-        }
-        // Si no tiene parámetros, agregar raw=1
-        else if (!finalAudioUrl.includes('raw=1')) {
-          const separator = finalAudioUrl.includes('?') ? '&' : '?';
-          finalAudioUrl = finalAudioUrl + separator + 'raw=1';
+        // Transformar www.dropbox.com a dl.dropboxusercontent.com para saltar redirects y mejorar CORS
+        finalAudioUrl = finalAudioUrl.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+
+        // Limpiar parámetros de visualización y forzar descarga directa
+        if (finalAudioUrl.includes('?')) {
+          finalAudioUrl = finalAudioUrl.replace(/dl=[01]/g, 'dl=1');
+          finalAudioUrl = finalAudioUrl.replace(/raw=[01]/g, 'dl=1');
+          if (!finalAudioUrl.includes('dl=1')) {
+            finalAudioUrl += '&dl=1';
+          }
+        } else {
+          finalAudioUrl += '?dl=1';
         }
       }
 
@@ -487,7 +491,7 @@ export class AdminComponent implements OnInit {
         progress: 0,
         message: `❌ Error: ${error.message || 'Error desconocido'}`
       });
-      alert(`Error al guardar: ${error.message || error}`);
+      this.toastService.error(`Error al guardar: ${error.message || error}`);
     }
   }
 
