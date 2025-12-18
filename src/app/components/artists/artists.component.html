@@ -4,9 +4,9 @@
         <div
             class="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-purple-900/40 to-black z-10 animate-gradient">
         </div>
-        <div
-            class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070')] bg-cover bg-center opacity-30">
-        </div>
+        <img [ngSrc]="'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070'"
+            alt="Fondo de artistas musicales" fill priority
+            class="absolute inset-0 w-full h-full object-cover bg-center opacity-30">
 
         <div class="absolute inset-0 flex flex-col justify-center text-center px-4 md:px-12 z-20 max-w-7xl mx-auto">
             <h1 class="text-4xl md:text-7xl font-black text-white mb-3 md:mb-4 tracking-tight">
@@ -133,9 +133,9 @@
                 <a [routerLink]="['/artist', artist.id]"
                     class="group relative aspect-square rounded-3xl overflow-hidden bg-zinc-900 cursor-pointer shadow-xl border border-white/5 hover:border-emerald-500/50 transition-all duration-300 transform hover:-translate-y-1">
 
-                    <!-- Image -->
-                    <img [src]="artist.image || '/assets/img/default-artist.jpg'" [alt]="artist.name"
-                        (error)="artist.image = '/assets/img/default-artist.jpg'" loading="lazy" decoding="async"
+                    <!-- Image Optimized -->
+                    <img [ngSrc]="artist.image || '/assets/img/default-artist.jpg'" [alt]="artist.name"
+                        (error)="artist.image = '/assets/img/default-artist.jpg'" width="300" height="300"
                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
 
                     <!-- Gradient Overlay -->

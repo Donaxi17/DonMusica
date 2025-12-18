@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { DatabaseService, Artist, Song } from '../../services/database.service';
 import { PlayerService } from '../../services/player.service';
@@ -17,7 +17,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 @Component({
   selector: 'app-artist-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent],
+  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent, NgOptimizedImage],
   templateUrl: './artist-detail.component.html',
   styleUrl: './artist-detail.component.css'
 })

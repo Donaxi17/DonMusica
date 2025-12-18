@@ -1,5 +1,5 @@
 ﻿import { Component, inject, signal, OnInit, ChangeDetectorRef, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
@@ -19,7 +19,7 @@ import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, NgOptimizedImage],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })

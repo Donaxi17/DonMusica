@@ -37,7 +37,7 @@ export class MusicApiService {
     private readonly LYRICS_API_URL = 'https://api.lyrics.ovh/v1';
     private readonly GENIUS_API_URL = 'https://api.genius.com';
     private readonly JAMENDO_API_URL = 'https://api.jamendo.com/v3.0';
-    private readonly JAMENDO_CLIENT_ID = 'c85b065b'; // Public demo ID
+    private readonly JAMENDO_CLIENT_ID = environment.jamendo?.clientId || 'c85b065b';
     private spotifyToken: string | null = null;
 
     constructor(private http: HttpClient) {
@@ -76,42 +76,41 @@ export class MusicApiService {
     }
 
     private getTrendingFromITunes(region: string = 'US'): Observable<Song[]> {
-        // Estrategia: Buscar "Hits" o "Latino" (ordenado por popularidad por iTunes)
-        // y filtrar estrictamente por una lista de artistas verificados para evitar spam.
+        // En producción, usamos JSONP para evitar problemas de CORS o bloqueos de dominio
+        // Además, normalizamos la región
+        const countryCode = region.toUpperCase();
 
-        const searchTerm = region === 'CO' ? 'Latino' : 'Pop';
+        // Términos de búsqueda robustos
+        const searchTerms = countryCode === 'CO'
+            ? ['Top Hits Colombia', 'Reggaeton 2025', 'Novedades']
+            : ['Top Hits 2025', 'Popular', 'Trending'];
 
-        // Lista amplia de artistas verificados para filtrar el spam
-        const trustedArtists = region === 'CO'
-            ? ['Feid', 'Karol G', 'Bad Bunny', 'J Balvin', 'Maluma', 'Ryan Castro', 'Blessd', 'Shakira', 'Myke Towers', 'Rauw Alejandro', 'Daddy Yankee', 'Arcangel', 'Eladio Carrion', 'Mora', 'Sech', 'Manuel Turizo', 'Sebastian Yatra', 'Camilo', 'Grupo Frontera', 'Peso Pluma', 'Young Miko', 'Cris Mj', 'Anuel AA', 'Ozuna', 'Nicky Jam', 'Wisin', 'Yandel', 'Don Omar', 'Tini', 'Maria Becerra']
-            : ['Taylor Swift', 'The Weeknd', 'Drake', 'Bad Bunny', 'Dua Lipa', 'Harry Styles', 'Ariana Grande', 'Justin Bieber', 'Ed Sheeran', 'Beyonce', 'Rihanna', 'Bruno Mars', 'Adele', 'Coldplay', 'Maroon 5', 'Post Malone', 'Billie Eilish', 'Olivia Rodrigo', 'SZA', 'Miley Cyrus', 'Katy Perry', 'Lady Gaga', 'Kendrick Lamar', 'Eminem', 'Imagine Dragons'];
+        const term = searchTerms[0];
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&country=${countryCode}`;
 
-        // Pedimos 200 canciones para tener suficiente margen después de filtrar
-        // Agregamos timestamp para evitar caché y asegurar resultados frescos siempre
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=200&country=${region}&_t=${Date.now()}`;
-
-        return this.http.get<any>(url).pipe(
+        // Usamos JSONP si estamos en el navegador para máxima compatibilidad
+        return this.http.jsonp<any>(url, 'callback').pipe(
             map(res => {
-                if (!res.results) return [];
+                if (!res.results || res.results.length === 0) return [];
 
-                // 1. Convertir a nuestro formato
-                const songs = res.results.map((t: any) => this.convertITunesToSong(t));
+                const songs = res.results
+                    .filter((t: any) => t && (t.trackId || t.collectionId)) // Filtro de seguridad
+                    .map((t: any) => this.convertITunesToSong(t));
 
-                // 2. Filtrar: Solo artistas verificados (búsqueda flexible)
-                const filtered = songs.filter((song: Song) => {
-                    const artistName = song.artist.toLowerCase();
-                    return trustedArtists.some(trusted => artistName.includes(trusted.toLowerCase()));
-                });
-
-                // 3. Eliminar duplicados (por ID o Título+Artista)
-                const unique = filtered.filter((s: Song, i: number, self: Song[]) =>
-                    i === self.findIndex((t: Song) => t.id === s.id || (t.title === s.title && t.artist === s.artist))
+                const unique = songs.filter((s: Song, i: number, self: Song[]) =>
+                    s && i === self.findIndex((t: Song) => t && (t.id === s.id || (t.title === s.title && t.artist === s.artist)))
                 );
 
-                // 4. Devolver el Top 20 (iTunes ya los entregó ordenados por popularidad)
-                return unique.slice(0, 20);
+                return unique.slice(0, 30);
             }),
-            catchError(() => of([]))
+            catchError((err) => {
+                console.error('Error fetching trends via JSONP:', err);
+                // Fallback a GET estándar si JSONP falla
+                return this.http.get<any>(url).pipe(
+                    map(res => res.results ? res.results.map((t: any) => this.convertITunesToSong(t)) : []),
+                    catchError(() => of([]))
+                );
+            })
         );
     }
 
@@ -169,25 +168,29 @@ export class MusicApiService {
     }
 
     private getNewReleasesFromITunes(country: string, limit: number): Observable<Song[]> {
-        // Search broader terms to get more candidates, then filter by date locally
-        const term = country === 'CO' ? 'Latino' : 'Pop';
+        // En producción, JSONP es más fiable para iTunes
+        const countryCode = country.toUpperCase();
+        const term = countryCode === 'CO' ? 'Latino' : 'Pop';
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=100&country=${countryCode}`;
 
-        // Request 200 items to ensure we have enough after date filtering
-        // Agregamos timestamp para evitar caché
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=200&country=${country}&_t=${Date.now()}`;
-
-        return this.http.get<any>(url).pipe(
+        return this.http.jsonp<any>(url, 'callback').pipe(
             map(res => {
                 if (!res.results) return [];
                 const sixMonthsAgo = new Date();
                 sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 7);
 
                 return res.results
-                    .filter((t: any) => new Date(t.releaseDate) > sixMonthsAgo)
+                    .filter((t: any) => t && new Date(t.releaseDate) > sixMonthsAgo)
                     .map((t: any) => this.convertITunesToSong(t))
                     .slice(0, limit);
             }),
-            catchError(() => of([]))
+            catchError(() => {
+                // Fallback a GET estándar
+                return this.http.get<any>(url).pipe(
+                    map(res => res.results ? res.results.map((t: any) => this.convertITunesToSong(t)) : []),
+                    catchError(() => of([]))
+                );
+            })
         );
     }
 
@@ -216,9 +219,15 @@ export class MusicApiService {
 
     private searchITunes(query: string): Observable<Song[]> {
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=20`;
-        return this.http.get<any>(url).pipe(
+        return this.http.jsonp<any>(url, 'callback').pipe(
             map(res => res.results ? res.results.map((t: any) => this.convertITunesToSong(t)) : []),
-            catchError(() => of([]))
+            catchError(() => {
+                // Fallback a GET estándar
+                return this.http.get<any>(url).pipe(
+                    map(res => res.results ? res.results.map((t: any) => this.convertITunesToSong(t)) : []),
+                    catchError(() => of([]))
+                );
+            })
         );
     }
 

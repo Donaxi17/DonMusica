@@ -17,9 +17,9 @@
             <!-- Gradient Overlay for Readability -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black z-10"></div>
 
-            <!-- Hero Image with Parallax -->
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop"
-                alt="Fondo de concierto de música urbana"
+            <!-- Hero Image with Parallax Optimized -->
+            <img [ngSrc]="'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop'"
+                alt="Fondo de concierto de música urbana" fill priority
                 [style.transform]="'scale(1.1) translate(' + (mouseX()/2) + 'px, ' + (mouseY()/2) + 'px)'"
                 class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out blur-[2px]">
         </div>
@@ -335,7 +335,7 @@
                             class="group relative bg-zinc-900/60 rounded-2xl overflow-hidden border border-white/5 hover:border-emerald-500/50 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.2)] hover:-translate-y-2 transition-all duration-500 cursor-pointer"
                             (click)="playSong(song)">
                             <div class="aspect-square relative overflow-hidden bg-zinc-950">
-                                <img [src]="song.img" [alt]="song.title"
+                                <img [ngSrc]="song.img" [alt]="song.title" width="300" height="300"
                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     onerror="this.src='https://placehold.co/300x300/18181b/10b981?text=Music'">
                                 <div

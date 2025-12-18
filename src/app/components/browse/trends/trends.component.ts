@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component'; // Import new component
 import { InfiniteScrollDirective } from '../../../directives/infinite-scroll.directive';
 import { MusicApiService } from '../../../services/music-api.service';
@@ -12,7 +12,7 @@ import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent], // Add to imports
+    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent, NgOptimizedImage], // Add to imports
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {

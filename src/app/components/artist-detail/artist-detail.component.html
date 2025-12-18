@@ -7,8 +7,8 @@
             @if (loading()) {
             <app-skeleton type="rectangle" width="100%" height="100%"></app-skeleton>
             } @else if (artist()) {
-            <img [src]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name"
-                class="w-full h-full object-cover blur-md scale-150">
+            <img [ngSrc]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Fondo artista'"
+                fill class="w-full h-full object-cover blur-md scale-150">
             <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"></div>
             }
         </div>
@@ -21,7 +21,8 @@
                 @if (loading()) {
                 <app-skeleton type="circle" size="160px"></app-skeleton>
                 } @else if (artist()) {
-                <img [src]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name"
+                <img [ngSrc]="artist()?.image || '/assets/img/default-music.png'" [alt]="artist()?.name || 'Perfil'"
+                    width="192" height="192" priority
                     class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-zinc-900 shadow-2xl">
                 }
             </div>
@@ -345,8 +346,8 @@
 
                     <!-- Image -->
                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 relative">
-                        <img [src]="song.img || artist()?.image || '/assets/icons/icon-512x512.png'"
-                            class="w-full h-full object-cover"
+                        <img [ngSrc]="song.img || artist()?.image || '/assets/icons/icon-512x512.png'" width="40"
+                            height="40" class="w-full h-full object-cover"
                             (error)="$any($event.target).src = '/assets/icons/icon-512x512.png'">
                         <!-- Offline Indicator -->
                         <div *ngIf="isOffline(song.id || '')"
