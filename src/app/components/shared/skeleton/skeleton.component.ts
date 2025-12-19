@@ -50,6 +50,14 @@ import { CommonModule } from '@angular/common';
       @if (type === 'circle') {
         <div class="skeleton-shimmer bg-zinc-800/30 rounded-full" [style.width]="size" [style.height]="size"></div>
       }
+
+      <!-- Stat Card Skeleton -->
+      @if (type === 'stat-card') {
+        <div class="p-10 rounded-[2rem] md:rounded-[2.5rem] bg-zinc-950/50 border border-white/5 w-full sm:w-44 md:w-60 h-[180px] md:h-[220px] flex flex-col items-center justify-center space-y-4">
+          <div class="h-12 md:h-16 w-3/4 skeleton-shimmer bg-zinc-800/20 rounded-2xl"></div>
+          <div class="h-4 w-1/2 skeleton-shimmer bg-zinc-800/20 rounded-full"></div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -57,7 +65,7 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class SkeletonComponent {
-  @Input() type: 'card' | 'list-item' | 'text' | 'circle' | 'rectangle' | 'hero' | 'track-card' = 'card';
+  @Input() type: 'card' | 'list-item' | 'text' | 'circle' | 'rectangle' | 'hero' | 'track-card' | 'stat-card' = 'card';
   @Input() width = '100%';
   @Input() height = '100px';
   @Input() size = '50px';

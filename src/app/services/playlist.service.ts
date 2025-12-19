@@ -15,6 +15,7 @@ export interface Song {
   isStreamUrlFetched?: boolean;
   thumbnail?: string;
   isFavorite?: boolean;
+  createdAt?: any;
 }
 
 export interface Playlist {

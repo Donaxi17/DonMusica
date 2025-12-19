@@ -69,19 +69,8 @@ export class ArtistsComponent implements OnInit {
     });
   });
 
-  // Cache State
-  private readonly CACHE_KEY = 'artist_images_cache';
-  private imgCache: { [key: string]: { url: string; lastUpdated: number } } = {};
-
   ngOnInit() {
     this.seoService.setSeoData('Artistas', 'Explora artistas musicales.');
-
-    // Load cache once
-    try {
-      this.imgCache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}');
-    } catch (e) {
-      console.warn('Error parsing artist cache', e);
-    }
 
     this.voiceService.text$.subscribe(text => {
       if (text) {
@@ -130,84 +119,55 @@ export class ArtistsComponent implements OnInit {
   loadArtists() {
     this.loading.set(true);
 
-    // Use combineLatest to get both artists and songs (real-time updates)
     combineLatest([
       this.dbService.getArtists(),
       this.dbService.getSongs()
     ]).subscribe(async ([artists, songs]: [Artist[], Song[]]) => {
 
-      // Map songs to artists for searching
       const artistsWithSongs = artists.map(artist => {
-        // Find songs where artist name matches (loose matching)
         const artistSongs = songs.filter(song =>
           song.artist && song.artist.toLowerCase().includes(artist.name.toLowerCase())
         );
         return { ...artist, songs: artistSongs };
       });
 
-      const THREE_MONTHS = 90 * 24 * 60 * 60 * 1000;
-      const now = Date.now();
-      let cacheModified = false;
+      // Set initial data immediately (Instant feel)
+      this.artists.set(artistsWithSongs);
+      this.loading.set(false);
 
-      // Optimizacion: Priorizamos Spotify para fotos de artista (Más actualizadas y de perfil)
-      const artistsWithImages = await Promise.all(artistsWithSongs.map(async (artist) => {
-        const cached = this.imgCache[artist.name];
-        const isCacheValid = cached && (now - cached.lastUpdated < THREE_MONTHS);
+      // Background process to update images if necessary
+      const updatedArtists = [...artistsWithSongs];
+      let needsStateUpdate = false;
 
-        // 1. If we have a valid cache, use it
-        if (isCacheValid) {
-          return { ...artist, image: cached.url };
-        }
+      for (let i = 0; i < updatedArtists.length; i++) {
+        const artist = updatedArtists[i];
 
-        // 2. If no valid cache, decide if we need to fetch
-        // Fetch if: No image, Default image, iTunes image (upgrade to Spotify), or Cache Expired
-        const needsUpdate = !artist.image ||
-          artist.image.includes('default-artist') ||
-          artist.image.includes('mzstatic') ||
-          (cached && !isCacheValid); // Expired cache
+        // Check if image needs update (missing, default, itunes to spotify upgrade)
+        const isDefault = !artist.image || artist.image.includes('default-artist') || artist.image.includes('mzstatic');
 
-        if (needsUpdate) {
+        if (isDefault) {
           try {
-            // Intentar Spotify primero
+            // SpotifyService already handles caching internally now
             const spotifyStats = await this.spotifyService.getArtistStats(artist.name);
             if (spotifyStats?.image) {
-              // Update Cache
-              this.imgCache[artist.name] = { url: spotifyStats.image, lastUpdated: now };
-              cacheModified = true;
-              return { ...artist, image: spotifyStats.image };
+              updatedArtists[i] = { ...artist, image: spotifyStats.image };
+              needsStateUpdate = true;
+              // Update state gradually for smooth appearance
+              this.artists.set([...updatedArtists]);
+            } else {
+              // Fallback to iTunes (also cached internally)
+              const itunesImage = await this.itunesService.getArtistImageBestEffort(artist.name).toPromise();
+              if (itunesImage && !itunesImage.includes('default-artist')) {
+                updatedArtists[i] = { ...artist, image: itunesImage };
+                needsStateUpdate = true;
+                this.artists.set([...updatedArtists]);
+              }
             }
           } catch (e) {
-            console.warn(`Spotify img failed for ${artist.name}`);
-          }
-
-          // Fallback a iTunes
-          try {
-            // Only fetch from iTunes if we don't have a valid cached URL (even if expired, it might be better than nothing if iTunes fails)
-            // But here we want to refresh.
-            const itunesImage = await this.itunesService.getArtistImageBestEffort(artist.name).toPromise();
-            if (itunesImage && !itunesImage.includes('default-artist')) {
-              this.imgCache[artist.name] = { url: itunesImage, lastUpdated: now };
-              cacheModified = true;
-              return { ...artist, image: itunesImage };
-            }
-          } catch (err) {
-            console.error('iTunes fallback error', err);
+            console.warn(`Background img update failed for ${artist.name}`);
           }
         }
-
-        // If update failed but we had an old cache, maybe stick with it?
-        // Or if we have an existing DB image that is not default.
-        if (cached) return { ...artist, image: cached.url };
-
-        return artist;
-      }));
-
-      if (cacheModified) {
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.imgCache));
       }
-
-      this.artists.set(artistsWithImages);
-      this.loading.set(false);
     });
   }
 }

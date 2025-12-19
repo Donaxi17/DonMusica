@@ -69,7 +69,6 @@ export class AdminComponent implements OnInit {
     albumName: '',
     genre: '',
     year: new Date().getFullYear(),
-    duration: '',
     externalUrl: '' // Nuevo campo para URL externa
   };
 
@@ -84,12 +83,7 @@ export class AdminComponent implements OnInit {
   showNewAlbumForm = signal(false);
   showNewGenreForm = signal(false);
 
-  // Files
-  audioFiles: File[] = [];
-  // imageFile removido - ya no subimos imágenes manualmente al storage
-
-  // Preview Data
-  previewSongs = signal<{ title: string, file: File, duration: string }[]>([]);
+  // Preview Data removido (una por una)
 
   // Upload state
   uploadProgress = signal<UploadProgress>({
@@ -317,87 +311,13 @@ export class AdminComponent implements OnInit {
     this.toastService.success('Género creado exitosamente');
   }
 
-  // Helper methods for bulk upload
-  formatTitle(filename: string): string {
-    // Eliminar extensión y posibles números iniciales (ej: "01. Cancion.mp3" -> "Cancion")
-    return filename.replace(/\.[^/.]+$/, "").replace(/^\d+\s*[-.]?\s*/, "").replace(/_/g, " ");
-  }
-
-  detectDuration(file: File): Promise<string> {
-    return new Promise((resolve) => {
-      const audio = new Audio();
-      audio.src = URL.createObjectURL(file);
-      audio.addEventListener('loadedmetadata', () => {
-        const minutes = Math.floor(audio.duration / 60);
-        const seconds = Math.floor(audio.duration % 60);
-        resolve(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-      });
-      audio.addEventListener('error', () => resolve('Unknown'));
-    });
-  }
-
-  async onAudioFileSelected(event: Event): Promise<void> {
+  onTitleInput(event: any) {
+    // Reemplaza guiones por espacios en tiempo real mientras el admin escribe
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      // Convertir FileList a Array y permitir audio/* o extensiones comunes si el tipo mime falla
-      const files = Array.from(input.files).filter(file =>
-        file.type.startsWith('audio/') ||
-        file.name.toLowerCase().endsWith('.mp3') ||
-        file.name.toLowerCase().endsWith('.wav') ||
-        file.name.toLowerCase().endsWith('.m4a')
-      );
-
-      if (files.length === 0) {
-        this.toastService.warning('Por favor selecciona archivos de audio válidos (MP3, WAV, M4A)');
-        return;
-      }
-
-      this.audioFiles = files;
-
-      // Generar preview data
-      const previews = [];
-      for (const file of files) {
-        const duration = await this.detectDuration(file);
-        previews.push({
-          title: this.formatTitle(file.name),
-          file: file,
-          duration: duration
-        });
-      }
-      this.previewSongs.set(previews);
-
-      // Si es solo uno, mantenemos comportamiento anterior
-      if (files.length === 1) {
-        this.songData.title = previews[0].title;
-        this.songData.duration = previews[0].duration;
-      } else {
-        this.songData.title = `Carga Masiva (${files.length} canciones)`;
-        this.songData.duration = 'Varios';
-      }
-    }
+    this.songData.title = input.value.replace(/-/g, ' ');
   }
 
-  removeSong(index: number) {
-    // Remove from files array
-    const currentFiles = [...this.audioFiles];
-    currentFiles.splice(index, 1);
-    this.audioFiles = currentFiles;
 
-    // Remove from preview signal
-    const currentPreviews = [...this.previewSongs()];
-    currentPreviews.splice(index, 1);
-    this.previewSongs.set(currentPreviews);
-
-    // Update form status
-    if (this.audioFiles.length === 0) {
-      this.resetForm();
-    } else if (this.audioFiles.length === 1) {
-      this.songData.title = currentPreviews[0].title;
-      this.songData.duration = currentPreviews[0].duration;
-    } else {
-      this.songData.title = `Carga Masiva (${this.audioFiles.length} canciones)`;
-    }
-  }
 
   async uploadSong(): Promise<void> {
     // Validaciones básicas
@@ -429,9 +349,7 @@ export class AdminComponent implements OnInit {
         message: 'Procesando enlace...'
       });
 
-      // 1. Obtener imagen del Arista (Automático)
-      const artist = this.artists().find(a => a.id === this.songData.artistId);
-      const imageUrl = artist?.image || '/assets/img/default-music.png';
+      // 1. Imagen removida - Se maneja dinámicamente en el frontend
 
       // 2. Procesar URL (Convertir Dropbox a URL directa compatible con localhost)
       let finalAudioUrl = this.songData.externalUrl;
@@ -459,15 +377,16 @@ export class AdminComponent implements OnInit {
       });
 
       // 3. Crear Objeto Canción
-      const song: Song = {
+      const song: any = {
+        artistId: this.songData.artistId,
         title: this.songData.title,
         artist: this.songData.artistName,
         url: finalAudioUrl,
-        img: imageUrl, // Usamos la imagen del artista
-        duration: this.songData.duration || '0:00', // Duración opcional o manual
+        // ya no guardamos img
         album: this.songData.albumName || 'Sin Álbum',
         genre: this.songData.genre,
-        year: this.songData.year
+        year: this.songData.year,
+        createdAt: Date.now() // Forzamos timestamp local para inmediatez en UI
       };
 
       await this.dbService.addSong(song);
@@ -497,22 +416,13 @@ export class AdminComponent implements OnInit {
 
   resetForm(): void {
     this.songData = {
+      ...this.songData,
       title: '',
-      artistId: '',
-      artistName: '',
-      albumId: '',
-      albumName: '',
-      genre: '',
-      year: new Date().getFullYear(),
-      duration: '',
+      albumId: this.songData.albumId,
+      albumName: this.songData.albumName,
       externalUrl: ''
     };
-    this.audioFiles = [];
-    this.previewSongs.set([]);
-
-    // Reset file inputs
-    const audioInput = document.querySelector('input[type="file"][accept="audio/*"]') as HTMLInputElement;
-    if (audioInput) audioInput.value = '';
+    // Note: artistId, artistName, genre, and year are preserved by the spread and omitting their resets
   }
 
   logout(): void {

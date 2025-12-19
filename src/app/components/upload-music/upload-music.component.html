@@ -149,10 +149,6 @@
                         <input #folderInput type="file" multiple webkitdirectory directory class="hidden"
                             [disabled]="isUploading" (change)="onFileSelected($event)">
 
-                        <!-- DEBUG: Version Indicator -->
-                        <div class="absolute top-2 right-2 text-[10px] text-zinc-600 font-mono opacity-50">
-                            FIX_ANDROID_V8_FOLDER</div>
-
                         <!-- Upload Overlay -->
                         <div *ngIf="isUploading"
                             class="absolute inset-0 bg-zinc-950/95 flex flex-col items-center justify-center z-20 animate-fade-in backdrop-blur-sm">

@@ -162,168 +162,124 @@
 
                 <!-- Song Info -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    <!-- Title (Only visible if single file or no file) -->
-                    @if (audioFiles.length <= 1) { <div>
+                    <div>
                         <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
                             Título de la Canción *
                         </label>
-                        <input type="text" [(ngModel)]="songData.title" name="title" required
+                        <input type="text" [(ngModel)]="songData.title" (input)="onTitleInput($event)" name="title"
+                            required
                             class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
                             placeholder="Ej: Tití Me Preguntó">
-                </div>
-                } @else {
-                <div class="flex items-center p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                    <i class='bx bx-check-double text-emerald-400 text-2xl mr-3'></i>
+                    </div>
+
+                    <!-- Genre -->
                     <div>
-                        <p class="text-emerald-400 font-bold">Modo Carga Masiva</p>
-                        <p class="text-zinc-400 text-sm">Se usarán los nombres de archivo como títulos</p>
+                        <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
+                            Género
+                        </label>
+                        <select (change)="onGenreChange($event)" [(ngModel)]="songData.genre" name="genre"
+                            class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base">
+                            <option value="">Seleccionar género</option>
+                            @for (genre of genres(); track genre) {
+                            <option [value]="genre">{{ genre }}</option>
+                            }
+                            <option value="new" class="text-emerald-400">+ Crear Nuevo Género</option>
+                        </select>
+
+                        <!-- New Genre Form -->
+                        @if (showNewGenreForm()) {
+                        <div
+                            class="mt-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 space-y-2 animate-fade-in">
+                            <input type="text" [(ngModel)]="newGenre" name="newGenre" placeholder="Nombre del género"
+                                class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" (click)="createNewGenre()"
+                                    class="flex-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded text-xs">
+                                    Crear
+                                </button>
+                                <button type="button" (click)="cancelNewGenre()"
+                                    class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded text-xs">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Year -->
+                    <div>
+                        <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
+                            Año
+                        </label>
+                        <input type="number" [(ngModel)]="songData.year" name="year"
+                            class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
+                            placeholder="2024">
+                    </div>
+
+                    <!-- Duration (auto-filled) -->
+
+                </div>
+
+                <!-- File Uploads -->
+                <div class="pt-2 md:pt-4">
+                    <!-- Audio File -->
+                    <div>
+                        <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
+                            Enlace de la Canción (Dropbox/Drive/MP3 Directo) *
+                        </label>
+                        <div class="relative">
+                            <input type="url" [(ngModel)]="songData.externalUrl" name="externalUrl"
+                                class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
+                                placeholder="Ej: https://www.dropbox.com/s/xyz/cancion.mp3?dl=0" required>
+                            <i class='bx bx-link absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xl'></i>
+                        </div>
+                        <p class="text-xs text-zinc-500 mt-2">
+                            Pega el enlace compartido de tu archivo MP3. Si usas Dropbox, el sistema lo convertirá
+                            automáticamente
+                            para reproducción directa.
+                        </p>
                     </div>
                 </div>
-                }
 
-                <!-- Genre -->
-                <div>
-                    <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
-                        Género
-                    </label>
-                    <select (change)="onGenreChange($event)" [(ngModel)]="songData.genre" name="genre"
-                        class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base">
-                        <option value="">Seleccionar género</option>
-                        @for (genre of genres(); track genre) {
-                        <option [value]="genre">{{ genre }}</option>
-                        }
-                        <option value="new" class="text-emerald-400">+ Crear Nuevo Género</option>
-                    </select>
-
-                    <!-- New Genre Form -->
-                    @if (showNewGenreForm()) {
-                    <div
-                        class="mt-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 space-y-2 animate-fade-in">
-                        <input type="text" [(ngModel)]="newGenre" name="newGenre" placeholder="Nombre del género"
-                            class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 text-sm">
-                        <div class="flex gap-2">
-                            <button type="button" (click)="createNewGenre()"
-                                class="flex-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded text-xs">
-                                Crear
-                            </button>
-                            <button type="button" (click)="cancelNewGenre()"
-                                class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded text-xs">
-                                Cancelar
-                            </button>
+                <!-- Progress Bar -->
+                @if (uploadProgress().uploading || uploadProgress().message) {
+                <div class="mt-4 md:mt-6 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                    @if (uploadProgress().uploading) {
+                    <div class="mb-2">
+                        <div class="justify-between text-sm text-zinc-400 mb-1 inline-flex w-full">
+                            <span>{{ uploadProgress().message }}</span>
+                            <span>{{ uploadProgress().progress }}%</span>
+                        </div>
+                        <div class="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full transition-all duration-300"
+                                [style.width.%]="uploadProgress().progress"></div>
                         </div>
                     </div>
                     }
+                    @if (!uploadProgress().uploading && uploadProgress().message) {
+                    <p class="text-center font-medium" [class.text-emerald-400]="uploadProgress().message.includes('✅')"
+                        [class.text-red-400]="uploadProgress().message.includes('❌')">
+                        {{ uploadProgress().message }}
+                    </p>
+                    }
                 </div>
+                }
 
-                <!-- Year -->
-                <div>
-                    <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
-                        Año
-                    </label>
-                    <input type="number" [(ngModel)]="songData.year" name="year"
-                        class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
-                        placeholder="2024">
-                </div>
+                <!-- Submit Button -->
+                <div class="flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4 inline-flex w-full">
+                    <button type="submit" [disabled]="uploadProgress().uploading"
+                        class="flex-1 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-black font-bold rounded-lg hover:from-emerald-500 hover:to-emerald-400 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none gap-2 text-sm md:text-base inline-flex items-center justify-center">
+                        <i class='bx bx-cloud-upload text-lg md:text-xl'></i>
+                        <span>{{ uploadProgress().uploading ? 'Subiendo...' : 'Subir Canción' }}</span>
+                    </button>
 
-                <!-- Duration (auto-filled) -->
-                <!-- Duration (Manual) -->
-                <div>
-                    <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
-                        Duración (Opcional)
-                    </label>
-                    <input type="text" [(ngModel)]="songData.duration" name="duration"
-                        class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
-                        placeholder="Ej: 3:45">
+                    <button type="button" (click)="resetForm()" [disabled]="uploadProgress().uploading"
+                        class="px-4 py-3 md:px-6 md:py-4 bg-zinc-800 text-white font-medium rounded-lg hover:bg-zinc-700 transition-all border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
+                        Limpiar
+                    </button>
                 </div>
+            </form>
         </div>
 
-        <!-- File Uploads -->
-        <div class="pt-2 md:pt-4">
-            <!-- Audio File -->
-            <div>
-                <label class="text-sm font-medium text-zinc-300 mb-2 inline-block">
-                    Enlace de la Canción (Dropbox/Drive/MP3 Directo) *
-                </label>
-                <div class="relative">
-                    <input type="url" [(ngModel)]="songData.externalUrl" name="externalUrl"
-                        class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm md:text-base"
-                        placeholder="Ej: https://www.dropbox.com/s/xyz/cancion.mp3?dl=0" required>
-                    <i class='bx bx-link absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xl'></i>
-                </div>
-                <p class="text-xs text-zinc-500 mt-2">
-                    Pega el enlace compartido de tu archivo MP3. Si usas Dropbox, el sistema lo convertirá
-                    automáticamente
-                    para reproducción directa.
-                </p>
-            </div>
-        </div>
 
-        <!-- Progress Bar -->
-        @if (uploadProgress().uploading || uploadProgress().message) {
-        <div class="mt-4 md:mt-6 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-            @if (uploadProgress().uploading) {
-            <div class="mb-2">
-                <div class="justify-between text-sm text-zinc-400 mb-1 inline-flex w-full">
-                    <span>{{ uploadProgress().message }}</span>
-                    <span>{{ uploadProgress().progress }}%</span>
-                </div>
-                <div class="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
-                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full transition-all duration-300"
-                        [style.width.%]="uploadProgress().progress"></div>
-                </div>
-            </div>
-            }
-            @if (!uploadProgress().uploading && uploadProgress().message) {
-            <p class="text-center font-medium" [class.text-emerald-400]="uploadProgress().message.includes('✅')"
-                [class.text-red-400]="uploadProgress().message.includes('❌')">
-                {{ uploadProgress().message }}
-            </p>
-            }
-        </div>
-        }
-
-        <!-- Submit Button -->
-        <div class="flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4 inline-flex w-full">
-            <button type="submit" [disabled]="uploadProgress().uploading"
-                class="flex-1 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-black font-bold rounded-lg hover:from-emerald-500 hover:to-emerald-400 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none gap-2 text-sm md:text-base inline-flex items-center justify-center">
-                <i class='bx bx-cloud-upload text-lg md:text-xl'></i>
-                <span>{{ uploadProgress().uploading ? 'Subiendo...' : (audioFiles.length > 1 ? 'Subir ' +
-                    audioFiles.length
-                    + ' Canciones' : 'Subir Canción') }}</span>
-            </button>
-
-            <button type="button" (click)="resetForm()" [disabled]="uploadProgress().uploading"
-                class="px-4 py-3 md:px-6 md:py-4 bg-zinc-800 text-white font-medium rounded-lg hover:bg-zinc-700 transition-all border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
-                Limpiar
-            </button>
-        </div>
-        </form>
     </div>
-
-    <!-- Instructions -->
-    <div class="mt-6 md:mt-8 bg-zinc-900/30 backdrop-blur-sm rounded-xl border border-zinc-800 p-4 md:p-6">
-        <h3 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 gap-2 inline-flex items-center">
-            <i class='bx bx-info-circle text-emerald-400'></i>
-            Instrucciones de Carga Masiva
-        </h3>
-        <ul class="space-y-2 text-xs md:text-sm text-zinc-400">
-            <li class="gap-2 inline-flex items-start">
-                <i class='bx bx-check text-emerald-400 mt-0.5'></i>
-                <span>Puedes seleccionar múltiples archivos MP3 a la vez.</span>
-            </li>
-            <li class="gap-2 inline-flex items-start">
-                <i class='bx bx-check text-emerald-400 mt-0.5'></i>
-                <span>La imagen de portada seleccionada se aplicará a TODAS las canciones.</span>
-            </li>
-            <li class="gap-2 inline-flex items-start">
-                <i class='bx bx-check text-emerald-400 mt-0.5'></i>
-                <span>El título se detecta automáticamente del nombre del archivo (ej: "01. Cancion.mp3" ->
-                    "Cancion").</span>
-            </li>
-            <li class="gap-2 inline-flex items-start">
-                <i class='bx bx-check text-emerald-400 mt-0.5'></i>
-                <span>Revisa la tabla de vista previa antes de subir para asegurar que todo esté correcto.</span>
-            </li>
-        </ul>
-    </div>
-</div>

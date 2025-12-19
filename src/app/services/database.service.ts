@@ -11,6 +11,7 @@ export interface Artist {
     bio?: string;
     genre?: string; // Agregado para compatibilidad
     songs?: Song[];
+    createdAt?: any;
 }
 
 export interface Song {
@@ -19,11 +20,12 @@ export interface Song {
     title: string;
     artist: string;
     url: string; // URL del archivo mp3 en Storage
-    img: string; // URL de la imagen en Storage
+    img?: string; // URL de la imagen en Storage
     duration?: string;
     album?: string;
     genre?: string;
     year?: number;
+    createdAt?: any;
 }
 
 @Injectable({
@@ -73,35 +75,20 @@ export class DatabaseService {
     // --- ARTISTAS ---
 
     getArtists(): Observable<Artist[]> {
-        if (this.artistsCache$) return this.artistsCache$;
-
-        const localData = this.getFromLocal(this.ARTISTS_KEY);
         const artistsRef = collection(this.firestore, 'artists');
-
-        const firebaseObs = collectionData(artistsRef, { idField: 'id' }).pipe(
+        return collectionData(artistsRef, { idField: 'id' }).pipe(
             map(data => data as Artist[]),
-            tap(data => this.saveToLocal(this.ARTISTS_KEY, data))
-        );
-
-        this.artistsCache$ = (localData ? firebaseObs.pipe(startWith(localData)) : firebaseObs).pipe(
+            tap(data => this.saveToLocal(this.ARTISTS_KEY, data)),
             shareReplay(1)
         );
-
-        return this.artistsCache$;
     }
 
     getArtist(id: string): Observable<Artist> {
-        // Optimización: Si ya tenemos la caché (local o memoria), lo buscamos ahí directamente
         return this.getArtists().pipe(
             map(artists => {
                 const found = artists.find(a => a.id === id);
                 if (!found) throw new Error('Artist not found');
                 return found;
-            }),
-            catchError(() => {
-                // Si no está en la caché por alguna razón, ir a Firebase directo
-                const artistDocRef = doc(this.firestore, `artists/${id}`);
-                return docData(artistDocRef, { idField: 'id' }) as Observable<Artist>;
             })
         );
     }
@@ -109,22 +96,12 @@ export class DatabaseService {
     // --- CANCIONES ---
 
     getSongs(): Observable<Song[]> {
-        if (this.songsCache$) return this.songsCache$;
-
-        const localData = this.getFromLocal(this.SONGS_KEY);
         const songsRef = collection(this.firestore, 'songs');
-        const q = query(songsRef, orderBy('title'));
-
-        const firebaseObs = collectionData(q, { idField: 'id' }).pipe(
+        return collectionData(songsRef, { idField: 'id' }).pipe(
             map(data => data as Song[]),
-            tap(data => this.saveToLocal(this.SONGS_KEY, data))
-        );
-
-        this.songsCache$ = (localData ? firebaseObs.pipe(startWith(localData)) : firebaseObs).pipe(
+            tap(data => this.saveToLocal(this.SONGS_KEY, data)),
             shareReplay(1)
         );
-
-        return this.songsCache$;
     }
 
     getSongsByArtist(artistName: string): Observable<Song[]> {
@@ -138,6 +115,19 @@ export class DatabaseService {
         );
     }
 
+    getLatestSongs(limitCount: number = 6): Observable<Song[]> {
+        const songsRef = collection(this.firestore, 'songs');
+        const latestQuery = query(
+            songsRef,
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
+
+        return collectionData(latestQuery, { idField: 'id' }).pipe(
+            map(data => data as Song[])
+        );
+    }
+
     // --- SUBIDA DE ARCHIVOS ---
 
     async uploadFile(path: string, file: File): Promise<string> {
@@ -148,14 +138,18 @@ export class DatabaseService {
 
     // Crea una nueva canción en Firestore
     async addSong(song: Song): Promise<any> {
+        this.refreshData(); // Limpiar caché para forzar recarga
         const songsRef = collection(this.firestore, 'songs');
-        return addDoc(songsRef, song);
+        const songWithDate = { ...song, createdAt: Date.now() };
+        return addDoc(songsRef, songWithDate);
     }
 
     // Crea un nuevo artista en Firestore
     async addArtist(artist: Artist): Promise<any> {
+        this.refreshData(); // Limpiar caché para forzar recarga
         const artistsRef = collection(this.firestore, 'artists');
-        return addDoc(artistsRef, artist);
+        const artistWithDate = { ...artist, createdAt: Date.now() };
+        return addDoc(artistsRef, artistWithDate);
     }
 
     // Limpiar caché manualmente si es necesario

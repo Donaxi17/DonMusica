@@ -130,6 +130,14 @@ body {
         height: 1rem;
         width: 100%;
     }
+
+    .will-change-transform {
+        will-change: transform;
+    }
+
+    .will-change-opacity {
+        will-change: opacity;
+    }
 }
 
 /* View Transitions API Animations */

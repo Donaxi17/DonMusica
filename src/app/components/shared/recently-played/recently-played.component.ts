@@ -11,7 +11,7 @@ import { SkeletonComponent } from '../skeleton/skeleton.component';
     standalone: true,
     imports: [CommonModule, AdsContainerComponent, SkeletonComponent],
     template: `
-    <div class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex flex-col justify-end md:justify-end md:flex-row animate-fade-in" (click)="close()">
+    <div class="fixed inset-0 bg-black/90 backdrop-blur-md z-[3500] flex flex-col justify-end md:justify-end md:flex-row animate-fade-in" (click)="close()">
         
         <!-- Main Panel -->
         <div class="w-full md:max-w-[320px] h-[95vh] md:h-full bg-zinc-950 border-t md:border-t-0 md:border-l border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] md:animate-slide-in-right animate-slide-up flex flex-col rounded-t-[2rem] md:rounded-t-none" (click)="$event.stopPropagation()">
@@ -65,7 +65,7 @@ import { SkeletonComponent } from '../skeleton/skeleton.component';
                          (click)="play(song)">
                         
                         <div class="relative w-11 h-11 rounded-lg overflow-hidden shadow-xl flex-shrink-0 bg-zinc-900 border border-white/5">
-                            <img [src]="song.img" class="w-full h-full object-cover">
+                            <img [src]="song.img" (error)="onImageError($event, song)" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M7 6v12l10-6z" />
@@ -166,5 +166,23 @@ export class RecentlyPlayedComponent {
         const hours = Math.floor(minutes / 60);
         if (hours < 24) return `${hours}h`;
         return '1d+';
+    }
+
+    onImageError(event: any, song: HistoryItem) {
+        const imgElement = event.target;
+        const fallbackLogo = 'assets/icons/icon-512x512.png';
+
+        // Step 1: Try to get artist image from PlayerService cache if available
+        const artistImg = this.playerService.getArtistImageForSong({ title: song.title, artist: song.artist } as any);
+
+        if (artistImg && imgElement.src !== artistImg) {
+            imgElement.src = artistImg;
+            return;
+        }
+
+        // Step 2: Fallback to the app logo
+        if (imgElement.src !== fallbackLogo) {
+            imgElement.src = fallbackLogo;
+        }
     }
 }

@@ -26,8 +26,8 @@ export class AdminLoginComponent {
   shakeError = signal(false);
 
   // Credenciales hardcodeadas (temporal - después puedes usar Firebase Auth)
-  private readonly ADMIN_USERNAME = 'admin';
-  private readonly ADMIN_PASSWORD = 'donmusica2025';
+  private readonly ADMIN_USERNAME = 'dona';
+  private readonly ADMIN_PASSWORD = '123';
 
   togglePasswordVisibility(): void {
     this.showPassword.set(!this.showPassword());

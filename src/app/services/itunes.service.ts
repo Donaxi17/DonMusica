@@ -1,13 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, catchError } from 'rxjs';
+import { Observable, map, of, catchError, tap } from 'rxjs';
+import { CacheService } from './cache.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ItunesService {
     private http = inject(HttpClient);
+    private cacheService = inject(CacheService);
     private readonly API_URL = 'https://itunes.apple.com/search';
+    private readonly CACHE_KEY_PREFIX = 'itunes_artist_img_';
 
     /**
      * Busca un artista en iTunes y devuelve su imagen de alta calidad
@@ -39,6 +42,10 @@ export class ItunesService {
      * Estrategia robusta: Busca el "Top Album" del artista para sacar su foto
      */
     getArtistImageBestEffort(artistName: string): Observable<string> {
+        const cacheKey = this.CACHE_KEY_PREFIX + artistName.toLowerCase().trim();
+        const cached = this.cacheService.get<string>(cacheKey);
+        if (cached) return of(cached);
+
         const term = encodeURIComponent(artistName);
         // Buscamos albumes del artista, ordenados por relevancia
         const url = `${this.API_URL}?term=${term}&media=music&entity=album&limit=1`;
@@ -48,7 +55,9 @@ export class ItunesService {
                 if (response.results && response.results.length > 0) {
                     const artwork = response.results[0].artworkUrl100;
                     // Truco: Reemplazar '100x100' por '600x600' para HD
-                    return artwork.replace('100x100bb', '600x600bb');
+                    const highRes = artwork.replace('100x100bb', '600x600bb');
+                    this.cacheService.set(cacheKey, highRes, 60 * 24 * 30); // 30 days
+                    return highRes;
                 }
                 return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Fallback
             }),

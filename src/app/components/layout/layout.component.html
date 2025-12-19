@@ -27,7 +27,7 @@
     </a>
 
     <!-- HEADER DESKTOP (Sticky) -->
-    <header class="border-b border-zinc-800 bg-black/80 backdrop-blur-md sticky top-0 z-50">
+    <header class="border-b border-zinc-800 bg-black/80 backdrop-blur-md sticky top-0 z-[2500]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
 
             <!-- Logo -->
@@ -221,6 +221,7 @@
                                     d="M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zM7 9l1.41 1.41L11 7.83V16h2V7.83l2.59 2.58L17 9l-5-5-5 5z" />
                             </svg> Añadir Música
                         </button>
+
                         <button (click)="navigateTo('/radio'); closeMoreMenu()"
                             class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-zinc-300 hover:text-white">
                             <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
@@ -284,7 +285,7 @@
     <!-- ========================================== -->
     <!-- MOBILE BOTTOM NAVIGATION (Modern Fixed Edge) -->
     <!-- ========================================== -->
-    <nav
+    <nav *ngIf="!showHistory && !showMobileMoreMenu"
         class="md:hidden fixed bottom-0 left-0 right-0 bg-black backdrop-blur-3xl border-t border-white/5 z-[2100] pb-[env(safe-area-inset-bottom,20px)] h-[calc(4.4rem+env(safe-area-inset-bottom,20px))] flex justify-between items-center overflow-hidden">
 
         <button (click)="navigateTo('/')"
@@ -389,7 +390,7 @@
     <!-- ========================================== -->
     <!-- MINI PLAYER -->
     <!-- ========================================== -->
-    <div *ngIf="!isActive('/player') && currentSong"
+    <div *ngIf="!isActive('/player') && currentSong && !showHistory && !showMobileMoreMenu"
         class="fixed left-2 right-2 md:left-auto md:right-8 md:bottom-8 md:w-96 
                bottom-[calc(4.6rem+env(safe-area-inset-bottom,20px))] 
                backdrop-blur-xl rounded-xl p-2 z-[2050] 
@@ -486,7 +487,7 @@
 
     <!-- MOBILE MORE MENU -->
     <div *ngIf="showMobileMoreMenu"
-        class="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[2200] flex flex-col justify-end animate-fade-in"
+        class="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[3000] flex flex-col justify-end animate-fade-in"
         (click)="closeMobileMoreMenu()">
         <!-- ... (Contenido del menú móvil sin cambios) ... -->
         <div class="bg-zinc-900 rounded-t-3xl border-t border-zinc-700/50 shadow-2xl overflow-hidden max-h-[80vh] overflow-y-auto"

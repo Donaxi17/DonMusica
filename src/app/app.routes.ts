@@ -59,6 +59,7 @@ export const routes: Routes = [
             { path: 'offline-music', loadComponent: () => import('./components/offline-music/offline-music.component').then(m => m.OfflineMusicComponent) },
             { path: 'smart-shuffle', loadComponent: () => import('./components/smart-shuffle-experience/smart-shuffle-experience.component').then(m => m.SmartShuffleExperienceComponent) },
             { path: 'upload-music', loadComponent: () => import('./components/upload-music/upload-music.component').then(m => m.UploadMusicComponent) }
+
         ]
     },
     { path: 'download', loadComponent: () => import('./components/download-page/download-page.component').then(m => m.DownloadPageComponent) },

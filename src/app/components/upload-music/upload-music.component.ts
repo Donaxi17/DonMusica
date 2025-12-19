@@ -319,25 +319,36 @@ export class UploadMusicComponent implements OnDestroy {
   async processFiles(files: FileList) {
     if (files.length === 0) return;
 
-    // 1. Pre-Check Limits
+    // 1. Pre-Check Limits & Prepare Folders
     let totalSizeMB = 0;
     const audioFiles: File[] = [];
+    const folderMap = new Map<string, string>(); // name -> id
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file = files[i] as any;
       const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac|wma|opus)$/i.test(file.name);
 
-      if (!isAudio) {
-        if (file.name.endsWith('.lrc') || file.name.endsWith('.txt')) {
-          this.toastService.info(`📝 "${file.name}" es una letra. Usa la sección de Letras.`);
-        } else {
-          this.showToastNotification(`⚠️ "${file.name}" no es audio.`);
-        }
-        continue;
-      }
+      if (!isAudio) continue;
 
       audioFiles.push(file);
       totalSizeMB += file.size / (1024 * 1024);
+
+      // Folder Detection
+      if (file.webkitRelativePath) {
+        const pathParts = file.webkitRelativePath.split('/');
+        if (pathParts.length > 1) {
+          const folderName = pathParts[0];
+          if (!folderMap.has(folderName)) {
+            // Check if folder already exists in our state
+            let existing = this.folders.find(f => f.name.toLowerCase() === folderName.toLowerCase());
+            if (!existing) {
+              // Create it
+              existing = this.createFolderInternal(folderName);
+            }
+            folderMap.set(folderName, existing.id);
+          }
+        }
+      }
     }
 
     if (audioFiles.length === 0) return;
@@ -349,9 +360,6 @@ export class UploadMusicComponent implements OnDestroy {
     }
 
     // 2. Upload
-    let targetFolderId = this.selectedFolder?.id || '1';
-    if (targetFolderId === '2') targetFolderId = '1';
-
     this.isUploading = true;
     this.uploadProgress = 0;
     this.cdr.markForCheck();
@@ -359,14 +367,19 @@ export class UploadMusicComponent implements OnDestroy {
     let processedCount = 0;
     const totalCount = audioFiles.length;
 
-    for (const file of audioFiles) {
+    for (const file of audioFiles as any[]) {
       this.currentUploadingFile = file.name;
       this.cdr.markForCheck();
 
-      // Simulation
-      const steps = 5;
-      for (let s = 1; s <= steps; s++) {
-        await new Promise(r => setTimeout(r, 20));
+      let targetFolderId = this.selectedFolder?.id || '1';
+      if (targetFolderId === '2') targetFolderId = '1';
+
+      // Override if file belongs to a detected folder
+      if (file.webkitRelativePath) {
+        const folderName = file.webkitRelativePath.split('/')[0];
+        if (folderMap.has(folderName)) {
+          targetFolderId = folderMap.get(folderName)!;
+        }
       }
 
       try {
@@ -380,8 +393,23 @@ export class UploadMusicComponent implements OnDestroy {
 
     this.isUploading = false;
     this.currentUploadingFile = '';
-    this.showToastNotification(`✅ ${processedCount} archivos subidos`);
+    this.showToastNotification(`✅ ${processedCount} archivos organizados`);
     this.cdr.markForCheck();
+  }
+
+  private createFolderInternal(name: string): Folder {
+    const newFolder: Folder = {
+      id: crypto.randomUUID(),
+      name: name,
+      fileCount: 0,
+      createdAt: new Date(),
+      isSystem: false,
+      colorClass: 'zinc'
+    };
+    this.folders = [...this.folders, newFolder];
+    this.saveToLocalStorage();
+    this.cdr.markForCheck();
+    return newFolder;
   }
 
   async addFile(file: File, folderId: string): Promise<void> {

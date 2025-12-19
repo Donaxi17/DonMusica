@@ -43,7 +43,7 @@ export class HistoryService {
             id: String(song.id || song.videoId || Date.now()),
             title: song.title,
             artist: song.artist || 'Desconocido',
-            img: song.img || song.thumbnail || 'assets/images/default-music.png',
+            img: song.img || song.thumbnail || 'assets/icons/icon-512x512.png',
             url: song.url || '',
             timestamp: Date.now(),
             type: song.videoId ? 'video' : 'audio'
