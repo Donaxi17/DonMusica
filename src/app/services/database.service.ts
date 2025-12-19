@@ -152,6 +152,16 @@ export class DatabaseService {
         return addDoc(artistsRef, artistWithDate);
     }
 
+    async updateArtist(id: string, data: Partial<Artist>): Promise<void> {
+        const artistRef = doc(this.firestore, `artists/${id}`);
+        return updateDoc(artistRef, data);
+    }
+
+    async updateSong(id: string, data: Partial<Song>): Promise<void> {
+        const songRef = doc(this.firestore, `songs/${id}`);
+        return updateDoc(songRef, data);
+    }
+
     // Limpiar caché manualmente si es necesario
     refreshData() {
         this.artistsCache$ = null;

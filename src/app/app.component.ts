@@ -25,6 +25,17 @@ export class AppComponent implements OnInit {
     this.loadAdsterraSocialBar();
     this.trackPwaInstallation();
     this.checkForUpdates();
+    this.checkIfJustUpdated();
+  }
+
+  private checkIfJustUpdated() {
+    if (typeof window !== 'undefined' && localStorage.getItem('donmusic_pending_update') === 'true') {
+      localStorage.removeItem('donmusic_pending_update');
+      // Esperamos a que la app cargue y se suavicen las animaciones iniciales
+      setTimeout(() => {
+        this.toastService.success('¡DonMusica se ha actualizado correctamente!', 5000);
+      }, 2500);
+    }
   }
 
   private checkForUpdates() {
@@ -32,7 +43,13 @@ export class AppComponent implements OnInit {
       this.swUpdate.versionUpdates.pipe(
         filter((evt: any): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
       ).subscribe(() => {
-        this.toastService.info('¡Nueva versión disponible! Recarga la página para actualizar.', 0);
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const message = isMobile
+          ? '¡Nueva versión disponible! Cierra la app y vuelve a entrar para actualizar.'
+          : '¡Nueva versión disponible! Recarga la página para actualizar.';
+
+        localStorage.setItem('donmusic_pending_update', 'true');
+        this.toastService.info(message, 0);
       });
     }
   }

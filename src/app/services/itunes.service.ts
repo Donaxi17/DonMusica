@@ -42,12 +42,11 @@ export class ItunesService {
      * Estrategia robusta: Busca el "Top Album" del artista para sacar su foto
      */
     getArtistImageBestEffort(artistName: string): Observable<string> {
-        const cacheKey = this.CACHE_KEY_PREFIX + artistName.toLowerCase().trim();
-        const cached = this.cacheService.get<string>(cacheKey);
+        const cached = this.getArtistImageFromCache(artistName);
         if (cached) return of(cached);
 
         const term = encodeURIComponent(artistName);
-        // Buscamos albumes del artista, ordenados por relevancia
+        // rest of itunes...
         const url = `${this.API_URL}?term=${term}&media=music&entity=album&limit=1`;
 
         return this.http.jsonp<any>(url, 'callback').pipe(
@@ -56,7 +55,7 @@ export class ItunesService {
                     const artwork = response.results[0].artworkUrl100;
                     // Truco: Reemplazar '100x100' por '600x600' para HD
                     const highRes = artwork.replace('100x100bb', '600x600bb');
-                    this.cacheService.set(cacheKey, highRes, 60 * 24 * 30); // 30 days
+                    this.cacheService.set(this.CACHE_KEY_PREFIX + artistName.toLowerCase().trim(), highRes, 60 * 24 * 30); // 30 days
                     return highRes;
                 }
                 return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Fallback
@@ -66,6 +65,11 @@ export class ItunesService {
                 return of('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
             })
         );
+    }
+
+    getArtistImageFromCache(artistName: string): string | null {
+        const cacheKey = this.CACHE_KEY_PREFIX + artistName.toLowerCase().trim();
+        return this.cacheService.get<string>(cacheKey);
     }
     /**
      * Busca la portada de una canción específica

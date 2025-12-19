@@ -115,6 +115,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
                 }
                 return newList;
               });
+              // Persist to database so it's permanent for all users
+              if (song.id) {
+                this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
+              }
             }
           } catch (err) {
             // Silence is golden

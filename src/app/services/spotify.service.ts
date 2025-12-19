@@ -126,8 +126,7 @@ export class SpotifyService {
     }
 
     async getArtistStats(artistName: string): Promise<{ followers: number; popularity: number; image?: string } | null> {
-        const cacheKey = `${this.ARTIST_STATS_CACHE_KEY}_${artistName.toLowerCase().trim()}`;
-        const cached = this.cacheService.get<any>(cacheKey);
+        const cached = this.getArtistStatsFromCache(artistName);
         if (cached) return cached;
 
         try {
@@ -159,7 +158,7 @@ export class SpotifyService {
                     popularity: artist.popularity,
                     image
                 };
-                this.cacheService.set(cacheKey, result, 60 * 24 * 7); // 7 days
+                this.cacheService.set(this.ARTIST_STATS_CACHE_KEY + '_' + artistName.toLowerCase().trim(), result, 60 * 24 * 7); // 7 days
                 return result;
             }
             return null;
@@ -167,5 +166,10 @@ export class SpotifyService {
             console.error('Error fetching artist stats:', error);
             return null;
         }
+    }
+
+    getArtistStatsFromCache(artistName: string) {
+        const cacheKey = `${this.ARTIST_STATS_CACHE_KEY}_${artistName.toLowerCase().trim()}`;
+        return this.cacheService.get<any>(cacheKey);
     }
 }
