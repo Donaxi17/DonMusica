@@ -88,7 +88,8 @@
                         </button>
                     </div>
                 </div>
-                <p class="text-zinc-400 text-base md:text-lg mb-3 md:mb-4 truncate px-2 md:px-0">{{currentSong.artist}}
+                <p class="text-zinc-400 text-base md:text-lg mb-3 md:mb-4 truncate px-2 md:px-0 hover:text-emerald-400 transition-colors cursor-pointer"
+                    (click)="goToArtistDetail()">{{currentSong.artist}}
                 </p>
 
                 <!-- Time Display -->

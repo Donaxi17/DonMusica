@@ -30,11 +30,11 @@ export class AppComponent implements OnInit {
 
   private checkIfJustUpdated() {
     if (typeof window !== 'undefined' && localStorage.getItem('donmusic_pending_update') === 'true') {
-      localStorage.removeItem('donmusic_pending_update');
-      // Esperamos a que la app cargue y se suavicen las animaciones iniciales
+      // Usamos una pequeña pausa adicional para asegurar que el sistema de toasts esté listo
       setTimeout(() => {
         this.toastService.success('¡DonMusica se ha actualizado correctamente!', 5000);
-      }, 2500);
+        localStorage.removeItem('donmusic_pending_update');
+      }, 3000);
     }
   }
 
@@ -45,11 +45,17 @@ export class AppComponent implements OnInit {
       ).subscribe(() => {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const message = isMobile
-          ? '¡Nueva versión disponible! Cierra la app y vuelve a entrar para actualizar.'
-          : '¡Nueva versión disponible! Recarga la página para actualizar.';
+          ? '¡Nueva versión disponible! Toca para actualizar.'
+          : '¡Nueva versión disponible! Haz clic para actualizar.';
 
         localStorage.setItem('donmusic_pending_update', 'true');
-        this.toastService.info(message, 0);
+
+        // Activamos la actualización en segundo plano para que el próximo reload sea instantáneo
+        this.swUpdate.activateUpdate().then(() => {
+          this.toastService.info(message, 10000);
+          // Opcional: escuchar clicks en el toast si fuera posible, 
+          // pero como no lo es fácilmente, al menos el reload manual funcionará mejor.
+        });
       });
     }
   }

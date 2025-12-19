@@ -651,6 +651,11 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  openPlayer() {
+    this.hapticService.light();
+    this.router.navigate(['/player']);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     // If dragging, do not close menus

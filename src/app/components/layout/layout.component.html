@@ -390,20 +390,20 @@
     <!-- ========================================== -->
     <!-- MINI PLAYER -->
     <!-- ========================================== -->
-    <div *ngIf="!isActive('/player') && currentSong && !showHistory && !showMobileMoreMenu"
-        class="fixed left-2 right-2 md:left-auto md:right-8 md:bottom-8 md:w-96 
+    <div *ngIf="!isActive('/player') && currentSong && !showHistory && !showMobileMoreMenu" class="fixed left-2 right-2 md:left-auto md:right-8 md:bottom-8 md:w-96 
                bottom-[calc(4.6rem+env(safe-area-inset-bottom,20px))] 
                backdrop-blur-xl rounded-xl p-2 z-[2050] 
-               flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up cursor-pointer border overflow-hidden"
-        [ngClass]="(isFavorite(currentSong.id || '') || currentSong.isFavorite) ? 'bg-rose-950/95 border-rose-500/30' : 'bg-zinc-900/95 border-white/10'"
-        (click)="openPlayer()">
+               flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up border overflow-hidden"
+        [ngClass]="(isFavorite(currentSong.id || '') || currentSong.isFavorite) ? 'bg-rose-950/95 border-rose-500/30' : 'bg-zinc-900/95 border-white/10'">
 
-        <div
-            class="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 shadow-lg flex items-center justify-center">
+        <!-- ART PART -> Leads to Player -->
+        <div (click)="openPlayer()"
+            class="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 shadow-lg flex items-center justify-center cursor-pointer group/art">
 
             <!-- Robust Image Loading for Mini Player -->
             <img *ngIf="currentSong.img && !imageLoadError" [src]="currentSong.img"
-                class="w-full h-full object-cover animate-fade-in" (error)="onImageError($event)">
+                class="w-full h-full object-cover animate-fade-in group-hover/art:scale-110 transition-transform duration-500"
+                (error)="onImageError($event)">
 
             <!-- Base Fallback Icon (Only if strictly no image) -->
             <div *ngIf="(!currentSong.img && !imageLoadError)" class="w-6 h-6 text-zinc-600">
@@ -416,6 +416,8 @@
             <img *ngIf="imageLoadError"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 class="w-full h-full object-cover">
+
+            <!-- Overlay when playing -->
             <div *ngIf="isPlaying" class="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <div class="flex gap-0.5 items-end h-3">
                     <div class="w-0.5 animate-music-bar"
@@ -431,12 +433,15 @@
             </div>
         </div>
 
-        <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <p class="text-xs md:text-sm font-bold truncate text-white leading-tight mb-0.5">
+        <!-- TEXT PART -> Leads to Artist Detail / Context -->
+        <div class="flex-1 min-w-0 flex flex-col justify-center cursor-pointer group/text"
+            (click)="goToArtistDetail($event)">
+            <p
+                class="text-xs md:text-sm font-bold truncate text-white leading-tight mb-0.5 group-hover/text:text-emerald-400 transition-colors">
                 {{currentSong.title}}
             </p>
-            <p class="text-[10px] md:text-xs text-zinc-400 truncate flex items-center gap-1 hover:text-emerald-400 transition-colors"
-                (click)="goToArtistDetail($event)">
+            <p
+                class="text-[10px] md:text-xs text-zinc-400 truncate flex items-center gap-1 hover:text-emerald-400 transition-colors">
                 {{currentSong.artist}}
                 <span *ngIf="isFavoritesPlaying" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block ml-1"></span>
             </p>

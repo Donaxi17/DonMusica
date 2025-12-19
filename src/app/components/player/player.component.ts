@@ -320,4 +320,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
   onImageError(event: any) {
     this.imageLoadError = true;
   }
+
+  goToArtistDetail() {
+    this.hapticService.medium();
+    if (this.currentSong && (this.currentSong.artistId || this.currentSong.artist)) {
+      if (this.currentSong.artistId && this.currentSong.artistId !== 0 && this.currentSong.artistId !== '0') {
+        this.router.navigate(['/artist', this.currentSong.artistId]);
+      } else {
+        // Fallback: search by name
+        this.router.navigate(['/artists'], { queryParams: { q: this.currentSong.artist } });
+      }
+    }
+  }
 }
