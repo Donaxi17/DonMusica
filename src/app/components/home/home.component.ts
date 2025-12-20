@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, ElementRef, Renderer2, ChangeDetectionStrategy, signal, HostListener } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, ElementRef, Renderer2, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -64,9 +64,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
   canInstall = false;    // For the Hero button
   showInstallBanner = false; // For the bottom banner
 
-  // Parallax tracking (Signals for OnPush)
-  mouseX = signal(0);
-  mouseY = signal(0);
+  // Parallax tracking (Signals for OnPush) - REMOVED for CSS optimization
+
+  private observer: IntersectionObserver | null = null;
 
   ngOnInit() {
     // Enhanced SEO with rich meta tags
@@ -81,6 +81,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Load initial data
     this.loadTrends(this.selectedRegion());
     this.loadStats();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   }
 
   loadStats() {
@@ -141,7 +147,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
         checkLoadingFinished();
 
         // RE-SCAN for reveal animations AFTER data is set on DOM
-        setTimeout(() => this.initScrollAnimations(), 200);
+        // Debounce to avoid thrashing if data comes in bursts
+        requestAnimationFrame(() => this.initScrollAnimations());
 
         // Step 3: Proactively fetch artwork for all songs and update one by one as they arrive
         initialMap.forEach(async (song) => {
@@ -218,7 +225,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
           }
         });
         // After data is loaded, re-scan for reveal elements if needed
-        setTimeout(() => this.initScrollAnimations(), 100);
+        requestAnimationFrame(() => this.initScrollAnimations());
       },
       error: (err) => {
         console.error('Error loading trending songs for home:', err);
@@ -236,23 +243,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loadTrends(region);
   }
 
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
-    this.mouseX.set((e.clientX / window.innerWidth - 0.5) * 20);
-    this.mouseY.set((e.clientY / window.innerHeight - 0.5) * 20);
-  }
+
 
   ngAfterViewInit() {
     this.initScrollAnimations();
   }
 
   private initScrollAnimations() {
+    // 1. Cleanup existing observer to prevent memory leaks and duplicate callbacks
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+
     const observerOptions = {
       threshold: 0.15, // 15% visibility triggers it
       rootMargin: '0px 0px -100px 0px' // Slightly more forgiving for fast mobile scrolls
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           this.renderer.addClass(entry.target, 'active');
@@ -276,7 +284,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }, observerOptions);
 
     const elements = this.el.nativeElement.querySelectorAll('.reveal');
-    elements.forEach((element: HTMLElement) => observer.observe(element));
+    elements.forEach((element: HTMLElement) => this.observer?.observe(element));
   }
 
   listenForInstallPrompt() {

@@ -21,8 +21,7 @@
             <!-- Hero Image with Parallax Optimized -->
             <img [src]="'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop'"
                 alt="Fondo de concierto de música urbana"
-                [style.transform]="'scale(1.1) translate(' + (mouseX()/2) + 'px, ' + (mouseY()/2) + 'px)'"
-                class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out blur-[2px]">
+                class="absolute inset-0 w-full h-full object-cover object-center animate-slow-zoom blur-[2px]">
         </div>
 
         <!-- HERO CONTENT (Centered by parent flex) -->
@@ -39,7 +38,6 @@
 
             <!-- Title -->
             <h1 class="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 leading-[0.9] tracking-tighter drop-shadow-2xl animate-hero-up"
-                [style.transform]="'translate(' + (mouseX()/5) + 'px, ' + (mouseY()/5) + 'px)'"
                 style="animation-delay: 300ms;">
                 Siente <br class="md:hidden" />
                 <span
@@ -49,14 +47,12 @@
 
             <!-- Description -->
             <p class="text-zinc-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed px-4 animate-hero-up"
-                [style.transform]="'translate(' + (mouseX()/8) + 'px, ' + (mouseY()/8) + 'px)'"
                 style="animation-delay: 500ms;">
                 La plataforma definitiva de música urbana. Escucha en alta fidelidad, totalmente gratis.
             </p>
 
             <!-- Buttons Action Area -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full px-4 animate-hero-up"
-                [style.transform]="'translate(' + (mouseX()/10) + 'px, ' + (mouseY()/10) + 'px)'"
                 style="animation-delay: 700ms;">
 
                 <button (click)="navigateToArtists(); playUISound('click')"
@@ -176,7 +172,7 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <!-- 1. Artistas -->
-                    <a routerLink="/artists" (click)="playUISound('nav')"
+                    <a routerLink="/artists" (click)="playUISound('nav')" aria-label="Explorar catálogo de Artistas"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-emerald-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 reveal reveal-up">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -206,7 +202,7 @@
                     </a>
 
                     <!-- 2. Videos -->
-                    <a routerLink="/videos" (click)="playUISound('nav')"
+                    <a routerLink="/videos" (click)="playUISound('nav')" aria-label="Ver Videos Musicales"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-red-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-red-500/10 hover:-translate-y-1 reveal reveal-up delay-100">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-red-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -235,7 +231,7 @@
                     </a>
 
                     <!-- 3. Radio -->
-                    <a routerLink="/radio" (click)="playUISound('nav')"
+                    <a routerLink="/radio" (click)="playUISound('nav')" aria-label="Ir a la sección de Radio"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-cyan-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-1 reveal reveal-up delay-200">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -264,7 +260,7 @@
                     </a>
 
                     <!-- 4. Blog -->
-                    <a routerLink="/blog" (click)="playUISound('nav')"
+                    <a routerLink="/blog" (click)="playUISound('nav')" aria-label="Leer el Blog Musical"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-violet-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1 reveal reveal-up delay-300">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-violet-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -414,7 +410,9 @@
                             <div *ngFor="let song of recentlyAdded(); let i = index"
                                 class="group relative cursor-pointer reveal reveal-up"
                                 [style.transition-delay]="(i * 50) + 'ms'"
-                                (click)="playRecent(song); playUISound('click')">
+                                (click)="playRecent(song); playUISound('click')" role="button" tabindex="0"
+                                [attr.aria-label]="'Reproducir ' + song.title + ' de ' + song.artist"
+                                (keydown.enter)="playRecent(song); playUISound('click')">
 
                                 <div class="flex flex-col gap-3 transition-all duration-500 group-hover:-translate-y-2">
                                     <div
@@ -446,14 +444,14 @@
                                     </div>
                                     <div class="px-1">
                                         <div class="flex items-center gap-1.5 mb-0.5 min-w-0">
-                                            <h4
+                                            <h3
                                                 class="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors tracking-tight">
-                                                {{song.title}}</h4>
+                                                {{song.title}}</h3>
                                             <span *ngIf="isNewSong(song.createdAt)"
                                                 class="shrink-0 bg-emerald-500/20 text-emerald-400 text-[6px] font-black px-1.5 py-0.5 rounded-md border border-emerald-500/30 uppercase tracking-tighter">NUEVO</span>
                                         </div>
                                         <p
-                                            class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest truncate opacity-60">
+                                            class="text-zinc-400 text-[10px] font-bold uppercase tracking-widest truncate opacity-80">
                                             {{song.artist}}</p>
                                     </div>
                                 </div>
@@ -497,7 +495,7 @@
                         </button>
                     </div>
 
-                    <a routerLink="/browse/trends"
+                    <a routerLink="/browse/trends" aria-label="Ver todas las canciones en tendencia"
                         class="text-emerald-500 text-sm font-bold hover:text-emerald-400 transition-colors flex items-center gap-2 group shrink-0 bg-emerald-500/5 px-4 py-2 rounded-full border border-emerald-500/10 reveal reveal-right delay-300">
                         Ver todo
                         <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
@@ -514,7 +512,9 @@
                             <div *ngFor="let song of trendingSongs(); let i = index"
                                 class="group relative cursor-pointer reveal reveal-up"
                                 [style.transition-delay]="(i * 50) + 'ms'"
-                                (click)="playSong(song); playUISound('click')">
+                                (click)="playSong(song); playUISound('click')" role="button" tabindex="0"
+                                [attr.aria-label]="'Reproducir ' + song.title + ' de ' + song.artist"
+                                (keydown.enter)="playSong(song); playUISound('click')">
                                 <div class="flex flex-col gap-3 transition-all duration-500 group-hover:-translate-y-2">
                                     <div
                                         class="aspect-square relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 group-hover:border-emerald-500/40 group-hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] shadow-2xl isolate">
@@ -542,11 +542,11 @@
                                         </div>
                                     </div>
                                     <div class="px-1">
-                                        <h4
+                                        <h3
                                             class="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors tracking-tight">
-                                            {{song.title}}</h4>
+                                            {{song.title}}</h3>
                                         <p
-                                            class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest truncate opacity-60">
+                                            class="text-zinc-400 text-[10px] font-bold uppercase tracking-widest truncate opacity-80">
                                             {{song.artist}}</p>
                                     </div>
                                 </div>
