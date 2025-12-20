@@ -24,43 +24,38 @@ import { RouterModule } from '@angular/router';
           <span class="text-sm font-bold uppercase tracking-widest">Regresar</span>
         </button>
 
-        <div class="bg-zinc-900/40 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] border border-white/5 shadow-2xl">
+        <div class="bg-zinc-900/40 backdrop-blur-2xl p-6 md:p-12 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 shadow-2xl">
           <h1 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter">
             Términos <span class="text-emerald-500">&</span> Condiciones
           </h1>
           <p class="text-zinc-500 mb-12 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Última actualización: 11 de Diciembre de 2025
+            Última actualización: 19 de Diciembre de 2025
           </p>
           
           <div class="space-y-12 text-sm md:text-base leading-relaxed">
             <section class="group">
               <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
                 <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all">01</span>
-                Aceptación de los Términos
+                Aceptación de Términos
               </h2>
-              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                <p>Al acceder y utilizar DonMusica ("el Sitio", "nosotros", "nuestro"), usted acepta estar sujeto a estos términos y condiciones de uso. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar nuestro servicio.</p>
-                <p>El uso continuado del Sitio constituye su aceptación de estos términos y de cualquier modificación futura.</p>
+              <div class="pl-1 md:pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Al acceder a este sitio web, accesible desde https://www.donmusica.online/, usted acepta estar sujeto a estos Términos y Condiciones de uso del sitio web y acepta que es responsable del acuerdo con cualquier ley local aplicable. Si no está de acuerdo con alguno de estos términos, tiene prohibido acceder a este sitio.</p>
               </div>
             </section>
 
             <section class="group">
               <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
                 <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all">02</span>
-                Descripción del Servicio
+                Licencia de Uso
               </h2>
-              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                <p>DonMusica es una plataforma de streaming de música que:</p>
-                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <li class="flex items-start gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2"></div>
-                    Proporciona acceso a contenido mediante enlaces a servicios de terceros.
-                  </li>
-                  <li class="flex items-start gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2"></div>
-                    NO aloja archivos de música o video en nuestros servidores.
-                  </li>
+              <div class="pl-1 md:pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Se concede permiso para descargar temporalmente una copia de los materiales en el sitio web de DonMusica solo para visualización transitoria personal y no comercial. Esta es la concesión de una licencia, no una transferencia de título, y bajo esta licencia usted no puede:</p>
+                <ul class="space-y-2 mt-4 list-disc list-inside">
+                  <li>Modificar o copiar los materiales;</li>
+                  <li>Usar los materiales para cualquier propósito comercial;</li>
+                  <li>Intentar descompilar o realizar ingeniería inversa de cualquier software contenido en DonMusica;</li>
+                  <li>Eliminar cualquier derecho de autor u otras notaciones de propiedad de los materiales.</li>
                 </ul>
               </div>
             </section>
@@ -68,12 +63,13 @@ import { RouterModule } from '@angular/router';
             <section class="group">
               <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
                 <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all">03</span>
-                Derechos de Autor
+                DMCA / Derechos de Autor
               </h2>
-              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                <p>Todo el contenido musical mostrado en DonMusica es propiedad de sus respectivos dueños y está protegido por leyes internacionales de derechos de autor.</p>
-                <div class="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl text-red-400">
-                  <strong>Aviso Importante:</strong> Respetamos la propiedad intelectual. Si considera que su contenido es usado indebidamente, contáctenos para su retiro inmediato.
+              <div class="pl-1 md:pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>DonMusica actúa como un motor de búsqueda y agregador de contenido multimedia. No alojamos ningún archivo de audio o video en nuestros propios servidores. Todo el contenido es proporcionado por servicios de terceros como YouTube, Spotify, Jamendo, etc.</p>
+                <div class="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl">
+                  <p class="text-emerald-400 font-bold mb-2">Aviso a los titulares de derechos:</p>
+                  <p class="text-sm">Si usted es el propietario de un contenido que aparece en DonMusica y no ha autorizado su uso, puede solicitar la retirada del enlace enviando un correo a <span class="text-white">contacto&#64;donmusica.online</span>. Procesaremos su solicitud en un plazo de 24-48 horas hábiles.</p>
                 </div>
               </div>
             </section>
@@ -81,16 +77,26 @@ import { RouterModule } from '@angular/router';
             <section class="group">
               <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
                 <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all">04</span>
-                Uso Aceptable
+                Limitación de Responsabilidad
               </h2>
-              <div class="pl-11 space-y-4 text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                <p>Usted se compromete a no utilizar el Sitio para actividades ilegales, distribución de malware o infracción de derechos de autor.</p>
+              <div class="pl-1 md:pl-11 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Todos los materiales en el sitio web de DonMusica se proporcionan "tal cual". DonMusica no ofrece garantías, ya sean expresas o implícitas, y por lo tanto niega todas las demás garantías. Además, DonMusica no hace ninguna representación con respecto a la exactitud o fiabilidad del uso de los materiales en su sitio web o de otro modo en relación con tales materiales o cualquier sitio vinculado a este sitio web.</p>
+              </div>
+            </section>
+
+            <section class="group">
+              <h2 class="text-xl font-black text-white mb-4 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all">05</span>
+                Revisiones y Erratas
+              </h2>
+              <div class="pl-1 md:pl-11 text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <p>Los materiales que aparecen en el sitio web de DonMusica podrían incluir errores técnicos, tipográficos o fotográficos. DonMusica no promete que ninguno de los materiales en este sitio web sea exacto, completo o actual. DonMusica puede cambiar los materiales contenidos en su sitio web en cualquier momento sin previo aviso.</p>
               </div>
             </section>
 
             <section class="group border-t border-white/5 pt-12">
-              <h2 class="text-xl font-black text-white mb-4">Contacto Directo</h2>
-              <p class="mb-6">Si tiene alguna pregunta sobre estos Términos o desea reportar una infracción:</p>
+              <h2 class="text-xl font-black text-white mb-4">Contacto</h2>
+              <p class="mb-6">Si tiene alguna pregunta sobre estos Términos, por favor contáctenos:</p>
               <a href="mailto:contacto&#64;donmusica.online" 
                 class="inline-flex items-center gap-4 bg-emerald-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-emerald-500/20">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
