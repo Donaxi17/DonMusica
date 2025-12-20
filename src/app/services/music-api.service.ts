@@ -40,13 +40,15 @@ export class MusicApiService {
     private readonly JAMENDO_API_URL = 'https://api.jamendo.com/v3.0';
     private readonly JAMENDO_CLIENT_ID = environment.jamendo?.clientId || 'c85b065b';
     private spotifyToken: string | null = null;
+    private tokenExpiresAt: number = 0;
 
     constructor(private http: HttpClient) {
         this.getSpotifyToken();
     }
 
     private getSpotifyToken(): Observable<string> {
-        if (this.spotifyToken) {
+        const now = Date.now();
+        if (this.spotifyToken && now < this.tokenExpiresAt) {
             return of(this.spotifyToken);
         }
 
@@ -59,6 +61,8 @@ export class MusicApiService {
         return this.http.post<any>(this.SPOTIFY_TOKEN_URL, body, { headers }).pipe(
             map(response => {
                 this.spotifyToken = response.access_token;
+                // Tokens typically expire in 3600s, we refresh at 3500s to be safe
+                this.tokenExpiresAt = Date.now() + (response.expires_in * 1000) - 100000;
                 return response.access_token;
             }),
             catchError(err => {
@@ -104,7 +108,10 @@ export class MusicApiService {
             }
         }
 
-        const term = searchTerms[0];
+        // Use the current hour to pick a term. This makes results stable for 1 hour 
+        // but ensures they rotate automatically throughout the day.
+        const currentHour = new Date().getHours();
+        const term = searchTerms[currentHour % searchTerms.length];
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&country=${countryCode}`;
 
         // Usamos JSONP si estamos en el navegador para máxima compatibilidad
@@ -189,7 +196,15 @@ export class MusicApiService {
     private getNewReleasesFromITunes(country: string, limit: number): Observable<Song[]> {
         // En producción, JSONP es más fiable para iTunes
         const countryCode = country.toUpperCase();
-        const term = countryCode === 'CO' ? 'Latino' : 'Pop';
+
+        // Usar términos que fuercen resultados más recientes
+        const terms = countryCode === 'CO'
+            ? ['Novedades 2025', 'Estrenos Reggaeton', 'Lo mas nuevo']
+            : ['New Releases 2025', 'Latest Music', 'New Songs'];
+
+        // Use current hour to rotate search terms every hour for stability and freshness
+        const currentHour = new Date().getHours();
+        const term = terms[currentHour % terms.length];
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=100&country=${countryCode}`;
 
         return this.http.jsonp<any>(url, 'callback').pipe(
