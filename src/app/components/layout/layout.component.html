@@ -492,22 +492,27 @@
             </button>
         </div>
 
-        <!-- PROGRESS BAR (Relocated to Top for visibility) -->
-        <div #progressBarRef
-            class="absolute top-0 left-0 right-0 h-[3px] bg-white/5 cursor-pointer hover:h-[6px] transition-all group/progress z-50 touch-none"
+        <!-- PROGRESS BAR (Relocated to Bottom for safety) -->
+        <div #progressBarRef class="absolute left-0 right-0 h-6 -bottom-1 z-50 cursor-pointer touch-none group/progress"
             (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
 
-            <!-- Progress Fill -->
-            <div class="h-full relative transition-all duration-100 ease-linear" [ngClass]="[
-                    (currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-red-500' : 'bg-emerald-500',
-                    isDragging ? 'shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'shadow-[0_0_8px_rgba(255,255,255,0.2)]'
-                ]" [style.width.%]="progress">
+            <!-- Visual Bar -->
+            <div
+                class="absolute bottom-[4px] left-0 right-0 h-[3px] bg-white/10 group-hover/progress:h-[5px] transition-all">
+                <!-- Progress Fill -->
+                <div class="h-full relative shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                    [class.transition-all]="!isDragging" [class.duration-100]="!isDragging"
+                    [class.ease-linear]="!isDragging" [ngClass]="[
+                        (currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'bg-red-500' : 'bg-emerald-500',
+                        isDragging ? 'shadow-[0_0_15px_rgba(16,185,129,0.5)]' : ''
+                    ]" [style.width.%]="progress">
 
-                <!-- Magnetic Thumb (Only visible on hover or drag) -->
-                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg 
-                            opacity-0 group-hover/progress:opacity-100 transition-all duration-200
-                            scale-0 group-hover/progress:scale-100" [class.opacity-100]="isDragging"
-                    [class.scale-125]="isDragging">
+                    <!-- Magnetic Thumb (Only visible on hover or drag) -->
+                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-xl 
+                                opacity-0 group-hover/progress:opacity-100 transition-all duration-200
+                                scale-0 group-hover/progress:scale-100" [class.opacity-100]="isDragging"
+                        [class.scale-125]="isDragging">
+                    </div>
                 </div>
             </div>
         </div>

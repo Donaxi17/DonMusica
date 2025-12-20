@@ -98,6 +98,8 @@ export class LayoutComponent implements OnInit {
     this.playerService.currentSong$.subscribe(song => {
       this.currentSong = song;
       this.imageLoadError = false;
+      this.isDragging = false; // Fix: Reset on song change
+      this.progress = 0;
       this.cdr.markForCheck();
     });
 
@@ -324,7 +326,7 @@ export class LayoutComponent implements OnInit {
         return;
       }
       if (this.playbackContext?.startsWith('home')) {
-        this.router.navigate(['/']);
+        this.router.navigate(['/'], { fragment: 'recientes' });
         return;
       }
       if (this.playbackContext?.startsWith('smart-shuffle')) {

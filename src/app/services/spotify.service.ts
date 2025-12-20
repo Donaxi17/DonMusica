@@ -94,6 +94,10 @@ export class SpotifyService {
     }
 
     async getTrackMetadata(title: string, artist: string): Promise<{ image: string, duration_ms: number } | null> {
+        const cacheKey = `metadata_${title.toLowerCase().trim()}_${artist.toLowerCase().trim()}`;
+        const cached = this.cacheService.get<any>(cacheKey);
+        if (cached) return cached;
+
         try {
             const token = await this.getAccessToken();
             let queryStr = encodeURIComponent(`track:${title} artist:${artist}`);
@@ -117,7 +121,9 @@ export class SpotifyService {
                 if (this.settingsService.dataSaver() && images && images.length > 1) {
                     image = images[1]?.url || images[0]?.url || '';
                 }
-                return { image, duration_ms: track.duration_ms };
+                const result = { image, duration_ms: track.duration_ms };
+                this.cacheService.set(cacheKey, result, 60 * 24 * 7); // 7 days
+                return result;
             }
             return null;
         } catch (e) {

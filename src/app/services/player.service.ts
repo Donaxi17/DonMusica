@@ -152,6 +152,11 @@ export class PlayerService {
       this.updateMediaSessionMetadata(song);
       this.enrichSongMetadata(song);
 
+      // Reset progress to avoid showing old song's position
+      this.currentTimeSubject.next(0);
+      this.progressSubject.next(0);
+      this.durationSubject.next(0);
+
       const currentUrl = this.router.url;
       const isBrowseContext = currentUrl.includes('/browse');
 
@@ -232,6 +237,9 @@ export class PlayerService {
     this.audio.currentTime = 0;
     this.isPlayingSubject.next(false);
     this.currentSongSubject.next(null);
+    this.progressSubject.next(0);
+    this.currentTimeSubject.next(0);
+    this.durationSubject.next(0);
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
       navigator.mediaSession.metadata = null;
@@ -319,9 +327,28 @@ export class PlayerService {
   }
 
   seekTo(percentage: number): void {
-    const duration = this.audio.duration;
-    if (duration > 0) {
-      this.audio.currentTime = (percentage / 100) * duration;
+    if (!this.audio) return;
+
+    // Use audio duration if available, fallback to internal duration subject
+    const duration = this.audio.duration || this.durationSubject.value;
+
+    if (duration && isFinite(duration) && duration > 0) {
+      const wasPlaying = !this.audio.paused;
+      const targetTime = (percentage / 100) * duration;
+
+      try {
+        this.audio.currentTime = targetTime;
+
+        // Force an immediate update to all listeners
+        this.progressSubject.next(percentage);
+        this.currentTimeSubject.next(targetTime);
+
+        if (wasPlaying && this.audio.paused) {
+          this.audio.play().catch(e => console.warn('Play interrupted after seek:', e));
+        }
+      } catch (err) {
+        console.error('Seek error:', err);
+      }
     }
   }
 
@@ -342,11 +369,20 @@ export class PlayerService {
     }
   }
 
+  private lastToggleTime = 0;
+
   toggleShuffle(): void {
+    const now = Date.now();
+    if (now - this.lastToggleTime < 300) return;
+    this.lastToggleTime = now;
     this.isShuffleSubject.next(!this.isShuffleSubject.value);
   }
 
   toggleRepeat(): void {
+    const now = Date.now();
+    if (now - this.lastToggleTime < 300) return;
+    this.lastToggleTime = now;
+
     const current = this.repeatModeSubject.value;
     if (current === 'off') {
       this.repeatModeSubject.next('one');

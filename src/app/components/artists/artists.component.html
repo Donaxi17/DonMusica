@@ -304,15 +304,20 @@
                             </ng-container>
                         </div>
 
-                        <!-- Enhanced Play Icon (Hover - Hidden if searching and no song match) -->
-                        <div *ngIf="!searchQuery() || getMatchingSong(artist)"
+                        <!-- Always Visible Download Badge (Only for Matched Songs) -->
+                        <div *ngIf="searchQuery() && getMatchingSong(artist)"
+                            class="absolute top-2 right-2 z-20 animate-fade-in">
+                            <div (click)="$event.preventDefault(); $event.stopPropagation(); downloadSong(getMatchingSong(artist)!)"
+                                class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-xl text-white transition-all duration-300 cursor-pointer bg-zinc-900/40 backdrop-blur-md border border-white/20 hover:bg-emerald-500 hover:border-emerald-400 active:scale-90">
+                                <app-svg-icon name="download" width="20" height="20"></app-svg-icon>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Play Icon (Hover - Only for Matched Songs) -->
+                        <div *ngIf="searchQuery() && getMatchingSong(artist)"
                             class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10 pointer-events-none">
                             <div (click)="playMatchingSong(artist, $event)"
-                                class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-2xl text-black transition-all duration-300 pointer-events-auto cursor-pointer"
-                                [ngClass]="{
-                                    'bg-gradient-to-br from-emerald-400 to-green-600 shadow-emerald-500/60 animate-pulse': searchQuery() && getMatchingSong(artist),
-                                    'bg-emerald-500 shadow-emerald-500/30': !searchQuery()
-                                }">
+                                class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-2xl text-black transition-all duration-300 pointer-events-auto cursor-pointer bg-gradient-to-br from-emerald-400 to-green-600 shadow-emerald-500/60 active:scale-95">
                                 <app-svg-icon name="play" width="32" height="32" class="ml-1"></app-svg-icon>
                             </div>
                         </div>

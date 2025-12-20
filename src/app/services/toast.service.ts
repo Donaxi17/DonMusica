@@ -22,18 +22,9 @@ export class ToastService {
         const id = this.nextId++;
         const toast: Toast = { id, message, originalMessage: message, type, duration, isHtml: false };
 
-        this.toasts.update(currentToasts => {
-            // 1. Evitar duplicados exactos (mismo mensaje y tipo)
-            let newList = currentToasts.filter(t => !(t.type === type && (t.message === message || t.originalMessage === message)));
-
-            // 2. Añadir el nuevo
-            newList = [...newList, toast];
-
-            // 3. Limitar a máximo 5 notificaciones simultáneas
-            if (newList.length > 5) {
-                newList = newList.slice(newList.length - 5);
-            }
-            return newList;
+        this.toasts.update(() => {
+            // Only keep the latest toast
+            return [toast];
         });
 
         if (duration > 0) {
@@ -46,18 +37,9 @@ export class ToastService {
         const safeHtml = this.sanitizer.bypassSecurityTrustHtml(htmlMessage);
         const toast: Toast = { id, message: safeHtml, originalMessage: htmlMessage, type, duration, isHtml: true };
 
-        this.toasts.update(currentToasts => {
-            // 1. Evitar duplicados
-            let newList = currentToasts.filter(t => !(t.type === type && t.originalMessage === htmlMessage));
-
-            // 2. Añadir el nuevo
-            newList = [...newList, toast];
-
-            // 3. Limitar a 5
-            if (newList.length > 5) {
-                newList = newList.slice(newList.length - 5);
-            }
-            return newList;
+        this.toasts.update(() => {
+            // Only keep the latest toast
+            return [toast];
         });
 
         if (duration > 0) {

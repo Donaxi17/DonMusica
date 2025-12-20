@@ -291,12 +291,20 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
         }
       })
     ).subscribe(artistSongs => {
-      this.songs.set(artistSongs);
+      const artistImg = this.artist()?.image;
+      const songsWithId = artistSongs.map(s => ({
+        ...s,
+        artistId: this.artistId(),
+        // Immediate fallback to artist image if song image is placeholder or missing
+        img: (!s.img || s.img.includes('default')) ? artistImg : s.img
+      }));
+
+      this.songs.set(songsWithId);
       this.loading.set(false);
 
-      // Fetch metadata/artwork only for songs that need it
-      if (artistSongs.length > 0) {
-        this.fetchArtworkForSongs(artistSongs);
+      // Fetch high-quality metadata/artwork from Spotify
+      if (songsWithId.length > 0) {
+        this.fetchArtworkForSongs(songsWithId);
       }
     });
   }
@@ -305,7 +313,8 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     // console.log('🎨 Fetching metadata for', songs.length, 'songs using Spotify API');
 
     for (const song of songs) {
-      if (!song.img || song.img.includes('default') || !song.duration || song.duration === '0:00') {
+      const isArtistFallback = song.img === this.artist()?.image;
+      if (!song.img || song.img.includes('default') || isArtistFallback || !song.duration || song.duration === '0:00') {
         try {
           const metadata = await this.spotifyService.getTrackMetadata(song.title, song.artist);
           // ... rest of logic

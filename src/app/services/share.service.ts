@@ -17,7 +17,14 @@ export class ShareService {
         if (source === 'free-music') {
             deepLink = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
         } else {
-            deepLink = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+            // Priority: direct artist link if artistId is available
+            const artistId = song.artistId;
+            if (artistId && artistId !== '0') {
+                deepLink = `${this.BASE_URL}/artist/${artistId}`;
+            } else {
+                // Fallback to searching the artist
+                deepLink = `${this.BASE_URL}/artists?q=${encodeURIComponent(song.artist || '')}`;
+            }
         }
 
         const shareData = {
@@ -128,7 +135,12 @@ export class ShareService {
         if (source === 'free-music') {
             url = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
         } else {
-            url = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+            const artistId = song.artistId;
+            if (artistId && artistId !== '0') {
+                url = `${this.BASE_URL}/artist/${artistId}`;
+            } else {
+                url = `${this.BASE_URL}/artists?q=${encodeURIComponent(song.artist || '')}`;
+            }
         }
 
         let shareUrl = '';

@@ -477,4 +477,31 @@ export class HomeComponent implements OnInit, AfterViewInit {
       // Audio not supported or blocked
     }
   }
+
+  downloadSong(song: Song) {
+    if (!song.url) {
+      this.toastService.info('Buscando enlace de descarga...');
+      this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'default');
+        } else {
+          this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+        }
+      });
+    } else {
+      this.navigateToDownload(song, song.url, 'default');
+    }
+  }
+
+  navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline') {
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: song.artist,
+        downloadUrl: url,
+        mode: mode,
+        songData: song
+      }
+    });
+  }
 }

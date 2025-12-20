@@ -14,6 +14,9 @@ import { combineLatest } from 'rxjs';
 import { ItunesService } from '../../services/itunes.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { PlayerService } from '../../services/player.service';
+import { MusicApiService } from '../../services/music-api.service';
+import { ToastService } from '../../services/toast.service';
+import { Router } from '@angular/router';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { HapticService } from '../../services/haptic.service';
 
@@ -38,6 +41,9 @@ export class ArtistsComponent implements OnInit {
   private spotifyService = inject(SpotifyService);
   private hapticService = inject(HapticService);
   private playerService = inject(PlayerService);
+  private musicApi = inject(MusicApiService);
+  private toastService = inject(ToastService);
+  private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
 
   searchQuery = signal<string>('');
@@ -493,18 +499,42 @@ export class ArtistsComponent implements OnInit {
       return;
     }
 
-    // Clear ALL Spotify cache from localStorage
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('spotify_artist_stats') || key.includes('donmusic_cache_spotify')) {
+    this.hapticService.medium();
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('spotify_artist_') || key.startsWith('spotify_search_')) {
         localStorage.removeItem(key);
-        console.log('🗑️ Eliminado:', key);
       }
     });
 
-    console.log('✅ Caché de Spotify completamente limpiado');
-    console.log('🔄 Recargando página para buscar imágenes frescas...');
+    this.toastService.success('Caché de imágenes limpiado. Recargando...');
+    setTimeout(() => window.location.reload(), 1500);
+  }
 
-    // Reload page to fetch fresh images
-    window.location.reload();
+  downloadSong(song: Song) {
+    if (!song.url) {
+      this.toastService.info('Buscando enlace de descarga...');
+      this.musicApi.getBestAudioStream(song.title, (song as any).artistName || song.artist).subscribe((url: string | null) => {
+        if (url) {
+          this.navigateToDownload(song, url, 'default');
+        } else {
+          this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+        }
+      });
+    } else {
+      this.navigateToDownload(song, song.url, 'default');
+    }
+  }
+
+  navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline') {
+    this.router.navigate(['/download'], {
+      state: {
+        songTitle: song.title,
+        artistName: (song as any).artistName || song.artist,
+        downloadUrl: url,
+        mode: mode,
+        songData: song
+      }
+    });
   }
 }

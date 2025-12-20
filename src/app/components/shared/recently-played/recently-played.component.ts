@@ -6,6 +6,8 @@ import { Song } from '../../../services/playlist.service';
 import { AdsContainerComponent } from '../ads-container/ads-container.component';
 import { ToastService } from '../../../services/toast.service';
 import { SkeletonComponent } from '../skeleton/skeleton.component';
+import { Router } from '@angular/router';
+import { MusicApiService } from '../../../services/music-api.service';
 
 @Component({
     selector: 'app-recently-played',
@@ -84,7 +86,16 @@ import { SkeletonComponent } from '../skeleton/skeleton.component';
                             </div>
                         </div>
     
-                        <div class="flex items-center">
+                        <div class="flex items-center gap-1">
+                            <!-- Download Button -->
+                            <button (click)="downloadItem(song, $event)" 
+                                title="Descargar MP3"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </button>
+
                             <button (click)="remove(song.id, $event)" 
                                 class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,6 +137,8 @@ export class RecentlyPlayedComponent {
     private historyService = inject(HistoryService);
     private playerService = inject(PlayerService);
     private toastService = inject(ToastService);
+    private musicApi = inject(MusicApiService);
+    private router = inject(Router);
 
     constructor() {
         this.history$ = this.historyService.history$;
@@ -191,5 +204,43 @@ export class RecentlyPlayedComponent {
         if (imgElement.src !== fallbackLogo) {
             imgElement.src = fallbackLogo;
         }
+    }
+
+    downloadItem(item: HistoryItem, event: Event) {
+        event.stopPropagation();
+        const song: Song = {
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+            img: item.img,
+            url: item.url || '',
+            artistId: item.artistId as any,
+            duration: '0:00'
+        } as any;
+
+        if (!song.url) {
+            this.toastService.info('Buscando enlace de descarga...');
+            this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
+                if (url) {
+                    this.navigateToDownload(song, url, 'default');
+                } else {
+                    this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+                }
+            });
+        } else {
+            this.navigateToDownload(song, song.url, 'default');
+        }
+    }
+
+    navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline') {
+        this.router.navigate(['/download'], {
+            state: {
+                songTitle: song.title,
+                artistName: song.artist,
+                downloadUrl: url,
+                mode: mode,
+                songData: song
+            }
+        });
     }
 }
