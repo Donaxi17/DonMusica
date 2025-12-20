@@ -626,4 +626,64 @@ export class MusicApiService {
             })
         );
     }
+
+    // --- GAME API METHODS ---
+    getGameFamous(category: string): Observable<string[]> {
+        let term = '';
+        let entity = 'musicArtist';
+
+        // Semillas que aseguran gente MUY FAMOSA en iTunes
+        switch (category) {
+            case 'singers': term = 'Bad Bunny Karol G Shakira Maluma'; entity = 'musicArtist'; break;
+            case 'soccer': term = 'Messi Ronaldo Mbappe Neymar'; entity = 'allArtist'; break;
+            case 'movies': term = 'Marvel Avengers Disney Brad Pitt'; entity = 'movieArtist'; break;
+            default: term = 'superstar'; entity = 'allArtist'; break;
+        }
+
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&limit=100&entity=${entity}`;
+
+        return this.http.jsonp<any>(url, 'callback').pipe(
+            map(res => {
+                if (!res.results) return [];
+                // Mezclamos y filtramos para que salgan nombres reales y conocidos
+                return res.results
+                    .map((r: any) => r.artistName || r.trackName)
+                    .filter((name: string) => name && name.length > 3 && !name.includes('feat') && !name.includes('Unknown'))
+                    .sort(() => Math.random() - 0.5);
+            }),
+            catchError(() => of([]))
+        );
+    }
+
+    getGameWord(): Observable<string> {
+        // Lista de palabras MUY COMUNES en español para mejor experiencia (UX)
+        const commonWords = [
+            'Pizza', 'Hamburguesa', 'Fútbol', 'Baloncesto', 'París', 'Madrid', 'Perro',
+            'Gato', 'Elefante', 'Computadora', 'Playa', 'Montaña', 'Cine', 'Netflix',
+            'Guitarra', 'Piano', 'Café', 'Escuela', 'Avión', 'Reloj', 'Zapatos'
+        ];
+
+        // Usamos la lista común el 80% de las veces para asegurar que se entienda bien
+        if (Math.random() > 0.2) {
+            const word = commonWords[Math.floor(Math.random() * commonWords.length)];
+            return of(word);
+        }
+
+        const categories = ['food', 'animal', 'city', 'technology', 'sport'];
+        const randomCat = categories[Math.floor(Math.random() * categories.length)];
+        const url = `https://api.datamuse.com/words?ml=${randomCat}&max=20`;
+
+        return this.http.get<any[]>(url).pipe(
+            map(words => {
+                if (words && words.length > 0) {
+                    const filtered = words.filter(w => !w.word.includes(' ') && w.word.length > 3);
+                    if (filtered.length === 0) return commonWords[0];
+                    const randomWord = filtered[0].word;
+                    return randomWord.charAt(0).toUpperCase() + randomWord.slice(1);
+                }
+                return commonWords[Math.floor(Math.random() * commonWords.length)];
+            }),
+            catchError(() => of(commonWords[0]))
+        );
+    }
 }

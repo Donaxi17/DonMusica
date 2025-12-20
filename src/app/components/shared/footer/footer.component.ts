@@ -80,7 +80,9 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
           </p>
           <div class="flex items-center gap-2 text-zinc-600 text-xs md:text-sm">
             <span>Hecho con</span>
-            <app-svg-icon name="heart-filled" width="16" height="16" class="text-red-500"></app-svg-icon>
+            <a routerLink="/games" class="hover:scale-125 transition-transform">
+              <app-svg-icon name="heart-filled" width="16" height="16" class="text-red-500"></app-svg-icon>
+            </a>
             <span>en Colombia</span>
           </div>
         </div>

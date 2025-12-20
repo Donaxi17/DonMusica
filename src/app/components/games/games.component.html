@@ -1,0 +1,324 @@
+<div class="min-h-screen bg-zinc-950 text-white pt-20 pb-12 px-4 md:px-12 flex flex-col items-center overflow-x-hidden">
+
+    <!-- Ultra Background Accents -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div
+            class="absolute top-0 -left-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-emerald-600/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse">
+        </div>
+        <div
+            class="absolute bottom-0 -right-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-purple-600/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse delay-1000">
+        </div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-5xl flex flex-col items-center">
+
+        <!-- Premium Header - Compact for Mobile -->
+        <div class="text-center mb-6 md:mb-10 w-full px-4">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3 md:mb-6 backdrop-blur-xl animate-fade-in">
+                <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span
+                    class="text-emerald-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">DonMusica
+                    Pro Games</span>
+            </div>
+            <h1
+                class="text-4xl md:text-7xl font-black mb-2 md:mb-4 tracking-tighter leading-tight animate-fade-in translate-y-[-5px]">
+                Zona <span
+                    class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent italic">Gaming</span>
+            </h1>
+            <p
+                class="text-zinc-500 text-[10px] md:text-lg max-w-sm md:max-w-xl mx-auto font-medium opacity-80 animate-fade-in delay-100 italic leading-snug">
+                Crea momentos épicos con tus amigos. Elige, adivina y gana.
+            </p>
+        </div>
+
+        <!-- Scoreboard Global - Compact -->
+        <div *ngIf="players().length > 0 && mode() !== 'menu'"
+            class="w-[92%] max-w-2xl mb-5 md:mb-8 flex items-center justify-between gap-3 bg-zinc-900/80 backdrop-blur-2xl border border-white/5 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl animate-fade-in">
+            <div class="flex -space-x-1.5 md:-space-x-2 overflow-hidden">
+                <div *ngFor="let p of players()"
+                    class="w-7 h-7 md:w-10 md:h-10 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center font-bold text-[8px] md:text-xs"
+                    [class.bg-emerald-500]="p.score > 0" [class.text-black]="p.score > 0">
+                    {{p.score}}
+                </div>
+            </div>
+            <div class="flex flex-col items-end pr-1">
+                <span
+                    class="text-[7px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-0.5">Meta</span>
+                <span class="text-sm md:text-xl font-black text-emerald-400 leading-none">{{targetScore()}} pts</span>
+            </div>
+        </div>
+
+        <!-- MAIN MENU - Cards -->
+        <div *ngIf="mode() === 'menu'"
+            class="flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-6 w-full animate-fade-in px-4">
+            <!-- Guess Famous -->
+            <div (click)="setMode('famous')"
+                class="group relative py-6 md:py-10 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-emerald-500/10 bg-zinc-900/40 backdrop-blur-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer active:scale-[0.98] hover:border-emerald-500/40">
+                <div class="relative z-10 flex flex-col items-center px-4">
+                    <div
+                        class="w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-[2rem] bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3 md:mb-8 shadow-inner">
+                        <svg class="w-8 h-8 md:w-12 md:h-12" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl md:text-3xl font-black mb-1 md:mb-3">Adivina al Famoso</h3>
+                    <p class="text-zinc-500 text-[10px] md:text-base opacity-80 leading-snug">
+                        ¿Música, Fútbol o Cine? Adivina quién eres.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Impostor -->
+            <div (click)="setMode('impostor')"
+                class="group relative py-6 md:py-10 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-purple-500/10 bg-zinc-900/40 backdrop-blur-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer active:scale-[0.98] hover:border-purple-500/40">
+                <div class="relative z-10 flex flex-col items-center px-4">
+                    <div
+                        class="w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-[2rem] bg-purple-500/10 text-purple-400 flex items-center justify-center mb-3 md:mb-8 shadow-inner">
+                        <svg class="w-8 h-8 md:w-12 md:h-12" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13h-3V9h-4v6H7V7h10v8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl md:text-3xl font-black mb-1 md:mb-3">El Impostor</h3>
+                    <p class="text-zinc-500 text-[10px] md:text-base opacity-80 leading-snug">
+                        Debate, miente y encuentra al infiltrado.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME CONTAINER -->
+        <div *ngIf="mode() !== 'menu'" class="w-full max-w-3xl animate-scale-in px-3">
+            <div
+                class="bg-zinc-900/50 backdrop-blur-3xl border border-white/5 rounded-[2rem] md:rounded-[3rem] p-5 md:p-14 shadow-2xl relative overflow-hidden">
+
+                <!-- SETUP STATE -->
+                <div *ngIf="state() === 'setup'" class="flex flex-col items-center animate-fade-in">
+                    <h2
+                        class="text-3xl md:text-4xl font-black mb-8 md:mb-10 bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">
+                        Configuración</h2>
+
+                    <!-- Players Selection -->
+                    <div class="w-full mb-8 text-center">
+                        <label
+                            class="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4 block">Número
+                            de Jugadores</label>
+                        <div class="flex flex-wrap justify-center gap-2 md:gap-3">
+                            <button *ngFor="let n of [2, 3, 4, 5, 6, 8]" (click)="selectNumPlayers(n)"
+                                [class]="numPlayers() === n ? 'bg-emerald-500 text-black scale-105 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-zinc-900/50 border border-white/5 text-zinc-500 hover:text-white'"
+                                class="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-all">
+                                {{n}}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div *ngIf="mode() === 'famous'" class="w-full mb-8 text-center">
+                        <label
+                            class="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4 block">Elige
+                            la Categoría</label>
+                        <div class="grid grid-cols-2 xs:grid-cols-4 gap-2 md:gap-3">
+                            <button *ngFor="let cat of categoriesList" (click)="selectCategory(cat.id)"
+                                [class]="selectedCategory() === cat.id ? 'bg-emerald-500/10 border-2 border-emerald-500 text-emerald-400' : 'bg-zinc-900/50 border border-white/5 text-zinc-500 hover:bg-zinc-800'"
+                                class="flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl md:rounded-3xl transition-all group">
+                                <span
+                                    class="text-xl md:text-2xl mb-1 group-hover:scale-110 transition-transform">{{cat.icon}}</span>
+                                <span class="text-[8px] md:text-[10px] font-black uppercase">{{cat.label}}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Target Score Selection -->
+                    <div class="w-full mb-10 text-center">
+                        <label
+                            class="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4 block">Meta
+                            para Ganar (Puntos)</label>
+                        <div class="flex flex-wrap justify-center gap-2 md:gap-3">
+                            <button *ngFor="let s of [3, 5, 10, 15]" (click)="setTargetScore(s)"
+                                [class]="targetScore() === s ? 'text-emerald-400 border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'text-zinc-500 border-white/5 hover:bg-white/5'"
+                                class="flex-1 min-w-[60px] md:min-w-[80px] py-2 md:py-2.5 rounded-xl border font-black text-[10px] md:text-sm transition-all whitespace-nowrap">
+                                {{s}} <span class="hidden xs:inline">pts</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 md:gap-4 w-full pt-6 border-t border-white/5">
+                        <button (click)="backToMenu()"
+                            class="flex-1 py-3 md:py-4 rounded-2xl md:rounded-3xl bg-zinc-800/50 text-zinc-400 text-sm md:text-base font-bold hover:bg-zinc-800 transition-colors">Menú
+                            Principal</button>
+                        <button (click)="startGame()" [disabled]="isLoading()"
+                            class="flex-1 py-3 md:py-4 rounded-2xl md:rounded-3xl bg-emerald-500 text-black font-black text-sm md:text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                            <span *ngIf="!isLoading()">Empezar Partida</span>
+                            <span *ngIf="isLoading()" class="flex items-center gap-2">
+                                <svg class="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                Cargando...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PASSING STATE -->
+                <div *ngIf="state() === 'passing'" class="flex flex-col items-center animate-fade-in overflow-hidden">
+                    <div class="relative w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-8 flex items-center justify-center">
+                        <div
+                            class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-emerald-500 text-black text-3xl md:text-5xl font-black flex items-center justify-center z-10 shadow-2xl animate-scale-in">
+                            {{ currentPlayerIndex() + 1 }}
+                        </div>
+                        <div class="absolute inset-0 border-4 border-emerald-500/20 rounded-full animate-ping"></div>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black mb-3 md:mb-4">Turno del Jugador {{ currentPlayerIndex() +
+                        1 }}</h2>
+                    <p
+                        class="text-zinc-500 text-xs md:text-base mb-8 md:mb-12 text-center max-w-xs leading-relaxed font-medium">
+                        Pasa el dispositivo. Solo tú puedes ver tu identidad secreta.
+                    </p>
+
+                    <div class="w-full bg-black/40 rounded-[2rem] md:rounded-[3rem] min-h-[160px] md:min-h-[220px] mb-8 md:mb-12 flex items-center justify-center border-2 border-dashed transition-all duration-500 overflow-hidden px-4"
+                        [class]="showContent() ? 'border-emerald-500/30 bg-emerald-500/[0.03] scale-[1.02] shadow-[inset_0_0_40px_rgba(16,185,129,0.1)] border-solid' : 'border-white/10'">
+                        <div class="flex flex-col items-center">
+                            <button *ngIf="!showContent()" (click)="revealForPlayer()"
+                                class="flex flex-col items-center text-zinc-400 hover:text-white transition-all active:scale-90 duration-300">
+                                <svg class="w-8 h-8 md:w-10 md:h-10 mb-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <span class="font-black uppercase tracking-widest text-[8px] md:text-[10px]">Toca para
+                                    Ver</span>
+                            </button>
+
+                            <div *ngIf="showContent()" class="animate-scale-in text-center py-4">
+                                <span
+                                    class="text-[8px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-2 md:mb-3 block">Identidad
+                                    Secreta</span>
+                                <h4
+                                    class="text-3xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                                    {{ players()[currentPlayerIndex()].content }}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button *ngIf="showContent()" (click)="confirmSeen()"
+                        class="w-full py-4 md:py-5 rounded-2xl md:rounded-3xl bg-emerald-500 text-black font-black text-sm md:text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+                        Lo he visto, continuar
+                    </button>
+                </div>
+
+                <!-- PLAYING STATE -->
+                <div *ngIf="state() === 'playing'" class="flex flex-col items-center text-center animate-fade-in">
+                    <div class="relative w-24 h-24 md:w-32 md:h-32 mb-8 md:mb-10 flex items-center justify-center">
+                        <div
+                            class="relative z-10 w-16 h-16 md:w-24 md:h-24 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-2xl">
+                            <svg class="w-8 h-8 md:w-12 md:h-12" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z" />
+                            </svg>
+                        </div>
+                        <div class="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping"></div>
+                        <div class="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping delay-500"></div>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 italic tracking-tighter">¡Debate Abierto!
+                    </h2>
+                    <p class="text-zinc-400 text-sm md:text-lg mb-8 md:mb-12 leading-relaxed max-w-md mx-auto px-4">
+                        {{ mode() === 'famous' ? 'Hagan preguntas de Sí o No para descubrir qué famoso es cada uno.' :
+                        'Debaten sobre la palabra secreta. El impostor debe fingir que la conoce.' }}
+                    </p>
+
+                    <button (click)="finishGame()"
+                        class="w-full py-4 md:py-6 rounded-2xl md:rounded-3xl bg-white text-black font-black text-sm md:text-xl shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        Ver Identidades y Puntuar
+                    </button>
+                </div>
+
+                <!-- REVEALING STATE -->
+                <div *ngIf="state() === 'revealing'" class="flex flex-col items-center animate-fade-in w-full">
+                    <h2 class="text-3xl md:text-4xl font-black mb-2 md:mb-4">Fin de Ronda</h2>
+                    <p
+                        class="text-zinc-500 mb-6 md:mb-10 font-bold uppercase tracking-widest text-[8px] md:text-[10px]">
+                        Selecciona quiénes ganan punto</p>
+
+                    <div class="grid grid-cols-1 xs:grid-cols-2 gap-3 w-full mb-8 md:mb-12">
+                        <button *ngFor="let p of players()" (click)="toggleRoundWinner(p.id)"
+                            class="p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all flex items-center justify-between group overflow-hidden relative"
+                            [class]="roundWinners().includes(p.id) ? 'bg-emerald-500/20 border-emerald-500/50 shadow-lg scale-[0.98]' : 'bg-zinc-800/30 border-white/5 hover:border-white/20'">
+
+                            <div class="relative z-10 flex flex-col items-start truncate pr-2">
+                                <span class="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">{{
+                                    p.name }}</span>
+                                <h4 class="text-sm md:text-xl font-black truncate"
+                                    [class.text-emerald-400]="roundWinners().includes(p.id)">{{ p.content }}</h4>
+                            </div>
+
+                            <div class="relative z-10 w-8 h-8 md:w-12 md:h-12 flex-shrink-0 rounded-lg md:rounded-2xl flex items-center justify-center transition-all"
+                                [class]="roundWinners().includes(p.id) ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-600'">
+                                <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path *ngIf="roundWinners().includes(p.id)"
+                                        d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                    <path *ngIf="!roundWinners().includes(p.id)"
+                                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                                </svg>
+                            </div>
+
+                            <div *ngIf="p.role === 'IMPOSTOR'"
+                                class="absolute -right-2 top-0 py-1 px-4 bg-red-500 text-black text-[7px] font-black uppercase tracking-tighter rotate-[15deg] shadow-lg">
+                                Es el Impostor</div>
+                        </button>
+                    </div>
+
+                    <button (click)="confirmRound()" [disabled]="roundWinners().length === 0"
+                        class="w-full py-4 md:py-5 rounded-2xl md:rounded-3xl bg-emerald-500 text-black font-black text-sm md:text-lg disabled:opacity-30 transition-all shadow-xl">
+                        Confirmar Marcador
+                    </button>
+                </div>
+
+                <!-- GAME OVER -->
+                <div *ngIf="state() === 'game-over'" class="flex flex-col items-center animate-scale-in text-center">
+                    <div
+                        class="text-6xl md:text-8xl mb-6 md:mb-8 animate-bounce drop-shadow-[0_0_20px_rgba(250,204,21,1)]">
+                        👑</div>
+                    <h2 class="text-4xl md:text-5xl font-black mb-3 md:mb-4">¡Tenemos Ganador!</h2>
+                    <div
+                        class="p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] bg-emerald-500 text-black mb-10 md:mb-12 shadow-2xl relative overflow-hidden group w-full">
+                        <div
+                            class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.3)_0%,transparent_70%)] animate-pulse">
+                        </div>
+                        <span
+                            class="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-1 md:mb-2 block opacity-70">Campeón
+                            de la Partida</span>
+                        <h3 class="text-3xl md:text-5xl font-black italic tracking-tighter">{{ getWinner().name }}</h3>
+                        <p class="text-xl md:text-2xl font-black mt-1 md:mt-2 opacity-80">{{ getWinner().score }} Puntos
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
+                        <button (click)="backToMenu()"
+                            class="flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl bg-zinc-800 font-bold hover:bg-zinc-800 transition-colors">Volver
+                            al Inicio</button>
+                        <button (click)="setMode(mode())"
+                            class="flex-1 py-3 md:py-4 rounded-xl md:rounded-2xl bg-emerald-500 text-black font-black transition-all shadow-xl">Revancha</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="mt-8 md:mt-12 text-center animate-fade-in delay-300 px-4 opacity-50">
+            <p class="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] leading-relaxed">
+                Juega con responsabilidad. <br /> DonMusica Pro Gaming Interface &copy; 2025
+            </p>
+        </div>
+    </div>
+</div>

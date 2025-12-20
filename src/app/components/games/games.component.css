@@ -1,0 +1,69 @@
+/* Custom keyframe animations for the Games component */
+.animate-fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.2, 1, 0.2, 1) forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Delay helpers for animations */
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+.delay-500 {
+    animation-delay: 0.5s;
+}
+
+.delay-1000 {
+    animation-delay: 1s;
+}
+
+/* Custom utility for extra small screens (Tailwind doesn't have xs out of the box in some configs) */
+@media (min-width: 480px) {
+    .xs\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .xs\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .xs\:inline {
+        display: inline;
+    }
+}
+
+/* Ensure bottom padding accounts for mobile safe areas and footer height */
+.pb-12 {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 20px));
+}
