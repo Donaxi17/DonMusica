@@ -57,12 +57,13 @@
       "name": "image-cache",
       "urls": [
         "https://images.unsplash.com/**",
-        "https://picsum.photos/**",
+        "https://i.scdn.co/image/**",
+        "https://firebasestorage.googleapis.com/**",
         "https://is1-ssl.mzstatic.com/**",
         "https://*.mzstatic.com/**"
       ],
       "cacheConfig": {
-        "maxSize": 300,
+        "maxSize": 500,
         "maxAge": "14d",
         "timeout": "8s",
         "strategy": "performance"

@@ -76,61 +76,82 @@ export class HomeComponent implements OnInit, AfterViewInit {
   loadStats() {
     this.loadingStats.set(true);
 
+    let artistsLoaded = false;
+    let songsLoaded = false;
+
+    const checkLoadingFinished = () => {
+      if (artistsLoaded && songsLoaded) {
+        this.loadingStats.set(false);
+      }
+    };
+
     // Optimized: Use getCountFromServer to avoid reading all documents
-    this.databaseService.getCollectionCount('artists').subscribe(count => {
-      this.totalArtists.set(count);
+    this.databaseService.getCollectionCount('artists').subscribe({
+      next: count => {
+        this.totalArtists.set(count);
+        artistsLoaded = true;
+        checkLoadingFinished();
+      },
+      error: () => {
+        artistsLoaded = true;
+        checkLoadingFinished();
+      }
     });
 
-    this.databaseService.getCollectionCount('songs').subscribe(count => {
-      this.totalSongs.set(count);
-      this.loadingStats.set(false);
+    this.databaseService.getCollectionCount('songs').subscribe({
+      next: count => {
+        this.totalSongs.set(count);
+        songsLoaded = true;
+        checkLoadingFinished();
+      },
+      error: () => {
+        songsLoaded = true;
+        checkLoadingFinished();
+      }
     });
 
     // Real-time Latest Songs subscription
-    this.databaseService.getLatestSongs(6).subscribe(async songs => {
-      const currentList = this.recentlyAdded();
+    this.databaseService.getLatestSongs(6).subscribe({
+      next: async songs => {
+        const currentList = this.recentlyAdded();
 
-      // Step 1: Preliminary map with existing valid images
-      const initialMap = songs.map(song => {
-        const existing = currentList.find(s => s.id === song.id);
-        if (existing && !this.isGenericImage(existing.img)) {
-          return { ...song, img: existing.img };
-        }
-        return { ...song };
-      });
-
-      // Step 2: Show what we have initially (with placeholders if needed)
-      this.recentlyAdded.set(initialMap);
-      this.loadingStats.set(false);
-
-      // Step 3: Proactively fetch artwork for all songs and update one by one as they arrive
-      const fetchPromises = initialMap.map(async (song) => {
-        if (this.isGenericImage(song.img)) {
-          try {
-            const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
-            if (artwork) {
-              this.recentlyAdded.update(list => {
-                const newList = [...list];
-                const index = newList.findIndex(s => s.id === song.id);
-                if (index !== -1) {
-                  newList[index] = { ...newList[index], img: artwork };
-                }
-                return newList;
-              });
-              // Persist to database so it's permanent for all users
-              if (song.id) {
-                this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
-              }
-            }
-          } catch (err) {
-            // Silence is golden
+        // Step 1: Preliminary map with existing valid images
+        const initialMap = songs.map(song => {
+          const existing = currentList.find(s => s.id === song.id);
+          if (existing && !this.isGenericImage(existing.img)) {
+            return { ...song, img: existing.img };
           }
-        }
-      });
+          return { ...song };
+        });
 
-      // We don't necessarily need to wait for all if we update one by one, 
-      // but waiting ensures we handle the batch.
-      await Promise.all(fetchPromises);
+        // Step 2: Show what we have initially (with placeholders if needed)
+        this.recentlyAdded.set(initialMap);
+
+        // Step 3: Proactively fetch artwork for all songs and update one by one as they arrive
+        initialMap.forEach(async (song) => {
+          if (this.isGenericImage(song.img)) {
+            try {
+              const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
+              if (artwork) {
+                this.recentlyAdded.update(list => {
+                  const newList = [...list];
+                  const index = newList.findIndex(s => s.id === song.id);
+                  if (index !== -1) {
+                    newList[index] = { ...newList[index], img: artwork };
+                  }
+                  return newList;
+                });
+                // Persist to database so it's permanent for all users
+                if (song.id) {
+                  this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
+                }
+              }
+            } catch (err) {
+              // Silence is golden
+            }
+          }
+        });
+      }
     });
   }
 

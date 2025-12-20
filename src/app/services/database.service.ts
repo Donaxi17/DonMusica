@@ -44,6 +44,9 @@ export class DatabaseService {
     private artistsCache$: Observable<Artist[]> | null = null;
     private songsCache$: Observable<Song[]> | null = null;
 
+    private readonly COUNTS_KEY = 'donmusic_cache_counts';
+    private readonly COUNTS_TIMEOUT = 1000 * 60 * 60; // 1 hora de caché para contadores
+
     constructor() { }
 
     private isBrowser(): boolean {
@@ -75,18 +78,43 @@ export class DatabaseService {
     // --- ARTISTAS ---
 
     getArtists(): Observable<Artist[]> {
+        const cached = this.getFromLocal(this.ARTISTS_KEY);
         const artistsRef = collection(this.firestore, 'artists');
+
         return collectionData(artistsRef, { idField: 'id' }).pipe(
             map(data => data as Artist[]),
             tap(data => this.saveToLocal(this.ARTISTS_KEY, data)),
+            startWith(cached ? (cached as Artist[]) : []),
             shareReplay(1)
         );
     }
 
     getCollectionCount(collectionName: string): Observable<number> {
+        // 1. Intentar obtener de caché local con tiempo de expiración
+        const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
+        const now = Date.now();
+
+        if (cachedCounts[collectionName] && (now - cachedCounts[collectionName].timestamp < this.COUNTS_TIMEOUT)) {
+            return of(cachedCounts[collectionName].count);
+        }
+
+        // 2. Si no hay caché o expiró, consultar al servidor
         const collRef = collection(this.firestore, collectionName);
         return from(getCountFromServer(collRef)).pipe(
-            map(snapshot => snapshot.data().count)
+            map(snapshot => {
+                const count = snapshot.data().count;
+                // Guardar en caché
+                cachedCounts[collectionName] = { count, timestamp: now };
+                this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+                return count;
+            }),
+            catchError(err => {
+                console.error(`Error fetching count for ${collectionName}:`, err);
+                // Fallback a los datos locales si el servidor falla
+                const cacheKey = collectionName === 'artists' ? this.ARTISTS_KEY : this.SONGS_KEY;
+                const cachedData = this.getFromLocal(cacheKey);
+                return of(cachedData ? cachedData.length : 0);
+            })
         );
     }
 
@@ -103,10 +131,13 @@ export class DatabaseService {
     // --- CANCIONES ---
 
     getSongs(): Observable<Song[]> {
+        const cached = this.getFromLocal(this.SONGS_KEY);
         const songsRef = collection(this.firestore, 'songs');
+
         return collectionData(songsRef, { idField: 'id' }).pipe(
             map(data => data as Song[]),
             tap(data => this.saveToLocal(this.SONGS_KEY, data)),
+            startWith(cached ? (cached as Song[]) : []),
             shareReplay(1)
         );
     }
@@ -131,7 +162,12 @@ export class DatabaseService {
         );
 
         return collectionData(latestQuery, { idField: 'id' }).pipe(
-            map(data => data as Song[])
+            map(data => data as Song[]),
+            catchError(err => {
+                console.error('Error fetching latest songs:', err);
+                const cached = this.getFromLocal(this.SONGS_KEY);
+                return of((cached ? cached.slice(0, limitCount) : []) as Song[]);
+            })
         );
     }
 
@@ -148,6 +184,12 @@ export class DatabaseService {
         this.refreshData(); // Limpiar caché para forzar recarga
         const songsRef = collection(this.firestore, 'songs');
         const songWithDate = { ...song, createdAt: Date.now() };
+
+        // Invalidar caché de contadores
+        const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
+        delete cachedCounts['songs'];
+        this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+
         return addDoc(songsRef, songWithDate);
     }
 
@@ -156,6 +198,12 @@ export class DatabaseService {
         this.refreshData(); // Limpiar caché para forzar recarga
         const artistsRef = collection(this.firestore, 'artists');
         const artistWithDate = { ...artist, createdAt: Date.now() };
+
+        // Invalidar caché de contadores
+        const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
+        delete cachedCounts['artists'];
+        this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+
         return addDoc(artistsRef, artistWithDate);
     }
 
@@ -176,6 +224,7 @@ export class DatabaseService {
         if (this.isBrowser()) {
             localStorage.removeItem(this.ARTISTS_KEY);
             localStorage.removeItem(this.SONGS_KEY);
+            localStorage.removeItem(this.COUNTS_KEY);
         }
     }
 }

@@ -2,8 +2,9 @@ import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withPreloading, PreloadAllModules, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withJsonpSupport } from '@angular/common/http';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirestore, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from '@angular/fire/firestore';
 import { provideStorage, getStorage } from '@angular/fire/storage';
+import { getApp } from '@angular/fire/app';
 
 import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -33,7 +34,9 @@ export const appConfig: ApplicationConfig = {
       appId: "1:816803516200:web:2c6220c0455c4ad80d8a1d",
       measurementId: "G-0ERFXF46YN"
     })),
-    provideFirestore(() => getFirestore()),
+    provideFirestore(() => initializeFirestore(getApp(), {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    })),
     provideStorage(() => getStorage())
   ]
 };
