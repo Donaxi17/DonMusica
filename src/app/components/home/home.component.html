@@ -474,15 +474,31 @@
         <div class="mb-16 md:mb-24 px-4">
             <div class="max-w-7xl mx-auto">
                 <div
-                    class="flex flex-col md:flex-row items-center justify-between mb-8 px-1 text-center md:text-left gap-4">
-                    <div class="w-full">
+                    class="flex flex-col md:flex-row items-center justify-between mb-8 px-1 text-center md:text-left gap-6">
+                    <div class="w-full md:w-auto">
                         <span
                             class="text-emerald-500 text-[10px] font-bold uppercase tracking-[0.3em] mb-1 block opacity-70 reveal reveal-left">Tendencias</span>
                         <h2 class="text-2xl md:text-3xl font-black text-white reveal reveal-left delay-100">Top 20 <span
-                                class="text-emerald-500 italic">Global</span></h2>
+                                class="text-emerald-500 italic">{{ selectedRegion() === 'CO' ? 'Colombia' :
+                                (selectedRegion() === 'MX' ? 'México' : 'Global') }}</span></h2>
                     </div>
+
+                    <!-- Region Filters -->
+                    <div
+                        class="flex items-center gap-2 bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 reveal reveal-up delay-200">
+                        <button *ngFor="let reg of regions" (click)="changeRegion(reg.code)"
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2"
+                            [ngClass]="{
+                                'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20': selectedRegion() === reg.code,
+                                'text-zinc-400 hover:text-white hover:bg-white/5': selectedRegion() !== reg.code
+                            }">
+                            <span>{{reg.flag}}</span>
+                            <span class="hidden sm:inline">{{reg.name.split(' ')[0]}}</span>
+                        </button>
+                    </div>
+
                     <a routerLink="/browse/trends"
-                        class="text-emerald-500 text-sm font-bold hover:text-emerald-400 transition-colors flex items-center gap-2 group shrink-0 bg-emerald-500/5 px-4 py-2 rounded-full border border-emerald-500/10 reveal reveal-right delay-200">
+                        class="text-emerald-500 text-sm font-bold hover:text-emerald-400 transition-colors flex items-center gap-2 group shrink-0 bg-emerald-500/5 px-4 py-2 rounded-full border border-emerald-500/10 reveal reveal-right delay-300">
                         Ver todo
                         <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">

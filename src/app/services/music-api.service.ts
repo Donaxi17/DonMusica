@@ -70,21 +70,39 @@ export class MusicApiService {
 
     // --- TRENDING (Hybrid) ---
     // --- TRENDING (Direct iTunes for reliability and speed) ---
-    getTrending(region: string = 'US'): Observable<Song[]> {
+    getTrending(region: string = 'US', isChart: boolean = false): Observable<Song[]> {
         // Skip Spotify to avoid 404s on featured-playlists for some regions
         // and because we need iTunes previews anyway.
-        return this.getTrendingFromITunes(region);
+        return this.getTrendingFromITunes(region, isChart);
     }
 
-    private getTrendingFromITunes(region: string = 'US'): Observable<Song[]> {
+    private getTrendingFromITunes(region: string = 'US', isChart: boolean = false): Observable<Song[]> {
         // En producción, usamos JSONP para evitar problemas de CORS o bloqueos de dominio
         // Además, normalizamos la región
         const countryCode = region.toUpperCase();
 
-        // Términos de búsqueda robustos
-        const searchTerms = countryCode === 'CO'
-            ? ['Top Hits Colombia', 'Reggaeton 2025', 'Novedades']
-            : ['Top Hits 2025', 'Popular', 'Trending'];
+        // Términos de búsqueda robustos y diferenciados
+        let searchTerms: string[] = [];
+
+        if (isChart) {
+            // Charts: Rankings oficiales y fijos (Top 50)
+            if (countryCode === 'CO') {
+                searchTerms = ['Top 50 Colombia', 'Top Canciones', 'Éxitos 2025'];
+            } else if (countryCode === 'MX') {
+                searchTerms = ['Top 50 México', 'Éxitos México', 'Lo más escuchado'];
+            } else {
+                searchTerms = ['Top 50 Global', 'Billboard Hot 100', 'Top Songs'];
+            }
+        } else {
+            // Trends: Lo que está de moda o es novedad dinámica
+            if (countryCode === 'CO') {
+                searchTerms = ['Reggaeton 2025', 'Tendencias Colombia', 'Nuevos Hits'];
+            } else if (countryCode === 'MX') {
+                searchTerms = ['Música Mexicana 2025', 'Tendencias México', 'Regional Mexicano'];
+            } else {
+                searchTerms = ['Trending Music', 'Viral Hits', 'New Music 2025'];
+            }
+        }
 
         const term = searchTerms[0];
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50&country=${countryCode}`;

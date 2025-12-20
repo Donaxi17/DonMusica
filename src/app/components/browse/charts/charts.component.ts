@@ -55,7 +55,7 @@ export class ChartsComponent implements OnInit {
 
     loadCharts(countryCode: string) {
         this.loading.set(true);
-        this.musicApi.getTrending(countryCode).subscribe({
+        this.musicApi.getTrending(countryCode, true).subscribe({
             next: (songs) => {
                 this.chartSongs.set(songs);
                 this.loading.set(false);

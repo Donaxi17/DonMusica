@@ -27,9 +27,10 @@ export class TrendsComponent implements OnInit {
     allSongs: Song[] = [];
 
     // Filter options
-    selectedRegion = signal<'CO' | 'US'>('CO');
+    selectedRegion = signal<'CO' | 'US' | 'MX'>('CO');
     regions = [
         { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
+        { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
         { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
     ];
 
@@ -77,7 +78,7 @@ export class TrendsComponent implements OnInit {
     }
 
     // Change region filter
-    changeRegion(region: 'CO' | 'US') {
+    changeRegion(region: 'CO' | 'US' | 'MX') {
         if (this.selectedRegion() === region) return;
 
         this.selectedRegion.set(region);

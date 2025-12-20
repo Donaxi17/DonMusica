@@ -52,6 +52,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
   trendingSongs = signal<Song[]>([]);
   loadingTrends = signal(true);
 
+  // Filter options for Trends
+  selectedRegion = signal<'CO' | 'US' | 'MX'>('CO');
+  regions = [
+    { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
+    { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
+    { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
+  ];
+
   deferredPrompt: any;
   canInstall = false;    // For the Hero button
   showInstallBanner = false; // For the bottom banner
@@ -71,7 +79,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.listenForInstallPrompt();
 
     // Load initial data
-    this.loadTrends();
+    this.loadTrends(this.selectedRegion());
     this.loadStats();
   }
 
@@ -184,9 +192,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
       lower.includes('placehold.co');
   }
 
-  loadTrends() {
+  loadTrends(region: string = 'CO') {
     this.loadingTrends.set(true);
-    this.musicApi.getTrending('CO').subscribe({
+    this.musicApi.getTrending(region).subscribe({
       next: (songs) => {
         const previewSongs = songs.slice(0, 6);
         this.trendingSongs.set(previewSongs);
@@ -218,6 +226,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.trendingSongs.set([]);
       }
     });
+  }
+
+  // Change region filter
+  changeRegion(region: 'CO' | 'US' | 'MX') {
+    if (this.selectedRegion() === region) return;
+    this.hapticService.light();
+    this.selectedRegion.set(region);
+    this.loadTrends(region);
   }
 
   @HostListener('window:mousemove', ['$event'])
