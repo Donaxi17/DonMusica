@@ -233,6 +233,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   listenForInstallPrompt() {
+    // Check if it's iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    if (isIOS && !isStandalone) {
+      // Show a hint for iOS users after 5 seconds
+      setTimeout(() => {
+        this.showInstallBanner = true;
+      }, 5000);
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
