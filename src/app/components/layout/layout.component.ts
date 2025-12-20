@@ -255,8 +255,12 @@ export class LayoutComponent implements OnInit {
     }
   }
 
-  @HostListener('document:click')
-  onDocumentClick() {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    // Don't close menus if clicking inside the mini player or interactive areas
+    if (target.closest('.ultra-glass-player')) return;
+
     this.showMoreMenu = false;
     this.showLanguageMenu = false;
     this.cdr.markForCheck();
@@ -423,6 +427,7 @@ export class LayoutComponent implements OnInit {
   // --- Progress Bar Dragging ---
 
   startDrag(event: MouseEvent | TouchEvent) {
+    event.stopPropagation(); // Prevent swipe from starting when dragging progress
     this.hapticService.light();
     this.isDragging = true;
     this.updateProgressFromEvent(event);
@@ -430,21 +435,28 @@ export class LayoutComponent implements OnInit {
 
   @HostListener('document:mousemove', ['$event'])
   @HostListener('document:touchmove', ['$event'])
-  onDragMove(event: MouseEvent | TouchEvent) {
+  handleGlobalMove(event: MouseEvent | TouchEvent) {
     if (this.isDragging) {
       this.updateProgressFromEvent(event);
+    } else if (this.isSwiping) {
+      this.onSwipeMoveGlobal(event);
     }
   }
 
   @HostListener('document:mouseup')
   @HostListener('document:touchend')
-  stopDrag() {
+  handleGlobalEnd() {
     if (this.isDragging) {
-      this.isDragging = false;
-      // Final seek on the actual player service
-      this.playerService.seekTo(this.progress);
-      this.cdr.markForCheck();
+      this.stopDrag();
+    } else if (this.isSwiping) {
+      this.onSwipeEndGlobal();
     }
+  }
+  stopDrag() {
+    this.isDragging = false;
+    // Final seek on the actual player service
+    this.playerService.seekTo(this.progress);
+    this.cdr.markForCheck();
   }
 
   private updateProgressFromEvent(event: MouseEvent | TouchEvent) {
@@ -480,10 +492,8 @@ export class LayoutComponent implements OnInit {
     this.swipeDeltaX = 0;
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
   onSwipeMoveGlobal(event: MouseEvent | TouchEvent) {
-    if (!this.isSwiping || this.isDragging) return;
+    if (!this.isSwiping) return;
 
     const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
     const rawDelta = clientX - this.swipeStartX;
@@ -502,12 +512,10 @@ export class LayoutComponent implements OnInit {
     }
   }
 
-  @HostListener('document:mouseup')
-  @HostListener('document:touchend')
   onSwipeEndGlobal() {
     if (!this.isSwiping) return;
 
-    const threshold = 100; // Distance to trigger action
+    const threshold = 70; // Increased sensitivity (was 100)
 
     if (this.swipeDeltaX > threshold) {
       // Swipe Right -> Next (User's preferred logic)
