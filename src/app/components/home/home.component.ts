@@ -40,6 +40,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   totalArtists = signal<number>(0);
   totalSongs = signal<number>(0);
+  displayArtists = signal<number>(0);
+  displaySongs = signal<number>(0);
   loadingStats = signal<boolean>(true);
   recentlyAdded = signal<any[]>([]);
 
@@ -213,16 +215,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private initScrollAnimations() {
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px 0px 0px'
+      threshold: 0.2, // 20% del elemento debe estar visible
+      rootMargin: '0px 0px -150px 0px' // Se activa 150px DENTRO de la pantalla
     };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           this.renderer.addClass(entry.target, 'active');
+
+          // Trigger counter animations specifically
+          if (entry.target.id === 'stats-section') {
+            this.animateCounter(this.totalArtists(), this.displayArtists);
+            this.animateCounter(this.totalSongs(), this.displaySongs);
+          }
         } else {
-          // Re-enable removal to make animations "infinite" (scrolling up/down)
           this.renderer.removeClass(entry.target, 'active');
         }
       });
@@ -380,5 +387,70 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (days < 30) return `Hace ${days} d`;
 
     return 'Hace tiempo';
+  }
+
+  private animateCounter(target: number, signalRef: any) {
+    let current = 0;
+    const duration = 2000; // 2s para que se aprecie bien
+    const start = performance.now();
+
+    const update = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      // Ease out cubic
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      current = Math.round(easedProgress * target);
+      signalRef.set(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    };
+
+    requestAnimationFrame(update);
+  }
+
+  playUISound(type: 'click' | 'success' | 'nav' = 'click') {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        // Sonido de clic más orgánico y suave (tipo "pop" de interfaz de lujo)
+        oscillator.type = 'sine';
+        const now = audioCtx.currentTime;
+
+        oscillator.frequency.setValueAtTime(400, now);
+        oscillator.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+
+        // El secreto está en un ataque casi instantáneo pero con un decaimiento muy suave
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.06, now + 0.01); // Volumen más bajo y suave
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.15);
+      } else if (type === 'nav') {
+        // Sonido de navegación más aireado y profesional
+        oscillator.type = 'sine';
+        const now = audioCtx.currentTime;
+
+        oscillator.frequency.setValueAtTime(440, now); // La nota 'La'
+        oscillator.frequency.exponentialRampToValueAtTime(550, now + 0.2);
+
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.03, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.25);
+      }
+    } catch (e) {
+      // Audio not supported or blocked
+    }
   }
 }

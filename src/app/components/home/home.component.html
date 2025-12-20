@@ -30,16 +30,17 @@
             class="relative w-full max-w-7xl mx-auto px-5 pt-10 md:pt-24 pb-12 flex flex-col items-center justify-center text-center">
 
             <!-- Badge -->
-            <div
-                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8 backdrop-blur-md ">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8 backdrop-blur-md animate-hero-up"
+                style="animation-delay: 100ms;">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-emerald-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Plataforma
                     #1</span>
             </div>
 
             <!-- Title -->
-            <h1
-                class="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 leading-[0.9] tracking-tighter  drop-shadow-2xl">
+            <h1 class="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-6 leading-[0.9] tracking-tighter drop-shadow-2xl animate-hero-up"
+                [style.transform]="'translate(' + (mouseX()/5) + 'px, ' + (mouseY()/5) + 'px)'"
+                style="animation-delay: 300ms;">
                 Siente <br class="md:hidden" />
                 <span
                     class="bg-gradient-to-r from-emerald-400 via-green-400 to-cyan-500 bg-clip-text text-transparent italic">El
@@ -47,14 +48,19 @@
             </h1>
 
             <!-- Description -->
-            <p class="text-zinc-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed delay-100 px-4">
+            <p class="text-zinc-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed px-4 animate-hero-up"
+                [style.transform]="'translate(' + (mouseX()/8) + 'px, ' + (mouseY()/8) + 'px)'"
+                style="animation-delay: 500ms;">
                 La plataforma definitiva de música urbana. Escucha en alta fidelidad, totalmente gratis.
             </p>
 
             <!-- Buttons Action Area -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full px-4  delay-200">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full px-4 animate-hero-up"
+                [style.transform]="'translate(' + (mouseX()/10) + 'px, ' + (mouseY()/10) + 'px)'"
+                style="animation-delay: 700ms;">
 
-                <button (click)="navigateToArtists()" aria-label="Comenzar a escuchar música gratis"
+                <button (click)="navigateToArtists(); playUISound('click')"
+                    aria-label="Comenzar a escuchar música gratis"
                     class="w-full sm:w-auto h-14 px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-full text-lg md:text-xl transition-all transform active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M7 6v12l10-6z" />
@@ -106,7 +112,7 @@
     <div class="relative max-w-7xl mx-auto px-4">
 
         <!-- "PRO BETA" CARD -->
-        <div class="max-w-4xl mx-auto mt-0 mb-6 px-4 md:px-0 ">
+        <div class="max-w-4xl mx-auto mt-0 mb-6 px-4 md:px-0 reveal reveal-left delay-100">
             <div
                 class="rounded-2xl bg-gradient-to-r from-zinc-900/80 to-black/80 border border-white/5 backdrop-blur-md p-1 md:p-2">
                 <div
@@ -131,7 +137,7 @@
         </div>
 
         <!-- DonMusica Ads Card -->
-        <div class="max-w-4xl mx-auto mb-8 md:mb-12 px-4 md:px-0  delay-100">
+        <div class="max-w-4xl mx-auto mb-8 md:mb-12 px-4 md:px-0 reveal reveal-right delay-200">
             <div
                 class="rounded-2xl bg-gradient-to-r from-purple-900/30 to-violet-900/30 border border-purple-500/20 backdrop-blur-md p-1 md:p-2">
                 <div
@@ -157,7 +163,7 @@
         </div>
 
         <!-- MODULES GUIDE (Refined & Balanced Command Center) -->
-        <div class="mb-16 md:mb-24 px-4">
+        <div class="mb-16 md:mb-24 px-4 reveal reveal-scale">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col items-center justify-center mb-8 gap-2 px-1 text-center">
                     <div class="w-full">
@@ -170,7 +176,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
 
                     <!-- 1. Artistas -->
-                    <a routerLink="/artists"
+                    <a routerLink="/artists" (click)="playUISound('nav')"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-emerald-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -200,7 +206,7 @@
                     </a>
 
                     <!-- 2. Videos -->
-                    <a routerLink="/videos"
+                    <a routerLink="/videos" (click)="playUISound('nav')"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-red-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-red-500/10 hover:-translate-y-1">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-red-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -229,7 +235,7 @@
                     </a>
 
                     <!-- 3. Radio -->
-                    <a routerLink="/radio"
+                    <a routerLink="/radio" (click)="playUISound('nav')"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-cyan-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-1">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -258,7 +264,7 @@
                     </a>
 
                     <!-- 4. Blog -->
-                    <a routerLink="/blog"
+                    <a routerLink="/blog" (click)="playUISound('nav')"
                         class="group relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-[2rem] hover:border-violet-500/30 transition-all duration-500 cursor-pointer overflow-hidden shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1">
                         <div
                             class="absolute -top-12 -left-12 w-48 h-48 bg-violet-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -291,7 +297,7 @@
         </div>
 
         <!-- CALL TO ACTION / GLOBAL STATS SECTION (Striking Standalone Section) -->
-        <div class="mb-16 md:mb-24 px-4">
+        <div id="stats-section" class="mb-16 md:mb-24 px-4 reveal reveal-scale">
             <div
                 class="max-w-7xl mx-auto overflow-hidden relative rounded-[2rem] md:rounded-[2.5rem] bg-zinc-900/40 border border-white/5 backdrop-blur-3xl p-6 sm:p-8 md:p-12 group/stats">
                 <!-- Dynamic Backglows -->
@@ -336,7 +342,7 @@
                                     class="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] md:rounded-[2.5rem]">
                                 </div>
                                 <span
-                                    class="text-5xl md:text-7xl font-black text-white mb-2 group-hover:scale-110 transition-transform duration-500 tracking-tighter">{{totalArtists()}}</span>
+                                    class="text-5xl md:text-7xl font-black text-white mb-2 group-hover:scale-110 transition-transform duration-500 tracking-tighter">{{displayArtists()}}</span>
                                 <span
                                     class="text-emerald-500/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] group-hover:text-emerald-400 transition-colors">Artistas</span>
 
@@ -357,7 +363,7 @@
                                     class="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] md:rounded-[2.5rem]">
                                 </div>
                                 <span
-                                    class="text-5xl md:text-7xl font-black text-white mb-2 group-hover:scale-110 transition-transform duration-500 tracking-tighter">{{totalSongs()}}</span>
+                                    class="text-5xl md:text-7xl font-black text-white mb-2 group-hover:scale-110 transition-transform duration-500 tracking-tighter">{{displaySongs()}}</span>
                                 <span
                                     class="text-purple-500/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] group-hover:text-purple-400 transition-colors">Canciones</span>
 
@@ -382,7 +388,7 @@
         </div>
 
         <!-- RECENTLY ADDED SECTION (Elegant Feedback) -->
-        <div class="mb-16 md:mb-24 px-4">
+        <div class="mb-16 md:mb-24 px-4 reveal reveal-right">
             <div class="max-w-7xl mx-auto">
                 <div
                     class="flex flex-col md:flex-row items-center justify-between mb-10 px-1 gap-4 text-center md:text-left">
@@ -400,13 +406,12 @@
                     </div>
                 </div>
 
-                <!-- Recently Added Grid/Scroll -->
-                <div class="relative overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                    <div class="flex md:grid md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 min-w-max md:min-w-0">
+                <!-- Recently Added Grid (Matching Top 20 Design) -->
+                <div class="relative pb-6">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
                         <ng-container *ngIf="!loadingStats(); else recentSkeleton">
                             <div *ngFor="let song of recentlyAdded(); let i = index"
-                                class="group relative cursor-pointer w-44 sm:w-52 md:w-auto flex-shrink-0"
-                                (click)="playRecent(song)">
+                                class="group relative cursor-pointer" (click)="playRecent(song); playUISound('click')">
 
                                 <div class="flex flex-col gap-3 transition-all duration-500 group-hover:-translate-y-2">
                                     <div
@@ -453,7 +458,8 @@
                         </ng-container>
 
                         <ng-template #recentSkeleton>
-                            <app-skeleton *ngFor="let i of [1,2,3,4,5,6]" type="home-recent"></app-skeleton>
+                            <app-skeleton *ngFor="let i of [1,2,3,4,5,6]" type="home-recent"
+                                class="reveal reveal-up active"></app-skeleton>
                         </ng-template>
                     </div>
                 </div>
@@ -462,7 +468,7 @@
 
 
         <!-- Trending Now Preview (Universal & Robust Design) -->
-        <div class="mb-16 md:mb-24 px-4">
+        <div class="mb-16 md:mb-24 px-4 reveal reveal-left">
             <div class="max-w-7xl mx-auto">
                 <div
                     class="flex flex-col md:flex-row items-center justify-between mb-8 px-1 text-center md:text-left gap-4">
@@ -487,7 +493,7 @@
                         <div *ngIf="trendingSongs().length > 0"
                             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
                             <div *ngFor="let song of trendingSongs(); let i = index"
-                                class="group relative cursor-pointer" (click)="playSong(song)">
+                                class="group relative cursor-pointer" (click)="playSong(song); playUISound('click')">
                                 <div class="flex flex-col gap-3 transition-all duration-500 group-hover:-translate-y-2">
                                     <div
                                         class="aspect-square relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 group-hover:border-emerald-500/40 group-hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] shadow-2xl isolate">
@@ -534,7 +540,8 @@
 
                     <ng-template #trendsSkeleton>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
-                            <app-skeleton *ngFor="let i of [1,2,3,4,5,6]" type="home-trend"></app-skeleton>
+                            <app-skeleton *ngFor="let i of [1,2,3,4,5,6]" type="home-trend"
+                                class="reveal reveal-up active"></app-skeleton>
                         </div>
                     </ng-template>
                 </div>
@@ -542,8 +549,8 @@
         </div>
         <!-- DETAILED FEATURES SECTIONS -->
 
-        <!-- Explorar Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <!-- Detailed Features Sections -->
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -582,7 +589,7 @@
                             <span class="text-zinc-400">Estrenos destacados</span>
                         </li>
                     </ul>
-                    <button (click)="navigateTo('/browse')"
+                    <button (click)="navigateTo('/browse'); playUISound('click')"
                         class="h-14 px-10 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-base transition-all transform active:scale-95 shadow-xl shadow-blue-900/20">
                         Explorar Ahora
                     </button>
@@ -599,7 +606,7 @@
         </div>
 
         <!-- Rankings Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-scale">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -628,7 +635,7 @@
                         Descubre los <strong class="text-white font-bold">20 temas más pegados</strong> del momento.
                         Un ranking exclusivo actualizado diariamente.
                     </p>
-                    <button (click)="navigateTo('/browse/charts')"
+                    <button (click)="navigateTo('/browse/charts'); playUISound('click')"
                         class="h-14 px-10 bg-yellow-600 hover:bg-yellow-500 text-zinc-950 font-black rounded-2xl text-base transition-all transform active:scale-95 shadow-xl shadow-yellow-900/20">
                         Ver Rankings
                     </button>
@@ -637,7 +644,7 @@
         </div>
 
         <!-- Artistas Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -657,7 +664,7 @@
                         Disfruta de una selección premium de <strong class="text-white">artistas urbanos</strong>.
                         Sus hits más famosos y lo que está sonando ahora.
                     </p>
-                    <button (click)="navigateTo('/artists')"
+                    <button (click)="navigateTo('/artists'); playUISound('click')"
                         class="h-14 px-10 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl text-base transition-all transform active:scale-95 shadow-xl shadow-purple-900/20">
                         Ver Artistas
                     </button>
@@ -675,7 +682,7 @@
         </div>
 
         <!-- Videos Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-right">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -701,7 +708,7 @@
                         Disfruta de tus canciones favoritas en formato corto. Videos verticales rápidos para descubrir
                         música.
                     </p>
-                    <button (click)="navigateTo('/videos')"
+                    <button (click)="navigateTo('/videos'); playUISound('click')"
                         class="h-14 px-10 bg-red-600 hover:bg-red-500 text-white font-black rounded-2xl text-base transition-all transform active:scale-95 shadow-xl shadow-red-900/20">
                         Ver Videos
                     </button>
@@ -710,7 +717,7 @@
         </div>
 
         <!-- Sin Copyright Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -731,7 +738,7 @@
                         Gran variedad de pistas <strong class="text-white font-bold">100% libres de derechos</strong>.
                         Perfectas para tus videos de YouTube y TikToks.
                     </p>
-                    <button (click)="navigateTo('/sin-copyright')"
+                    <button (click)="navigateTo('/sin-copyright'); playUISound('click')"
                         class="h-14 px-10 bg-emerald-600 hover:bg-emerald-500 text-black font-black rounded-2xl text-base transition-all transform active:scale-95 shadow-xl shadow-emerald-900/20">
                         Descargar Gratis
                     </button>
@@ -749,7 +756,7 @@
         </div>
 
         <!-- Herramientas Pro Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-scale">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -785,7 +792,7 @@
         </div>
 
         <!-- Letras Guardadas Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -821,7 +828,7 @@
         </div>
 
         <!-- Radio Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-left">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -862,7 +869,7 @@
         </div>
 
         <!-- Playlists Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -898,7 +905,7 @@
         </div>
 
         <!-- Música Offline Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-right">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -934,7 +941,7 @@
         </div>
 
         <!-- Añadir Música Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div
@@ -968,7 +975,7 @@
         </div>
 
         <!-- Blog Section -->
-        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4">
+        <div class="mb-24 md:mb-32 max-w-7xl mx-auto px-4 reveal reveal-up">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="md:order-1">
                     <div
@@ -1005,7 +1012,7 @@
 
         <!-- REQUEST FORM (Updated Contact) - COMPACT VERSION -->
         <div #requestForm id="requestForm"
-            class="rounded-[2rem] bg-zinc-900/40 backdrop-blur-2xl border border-white/5 overflow-hidden relative mb-8  shadow-2xl max-w-5xl mx-auto">
+            class="rounded-[2rem] bg-zinc-900/40 backdrop-blur-2xl border border-white/5 overflow-hidden relative mb-8 shadow-2xl max-w-5xl mx-auto reveal reveal-up">
             <!-- Ambient Light -->
             <div
                 class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
@@ -1070,7 +1077,7 @@
         </div>
 
         <!-- Contact Buttons - Now visible on all screens -->
-        <div class="grid grid-cols-2 gap-3 md:gap-4 pb-0 max-w-md mx-auto  delay-100">
+        <div class="grid grid-cols-2 gap-3 md:gap-4 pb-0 max-w-md mx-auto reveal reveal-up delay-100">
             <button (click)="scrollToRequest()"
                 class="flex flex-col items-center justify-center p-4 md:p-6 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 active:scale-95 transition-all group">
                 <svg class="w-6 h-6 md:w-8 md:h-8 text-emerald-500 mb-2 group-hover:scale-110 transition-transform"
