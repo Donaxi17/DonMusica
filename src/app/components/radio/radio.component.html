@@ -130,7 +130,7 @@
                 <div
                     class="relative w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 border border-white/5 shadow-sm">
                     <img *ngIf="station.favicon" [src]="station.favicon" class="w-full h-full object-cover"
-                        onerror="this.style.display='none'">
+                        loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                     <div *ngIf="!station.favicon" class="w-full h-full flex items-center justify-center bg-zinc-800">
                         <svg class="w-6 h-6 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
                             <path

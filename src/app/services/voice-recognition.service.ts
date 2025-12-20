@@ -19,6 +19,9 @@ export class VoiceRecognitionService {
     private microphone: MediaStreamAudioSourceNode | null = null;
     private javascriptNode: ScriptProcessorNode | null = null;
     private stream: MediaStream | null = null;
+    private lastActiveTime = 0;
+    private silenceThreshold = 15; // Ajustado para ruidos como un abanico
+    private silenceTimeout = 2500; // 2.5 segundos de silencio antes de parar
 
     constructor() {
         if (typeof window !== 'undefined') {
@@ -54,6 +57,7 @@ export class VoiceRecognitionService {
     start() {
         if (!this.isSupported || !this.recognition) return;
         this.isListening = true;
+        this.lastActiveTime = Date.now(); // Resetear tiempo de actividad
         try {
             this.recognition.start();
             this.startVolumeTracking();
@@ -62,7 +66,13 @@ export class VoiceRecognitionService {
 
     private async startVolumeTracking() {
         try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
             this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.microphone = this.audioContext.createMediaStreamSource(this.stream);
@@ -87,6 +97,14 @@ export class VoiceRecognitionService {
 
                 const average = values / length;
                 this.volume.set(Math.round(average));
+
+                // Detector de silencio inteligente
+                if (average > this.silenceThreshold) {
+                    this.lastActiveTime = Date.now();
+                } else if (this.isListening && (Date.now() - this.lastActiveTime) > this.silenceTimeout) {
+                    // Si ha pasado demasiado tiempo en silencio, forzamos el stop
+                    this.stop();
+                }
             };
         } catch (e) {
             console.error('Error tracking voice volume', e);

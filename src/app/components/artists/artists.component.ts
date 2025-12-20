@@ -79,30 +79,65 @@ export class ArtistsComponent implements OnInit {
     const query = this.normalize(this.searchQuery());
     const genre = this.selectedGenre();
 
-    // First filter by genre to narrow down the list
     let filtered = this.artists();
     if (genre !== 'all') {
       filtered = filtered.filter(artist => artist.genre && artist.genre.toLowerCase().includes(genre));
     }
 
-    // Smart search: Search in both artist names AND song titles
     if (query) {
-      filtered = filtered.filter(artist => {
-        // Check if artist name matches
+      return filtered.filter(artist => {
         const artistNameMatches = this.normalize(artist.name).includes(query);
-
-        // Check if any song title matches
         const songMatches = artist.songs && artist.songs.some(s =>
           this.normalize(s.title).includes(query)
         );
-
-        // Return true if either matches
         return artistNameMatches || songMatches;
+      }).map(artist => {
+        // Encontrar la canción que coincide para guardarla en el objeto del artista
+        // y así no tener que calcularla en el HTML (evita loops y 429)
+        const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
+
+        if (matchingSong && (!matchingSong.img || matchingSong.img.includes('default'))) {
+          // Disparar la búsqueda de imagen de forma controlada
+          this.queueArtworkFetch(matchingSong, artist);
+        }
+
+        return { ...artist, _matchingSong: matchingSong };
       });
     }
 
-    return filtered;
+    return filtered.map(artist => ({ ...artist, _matchingSong: undefined }));
   });
+
+  // Cola de peticiones para no saturar a Spotify
+  private artworkQueue: { song: Song, artist: Artist }[] = [];
+  private isProcessingQueue = false;
+
+  private queueArtworkFetch(song: Song, artist: Artist) {
+    const cacheKey = `${artist.id}-${song.id}`;
+    if (this.artworkFetchCache.has(cacheKey)) return;
+
+    this.artworkQueue.push({ song, artist });
+
+    if (!this.isProcessingQueue) {
+      this.processArtworkQueue();
+    }
+  }
+
+  private async processArtworkQueue() {
+    if (this.artworkQueue.length === 0) {
+      this.isProcessingQueue = false;
+      return;
+    }
+
+    this.isProcessingQueue = true;
+    const { song, artist } = this.artworkQueue.shift()!;
+
+    // Esperar un poco entre peticiones (200ms) para evitar 429
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    await this.fetchSongArtwork(song, artist);
+    this.processArtworkQueue();
+  }
 
 
 
@@ -260,18 +295,8 @@ export class ArtistsComponent implements OnInit {
     }
   }
 
-  getMatchingSong(artist: Artist): Song | undefined {
-    const query = this.normalize(this.searchQuery());
-    if (!query) return undefined;
-
-    const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
-
-    // Fetch artwork from Spotify if not available
-    if (matchingSong && (!matchingSong.img || matchingSong.img.includes('default'))) {
-      this.fetchSongArtwork(matchingSong, artist);
-    }
-
-    return matchingSong;
+  getMatchingSong(artist: any): Song | undefined {
+    return artist._matchingSong;
   }
 
   private async fetchSongArtwork(song: Song, artist: Artist) {

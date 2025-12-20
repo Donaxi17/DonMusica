@@ -17,6 +17,15 @@ import { filter } from 'rxjs';
 })
 export class AppComponent implements OnInit {
   title = 'DonMusica';
+
+  // ==========================================
+  // 🚩 BANDERA DE ACTUALIZACIÓN
+  // ==========================================
+  // true  -> Muestra mensajes de "Nueva versión" y "Actualización exitosa"
+  // false -> Las actualizaciones serán silenciosas (ideal para cambios pequeños)
+  private readonly SHOW_UPDATE_NOTIFICATIONS = false;
+  // ==========================================
+
   private swUpdate = inject(SwUpdate);
   private toastService = inject(ToastService);
 
@@ -30,11 +39,15 @@ export class AppComponent implements OnInit {
 
   private checkIfJustUpdated() {
     if (typeof window !== 'undefined' && localStorage.getItem('donmusic_pending_update') === 'true') {
-      // Usamos una pequeña pausa adicional para asegurar que el sistema de toasts esté listo
-      setTimeout(() => {
-        this.toastService.success('¡DonMusica se ha actualizado correctamente!', 5000);
+      // Solo mostrar si la bandera está activa
+      if (this.SHOW_UPDATE_NOTIFICATIONS) {
+        setTimeout(() => {
+          this.toastService.success('¡DonMusica se ha actualizado correctamente!', 5000);
+          localStorage.removeItem('donmusic_pending_update');
+        }, 3000);
+      } else {
         localStorage.removeItem('donmusic_pending_update');
-      }, 3000);
+      }
     }
   }
 
@@ -52,9 +65,9 @@ export class AppComponent implements OnInit {
 
         // Activamos la actualización en segundo plano para que el próximo reload sea instantáneo
         this.swUpdate.activateUpdate().then(() => {
-          this.toastService.info(message, 10000);
-          // Opcional: escuchar clicks en el toast si fuera posible, 
-          // pero como no lo es fácilmente, al menos el reload manual funcionará mejor.
+          if (this.SHOW_UPDATE_NOTIFICATIONS) {
+            this.toastService.info(message, 10000);
+          }
         });
       });
     }

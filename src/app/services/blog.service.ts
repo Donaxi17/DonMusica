@@ -90,6 +90,15 @@ export class BlogService {
     constructor(private http: HttpClient) { }
 
     getPosts(): Observable<BlogPost[]> {
+        // Detectar si estamos en localhost para usar la API (NewsAPI solo permite localhost en plan gratis)
+        const isLocal = typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+        if (!isLocal) {
+            // En producción, usamos directamente los datos mock para evitar el error 426 y saturar la consola
+            return of(this.mockPosts).pipe(delay(500));
+        }
+
         // Try to fetch real news, fallback to mock data
         return this.http.get<any>(`${this.NEWS_API_URL}?q=music OR musician OR album OR concert&language=es&sortBy=publishedAt&pageSize=19&apiKey=${this.NEWS_API_KEY}`).pipe(
             map(response => {
@@ -108,7 +117,8 @@ export class BlogService {
                 return this.mockPosts;
             }),
             catchError(err => {
-                console.log('Using mock blog data (NewsAPI limit reached or error):', err.message);
+                // No loguear el error completo para no ensuciar la consola si es un error de cuota esperado
+                console.log('Using mock blog data (NewsAPI limit reached or not available)');
                 return of(this.mockPosts);
             }),
             delay(500)
