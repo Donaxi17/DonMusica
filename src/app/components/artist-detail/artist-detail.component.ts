@@ -16,6 +16,7 @@ import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { MusicApiService } from '../../services/music-api.service';
 import { HapticService } from '../../services/haptic.service';
+import { DonMusicaProService } from '../../services/don-musica-pro.service';
 
 @Component({
   selector: 'app-artist-detail',
@@ -38,6 +39,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private musicApi = inject(MusicApiService);
   private shareService = inject(ShareService);
   private hapticService = inject(HapticService);
+  private proService = inject(DonMusicaProService);
 
 
   artistId = signal<string>('');

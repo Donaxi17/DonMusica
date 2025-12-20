@@ -49,7 +49,7 @@ export class OfflineMusicComponent implements OnInit {
     // Offline limit is technically song count based currently in service (20 vs Infinity),
     // but user requested visual 5GB limit consistency. 
     // We will mock usage of the same storage limit values for consistency in UI even if logic differs slightly.
-    this.maxStorage = this.proService.getStorageLimitMB();
+    this.maxStorage = this.proService.getOfflineLimitMB();
   }
 
   ngOnInit() {
@@ -86,11 +86,19 @@ export class OfflineMusicComponent implements OnInit {
   }
 
   get usedStorageGB(): string {
-    return (this.usedStorage / 1024).toFixed(2);
+    const val = this.usedStorage / 1024;
+    return val < 0.01 && this.usedStorage > 0 ? '0.01' : val.toFixed(2);
   }
 
-  get maxStorageGB(): number {
-    return this.maxStorage / 1024;
+  get maxStorageGB(): string {
+    return (this.maxStorage / 1024).toFixed(this.maxStorage >= 1024 ? 1 : 2);
+  }
+
+  get formattedMaxStorage(): string {
+    if (this.maxStorage < 1024) {
+      return `${Math.round(this.maxStorage)} MB`;
+    }
+    return `${(this.maxStorage / 1024).toFixed(1)} GB`;
   }
 
   // Estimated song capacity (assuming average 4MB per song)

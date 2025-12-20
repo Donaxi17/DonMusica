@@ -19,12 +19,12 @@ export class DonMusicaProService {
       PRO: Infinity // Ilimitado
     },
     UPLOAD_STORAGE: { // En MB
-      FREE: 1024, // 1 GB
+      FREE: 500,
       PRO: 5120   // 5 GB
     },
-    OFFLINE_SONGS: {
-      FREE: 20,
-      PRO: Infinity
+    OFFLINE_STORAGE: { // En MB
+      FREE: 500,
+      PRO: 5120   // 5 GB
     }
   };
 
@@ -75,13 +75,13 @@ export class DonMusicaProService {
     return currentCount < this.LIMITS.LYRICS.FREE;
   }
 
-  canDownloadSong(currentCount: number): boolean {
-    if (this.isPro()) return true;
-    return currentCount < this.LIMITS.OFFLINE_SONGS.FREE;
+
+  getUploadLimitMB(): number {
+    return this.isPro() ? this.LIMITS.UPLOAD_STORAGE.PRO : this.LIMITS.UPLOAD_STORAGE.FREE;
   }
 
-  getStorageLimitMB(): number {
-    return this.isPro() ? this.LIMITS.UPLOAD_STORAGE.PRO : this.LIMITS.UPLOAD_STORAGE.FREE;
+  getOfflineLimitMB(): number {
+    return this.isPro() ? this.LIMITS.OFFLINE_STORAGE.PRO : this.LIMITS.OFFLINE_STORAGE.FREE;
   }
 
   shouldShowAds(): boolean {

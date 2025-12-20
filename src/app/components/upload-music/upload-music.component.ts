@@ -116,7 +116,7 @@ export class UploadMusicComponent implements OnDestroy {
     // React to Pro status changes automatically
     effect(() => {
       this.setStorageLimit();
-      this.maxStorage = this.proService.getStorageLimitMB();
+      this.maxStorage = this.proService.getUploadLimitMB();
       this.calculateStorage();
       this.cdr.markForCheck();
     });
@@ -202,7 +202,7 @@ export class UploadMusicComponent implements OnDestroy {
   // --- Storage & Limits ---
 
   setStorageLimit() {
-    this.maxStorage = this.proService.getStorageLimitMB();
+    this.maxStorage = this.proService.getUploadLimitMB();
     this.cdr.markForCheck();
   }
 
@@ -210,12 +210,20 @@ export class UploadMusicComponent implements OnDestroy {
     return this.isPro ? '5 GB (Pro)' : '1 GB (Free)';
   }
 
-  get maxStorageGB(): number {
-    return this.maxStorage / 1024;
+  get maxStorageGB(): string {
+    return (this.maxStorage / 1024).toFixed(this.maxStorage >= 1024 ? 1 : 2);
   }
 
   get usedStorageGB(): string {
-    return (this.usedStorage / 1024).toFixed(2);
+    const val = this.usedStorage / 1024;
+    return val < 0.01 && this.usedStorage > 0 ? '0.01' : val.toFixed(2);
+  }
+
+  get formattedMaxStorage(): string {
+    if (this.maxStorage < 1024) {
+      return `${Math.round(this.maxStorage)} MB`;
+    }
+    return `${(this.maxStorage / 1024).toFixed(1)} GB`;
   }
 
   get storageWarningLevel(): 'safe' | 'warning' | 'danger' {

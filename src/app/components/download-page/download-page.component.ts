@@ -7,6 +7,7 @@ import { OfflineService } from '../../services/offline.service';
 import { ToastService } from '../../services/toast.service';
 import { LyricsService } from '../../services/lyrics.service';
 import { MusicApiService } from '../../services/music-api.service';
+import { DonMusicaProService } from '../../services/don-musica-pro.service';
 
 @Component({
   selector: 'app-download-page',
@@ -20,6 +21,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private toastService = inject(ToastService);
   private lyricsService = inject(LyricsService);
   private musicApi = inject(MusicApiService);
+  private proService = inject(DonMusicaProService);
 
   countdown: number = 0; // Sin countdown
   songTitle: string = '';
@@ -92,8 +94,15 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.isDownloading = true;
 
-    // Open Monetag Smartlink (Monetization for both modes)
+    // 1. Open Monetag Smartlink (Monetization first!)
     window.open(this.SMARTLINK_URL, '_blank');
+
+    // 2. Now check if storage is full for offline mode
+    if (this.mode === 'offline' && this.offlineService.isStorageFull()) {
+      this.toastService.error('¡Almacenamiento lleno! Libera espacio para continuar.');
+      this.isDownloading = false;
+      return;
+    }
 
     // Wait 1 second before processing
     await new Promise(resolve => setTimeout(resolve, 1000));

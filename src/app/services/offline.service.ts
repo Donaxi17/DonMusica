@@ -52,11 +52,15 @@ export class OfflineService {
     }
 
     async downloadSong(song: Song): Promise<boolean> {
-        // Check Pro Limits
-        if (!this.proService.canDownloadSong(this.offlineSongs().length)) {
-            this.toastService.error('¡Límite de descargas alcanzado! Actualiza a DonMusica PRO para descargas ilimitadas.');
+        // 1. Check Storage Limit
+        if (this.isStorageFull()) {
+            this.toastService.error('¡Almacenamiento lleno! Libera espacio o pásate a PRO para más GB.');
+            this.proService.showUpgradeModal();
             return false;
         }
+
+        // 2. Pro logic: In the future, other restrictions could go here.
+        // Currently we only enforce the MB limit requested by the user.
 
         if (!this.db) {
             await this.initDB();
@@ -342,6 +346,12 @@ export class OfflineService {
             if (song.imageBlob) total += song.imageBlob.size;
         });
         return total;
+    }
+
+    isStorageFull(): boolean {
+        const totalBytes = this.getTotalSize();
+        const limitBytes = this.proService.getOfflineLimitMB() * 1024 * 1024;
+        return totalBytes >= limitBytes;
     }
 
     formatSize(bytes: number): string {

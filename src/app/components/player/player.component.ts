@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { MusicApiService } from '../../services/music-api.service';
 import { ToastService } from '../../services/toast.service';
 import { HapticService } from '../../services/haptic.service';
+import { DonMusicaProService } from '../../services/don-musica-pro.service';
 
 @Component({
   selector: 'app-player',
@@ -48,7 +49,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private musicApi: MusicApiService,
     private toastService: ToastService,
     private offlineService: OfflineService,
-    private hapticService: HapticService
+    private hapticService: HapticService,
+    private proService: DonMusicaProService
   ) { }
 
   ngOnInit(): void {
