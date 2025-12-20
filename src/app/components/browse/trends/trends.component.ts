@@ -110,7 +110,8 @@ export class TrendsComponent implements OnInit {
     onSongClick(song: Song, event: Event) {
         event.preventDefault();
         event.stopPropagation();
-        // this.playerService.playSong(song); // Disabled as per user request
+        this.playerService.setPlaylist(this.trendingSongs(), false, 'trends');
+        this.playerService.playSong(song);
     }
 
     // Image error handler - fallback to placeholder

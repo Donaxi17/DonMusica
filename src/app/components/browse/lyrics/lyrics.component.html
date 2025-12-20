@@ -28,7 +28,7 @@
 
             <!-- Voice Button -->
             <button (click)="toggleVoiceSearch()"
-                class="absolute inset-y-1.5 right-1.5 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-90 shadow-lg shrink-0"
+                class="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-95 shadow-lg shrink-0"
                 [ngClass]="{
                     'bg-red-500 text-white shadow-red-500/50 animate-pulse': isListening,
                     'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700': !isListening
@@ -41,7 +41,7 @@
     <!-- Waveform Indicator -->
     <div *ngIf="isListening"
         class="mb-4 animate-fade-in text-center p-4 bg-zinc-900/50 rounded-2xl border border-white/5">
-        <app-voice-waveform></app-voice-waveform>
+        <app-voice-visualizer></app-voice-visualizer>
         <p class="text-red-500 text-xs md:text-sm font-bold animate-pulse mt-1 tracking-widest uppercase">Escuchando
             voz...</p>
     </div>
@@ -55,7 +55,7 @@
 
     <!-- Results Grid -->
     <div *ngIf="!isSearching()" class="grid gap-2 w-full">
-        <div *ngFor="let song of searchResults()" (click)="viewLyrics(song)"
+        <div *ngFor="let song of searchResults()" (click)="playSong(song)"
             class="flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all group w-full overflow-hidden cursor-pointer">
             <!-- Cover With Play Overlay -->
             <div
@@ -78,18 +78,10 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center flex-shrink-0 gap-2">
-                <!-- 0. Play Button (Explicit) -->
-                <button (click)="playSong(song); $event.stopPropagation()"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-pink-500/10 hover:bg-pink-500 text-pink-500 hover:text-white transition-all flex items-center justify-center group/play"
-                    title="Reproducir">
-                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                </button>
-                <!-- 1. View Button (Eye) -->
+            <div class="flex items-center flex-shrink-0 gap-1 md:gap-2">
+                <!-- 1. View Lyrics Button -->
                 <button (click)="viewLyrics(song); $event.stopPropagation()"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors flex items-center justify-center relative"
+                    class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors flex items-center justify-center"
                     title="Ver Letra">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path
@@ -97,60 +89,32 @@
                     </svg>
                 </button>
 
-                <!-- 2. Download Lyric Button (Saves Text) -->
-                <button (click)="toggleSaveLyrics(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 transition-colors flex items-center justify-center relative"
-                    [class.bg-pink-600]="isSongLyricsSaved(song)" [class.text-white]="isSongLyricsSaved(song)"
-                    [class.bg-zinc-800]="!isSongLyricsSaved(song)" [class.text-zinc-400]="!isSongLyricsSaved(song)"
-                    [class.hover:text-white]="!isSongLyricsSaved(song)"
-                    [title]="isSongLyricsSaved(song) ? 'Letra Guardada' : 'Descargar Letra (Texto)'">
+                <!-- 2. Download Lyrics Button -->
+                <button (click)="downloadLyrics(song, $event)"
+                    class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors flex items-center justify-center relative group/lyrics"
+                    [class.text-pink-500]="isSongLyricsSaved(song)" [class.text-zinc-400]="!isSongLyricsSaved(song)"
+                    [class.hover:text-pink-400]="!isSongLyricsSaved(song)"
+                    [title]="isSongLyricsSaved(song) ? 'Letra Descargada' : 'Descargar Letra'">
 
-                    <!-- Not Saved: Download Icon -->
-                    <svg *ngIf="!isSongLyricsSaved(song)" class="w-4 h-4 md:w-5 md:h-5 " fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-
-                    <!-- Saved: Check/Document Icon -->
-                    <svg *ngIf="isSongLyricsSaved(song)" class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                </button>
-
-                <!-- 3. Download Offline Button -->
-                <button (click)="downloadForOffline(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-zinc-700 transition-colors flex items-center justify-center relative group/off"
-                    [class.text-cyan-500]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
-                    [title]="isOffline(song.id) ? 'Descargado Offline' : 'Guardar en la App (Offline)'">
-
-                    <svg *ngIf="!isOffline(song.id)" class="w-4 h-4 md:w-5 md:h-5 group-hover/off:text-cyan-400"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                    </svg>
-
-                    <svg *ngIf="isOffline(song.id)" class="w-4 h-4 md:w-5 md:h-5" fill="currentColor"
-                        viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                    </svg>
-                </button>
-
-                <!-- 4. Normal Download Button -->
-                <button (click)="openDownload(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-emerald-400 transition-colors flex items-center justify-center"
-                    title="Descargar archivo MP3">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
+
+                    <!-- Checkmark badge if saved -->
+                    <div *ngIf="isSongLyricsSaved(song)"
+                        class="absolute -top-1 -right-1 bg-pink-500 rounded-full p-0.5 border border-zinc-900">
+                        <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
                 </button>
 
-                <!-- 5. Share Button -->
+                <!-- 3. Share Button -->
                 <button (click)="shareSong(song, $event)"
-                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center transition-colors text-zinc-400 hover:text-green-400"
+                    class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center transition-colors text-zinc-400 hover:text-green-400"
                     title="Compartir">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path

@@ -129,7 +129,7 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
         this.isPlaying.set(true);
 
         // Set up playlist for continuous playback
-        this.player.setPlaylist(this.releases());
+        this.player.setPlaylist(this.releases(), false, 'new-releases');
     }
 
     playAll() {

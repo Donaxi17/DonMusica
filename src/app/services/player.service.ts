@@ -1,5 +1,5 @@
 import { Injectable, inject, Injector } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 import { Song } from './playlist.service';
 import { MusicApiService } from './music-api.service';
 import { ToastService } from './toast.service';
@@ -44,9 +44,7 @@ export class PlayerService {
   private smartShuffleArtistsSubject = new BehaviorSubject<any[]>([]);
   private lastVolume = 100;
 
-  // Sleep Timer
-  private sleepTimerRemainingSubject = new BehaviorSubject<number>(0);
-  private sleepTimerInterval: any = null;
+
 
   // Observables públicos
   currentSong$ = this.currentSongSubject.asObservable();
@@ -61,65 +59,14 @@ export class PlayerService {
   repeatMode$ = this.repeatModeSubject.asObservable();
   isFavoritesPlaying$ = this.isFavoritesPlayingSubject.asObservable();
   playbackContext$ = this.playbackContextSubject.asObservable();
-  sleepTimerRemaining$ = this.sleepTimerRemainingSubject.asObservable();
+
 
   constructor(private musicApi: MusicApiService) {
     this.initializeAudioListeners();
     this.setupMediaSession();
-    this.initSleepTimer();
   }
 
-  private initSleepTimer(): void {
-    const sleepEndTime = localStorage.getItem('sleepTimerEndTime');
-    if (sleepEndTime) {
-      const endTime = parseInt(sleepEndTime, 10);
-      const now = Date.now();
-      if (endTime > now) {
-        const remaining = Math.round((endTime - now) / 60000);
-        this.sleepTimerRemainingSubject.next(remaining);
-        this.startTimerInterval(endTime);
-      } else {
-        localStorage.removeItem('sleepTimerEndTime');
-      }
-    }
-  }
 
-  setSleepTimer(minutes: number): void {
-    this.cancelSleepTimer();
-    if (minutes <= 0) return;
-
-    const endTime = Date.now() + minutes * 60 * 1000;
-    localStorage.setItem('sleepTimerEndTime', endTime.toString());
-    this.sleepTimerRemainingSubject.next(minutes);
-    this.startTimerInterval(endTime);
-    this.toastService.info(`Temporizador configurado para ${minutes} minutos`);
-  }
-
-  cancelSleepTimer(): void {
-    if (this.sleepTimerInterval) {
-      clearInterval(this.sleepTimerInterval);
-      this.sleepTimerInterval = null;
-    }
-    localStorage.removeItem('sleepTimerEndTime');
-    this.sleepTimerRemainingSubject.next(0);
-  }
-
-  private startTimerInterval(endTime: number): void {
-    if (this.sleepTimerInterval) clearInterval(this.sleepTimerInterval);
-
-    this.sleepTimerInterval = setInterval(() => {
-      const now = Date.now();
-      if (now >= endTime) {
-        this.pause();
-        this.cancelSleepTimer();
-      } else {
-        const remaining = Math.ceil((endTime - now) / 60000);
-        if (remaining !== this.sleepTimerRemainingSubject.value) {
-          this.sleepTimerRemainingSubject.next(remaining);
-        }
-      }
-    }, 1000); // Check every second for accuracy
-  }
 
   private initializeAudioListeners(): void {
     this.audio.addEventListener('timeupdate', () => {
@@ -196,7 +143,10 @@ export class PlayerService {
     const currentSong = this.currentSongSubject.value;
 
     if (currentSong?.id === song.id) {
-      this.togglePlay();
+      if (!this.isPlayingSubject.value) {
+        this.resume();
+      }
+      return;
     } else {
       this.currentSongSubject.next(song);
       this.updateMediaSessionMetadata(song);
@@ -206,7 +156,7 @@ export class PlayerService {
       const isBrowseContext = currentUrl.includes('/browse');
 
       if (!isBrowseContext) {
-        this.historyService.addToHistory(song);
+        this.historyService.addToHistory(song, this.playbackContextSubject.value);
       }
 
       const offlineSong = this.offlineService.getOfflineSong(String(song.id || ''));
@@ -310,12 +260,43 @@ export class PlayerService {
     } else if (this.repeatModeSubject.value === 'all') {
       this.playSong(playlist[0]);
     } else {
-      // Fin de la lista y no hay repetición: detener estado "reproduciendo"
-      this.isPlayingSubject.next(false);
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'none';
-      }
+      // Fin de la lista y no hay repetición: intentar Auto-Play
+      this.handleAutoPlay(currentSong, playlist);
     }
+  }
+
+  private handleAutoPlay(currentSong: Song, currentPlaylist: Song[]) {
+    // Si ya estamos cargando o procesando algo similar, salimos
+    if (this.playbackContextSubject.value === 'autoplay-loading') return;
+
+    this.dbService.getSongsByArtist(currentSong.artist)
+      .pipe(take(1))
+      .subscribe(dbSongs => {
+        // Convert DB songs to Playlist songs
+        const validSongs: Song[] = dbSongs.map(s => ({
+          ...s,
+          id: s.id || '',
+        } as unknown as Song)).filter(s => s.id !== '');
+
+        const existingIds = new Set(currentPlaylist.map(s => String(s.id)));
+        const newSongs = validSongs.filter(s => !existingIds.has(String(s.id)));
+
+        if (newSongs.length > 0) {
+          const shuffledNewSongs = newSongs.sort(() => Math.random() - 0.5);
+          const updatedPlaylist = [...currentPlaylist, ...shuffledNewSongs];
+          this.playlistSubject.next(updatedPlaylist);
+          this.toastService.info(`Reproduciendo más de ${currentSong.artist}`);
+
+          if (shuffledNewSongs.length > 0) {
+            this.playSong(shuffledNewSongs[0]);
+          }
+        } else {
+          this.isPlayingSubject.next(false);
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'none';
+          }
+        }
+      });
   }
 
   previousTrack(): void {

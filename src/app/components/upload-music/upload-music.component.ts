@@ -749,7 +749,7 @@ export class UploadMusicComponent implements OnDestroy {
         };
       });
 
-      this.playerService.setPlaylist(playlistSongs, false);
+      this.playerService.setPlaylist(playlistSongs, false, 'upload-music');
       const songToPlay = playlistSongs.find(s => s.id === file.id);
 
       if (songToPlay) {

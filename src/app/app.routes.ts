@@ -28,7 +28,7 @@ export const routes: Routes = [
                     { path: 'charts', loadComponent: () => import('./components/browse/charts/charts.component').then(m => m.ChartsComponent) },
 
                     { path: 'featured-playlists', loadComponent: () => import('./components/browse/playlists/playlists.component').then(m => m.PlaylistsComponent) },
-                    { path: 'search', loadComponent: () => import('./components/browse/search/search.component').then(m => m.SearchComponent) }
+                    { path: 'lyrics', loadComponent: () => import('./components/browse/lyrics/lyrics.component').then(m => m.LyricsComponent) }
                 ]
             },
             { path: 'blog', loadComponent: () => import('./components/blog/blog.component').then(m => m.BlogComponent) },
@@ -51,7 +51,6 @@ export const routes: Routes = [
                     { path: 'bass-test', loadComponent: () => import('./components/tools/bass-test/bass-test.component').then(m => m.BassTestComponent) },
                     { path: 'tuner', loadComponent: () => import('./components/tools/tuner/tuner.component').then(m => m.TunerComponent) },
                     { path: 'vocal-fx', loadComponent: () => import('./components/tools/vocal-fx/vocal-fx.component').then(m => m.VocalFxComponent) },
-                    { path: 'sleep-timer', loadComponent: () => import('./components/tools/sleep-timer/sleep-timer.component').then(m => m.SleepTimerComponent) },
                     { path: 'zen-mode', loadComponent: () => import('./components/tools/zen-mode/zen-mode.component').then(m => m.ZenModeComponent) },
                     { path: 'piano', loadComponent: () => import('./components/tools/piano/piano.component').then(m => m.PianoComponent) }
                 ]

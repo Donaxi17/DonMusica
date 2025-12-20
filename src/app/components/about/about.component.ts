@@ -124,7 +124,7 @@ import { SeoService } from '../../services/seo.service';
             </div>
 
             <!-- Lyrics -->
-            <div routerLink="/browse/search" class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center select-none cursor-pointer hover:bg-zinc-800/40 hover:border-blue-500/30 transition-all group">
+            <div routerLink="/browse/lyrics" class="p-6 bg-zinc-900/20 rounded-2xl border border-white/5 text-center select-none cursor-pointer hover:bg-zinc-800/40 hover:border-blue-500/30 transition-all group">
               <div class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-blue-400 mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

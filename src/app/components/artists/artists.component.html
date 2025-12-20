@@ -31,19 +31,22 @@
         <!-- Search Bar with Voice -->
         <div class="relative max-w-3xl mx-auto mb-8 md:mb-16 group">
             <div
-                class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-purple-500/20 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-purple-500/20 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
             </div>
 
             <div
-                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all">
+                class="relative flex items-center bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all z-20">
                 <div class="pl-1 flex items-center justify-center text-zinc-400">
                     <app-svg-icon name="search"
                         class="text-zinc-400 group-focus-within:text-emerald-400 transition-colors" width="24"
                         height="24"></app-svg-icon>
                 </div>
 
-                <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por artista o canción..."
-                    class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-1 py-3 md:py-4 focus:ring-0 text-sm md:text-xl outline-none font-medium">
+                <form (submit)="onEnter(); $event.preventDefault()" class="w-full">
+                    <input type="text" name="searchQuery" [(ngModel)]="searchQuery" autocomplete="off"
+                        placeholder="Buscar por artista o canción..."
+                        class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-2 py-2 md:py-4 focus:ring-0 text-sm md:text-xl outline-none font-medium">
+                </form>
 
                 <!-- Voice Button -->
                 <button (click)="toggleVoiceSearch()"
@@ -56,9 +59,43 @@
                 </button>
             </div>
 
+            <!-- Recent Searches (Redesigned) -->
+            <div *ngIf="!searchQuery() && recentSearches().length > 0" class="mt-6 animate-fade-in px-2 relative z-20">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-zinc-400 text-sm font-semibold flex items-center gap-2">
+                        <app-svg-icon name="history" width="16" height="16" class="text-zinc-500"></app-svg-icon>
+                        Búsquedas Recientes
+                    </h3>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    @for (search of recentSearches(); track search) {
+                    <div
+                        class="group flex items-center bg-zinc-900/90 hover:bg-zinc-800 border border-white/5 hover:border-emerald-500/30 rounded-xl transition-all duration-300 shadow-sm overflow-hidden">
+
+                        <!-- Search Term (Clickable) -->
+                        <button (click)="selectSearch(search)"
+                            class="px-4 py-2.5 text-sm font-medium text-zinc-400 group-hover:text-emerald-400 transition-colors text-left flex-grow">
+                            {{ search }}
+                        </button>
+
+                        <!-- Separator -->
+                        <div class="w-px h-4 bg-white/5 group-hover:bg-white/10 transition-colors"></div>
+
+                        <!-- Delete Button -->
+                        <button (click)="removeSearch(search, $event)"
+                            class="px-2.5 py-2.5 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center cursor-pointer"
+                            title="Eliminar búsqueda">
+                            <app-svg-icon name="x" width="14" height="14"></app-svg-icon>
+                        </button>
+                    </div>
+                    }
+                </div>
+            </div>
+
             <!-- Waveform Indicator -->
             <div *ngIf="isListening" class="mt-4 animate-fade-in relative z-20">
-                <app-voice-waveform></app-voice-waveform>
+                <app-voice-visualizer></app-voice-visualizer>
                 <p
                     class="text-center text-red-500 text-xs md:text-sm font-bold animate-pulse mt-1 tracking-widest uppercase">
                     Escuchando voz...</p>
@@ -129,8 +166,8 @@
             } @else {
             <!-- Grid Real -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                <!-- Smart Shuffle Card -->
-                <div (click)="toggleSmartShuffle()"
+                <!-- Smart Shuffle Card - Only show when not searching -->
+                <div *ngIf="!searchQuery()" (click)="toggleSmartShuffle()"
                     class="group relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-500 to-green-700 cursor-pointer shadow-xl border border-white/10 hover:shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-1">
 
                     <div
@@ -157,44 +194,104 @@
 
                 </div>
 
+
                 @for (artist of filteredArtists(); track artist.id) {
-                <a [routerLink]="['/artist', artist.id]"
-                    class="group relative aspect-square rounded-3xl overflow-hidden bg-zinc-900 cursor-pointer shadow-xl border border-white/5 hover:border-emerald-500/50 transition-all duration-300 transform hover:-translate-y-1">
+                <!-- Logic to decide what to show: Artist Card or "Matched Song" Mini-Card -->
+                <!-- If search query matches a song title inside this artist, show the song directly too? -->
+                <!-- For now, keep the Artist Card but maybe highlight if they have the song? -->
+                <!-- User requested: "que salga la cancion si se que esta en ed sheeran" -->
 
-                    <!-- Image Optimized -->
-                    <img [src]="artist.image || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
-                        [alt]="artist.name"
-                        (error)="artist.image = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
-                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                <div class="relative group">
+                    <a [routerLink]="['/artist', artist.id]"
+                        class="block relative aspect-square rounded-3xl overflow-hidden bg-zinc-900 cursor-pointer shadow-xl border transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
+                        [ngClass]="{
+                            'border-emerald-500/60 shadow-emerald-500/20': searchQuery() && getMatchingSong(artist),
+                            'border-white/5 hover:border-emerald-500/50': !searchQuery() || !getMatchingSong(artist)
+                        }">
 
-                    <!-- Gradient Overlay -->
-                    <div
-                        class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity">
-                    </div>
-
-                    <!-- Info -->
-                    <div class="absolute bottom-0 inset-x-0 p-4 md:p-5">
-                        <h3
-                            class="text-white font-bold text-lg md:text-xl mb-1 truncate leading-tight group-hover:text-emerald-400 transition-colors">
-                            {{ artist.name }}
-                        </h3>
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-zinc-300 backdrop-blur-sm border border-white/10">
-                                {{ artist.genre || 'Artista' }}
-                            </span>
+                        <!-- Animated Glow Effect for Song Cards -->
+                        <div *ngIf="searchQuery() && getMatchingSong(artist)"
+                            class="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse">
                         </div>
-                    </div>
 
-                    <!-- Play Icon (Hover) -->
-                    <div
-                        class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
-                        <div
-                            class="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 text-black">
-                            <app-svg-icon name="play" width="28" height="28" class="ml-1"></app-svg-icon>
+                        <!-- Image Optimized (Prioritize Matching Song Image if searching) -->
+                        <ng-container *ngIf="searchQuery() && getMatchingSong(artist) as match">
+                            <img [src]="match.img || artist.image || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
+                                [alt]="match.title"
+                                (error)="match.img = artist.image || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
+                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1">
+                        </ng-container>
+
+                        <ng-container *ngIf="!searchQuery() || !getMatchingSong(artist)">
+                            <img [src]="artist.image || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
+                                [alt]="artist.name"
+                                (error)="artist.image = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"
+                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        </ng-container>
+
+                        <!-- Enhanced Gradient Overlay for Song Cards -->
+                        <div class="absolute inset-x-0 bottom-0 transition-all duration-500" [ngClass]="{
+                                'h-3/4 bg-gradient-to-t from-black via-emerald-950/60 to-transparent opacity-90 group-hover:opacity-95': searchQuery() && getMatchingSong(artist),
+                                'h-2/3 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90': !searchQuery() || !getMatchingSong(artist)
+                            }">
                         </div>
-                    </div>
-                </a>
+
+
+                        <!-- Info -->
+                        <div class="absolute bottom-0 inset-x-0 p-4 md:p-5">
+                            <!-- When searching and song matches -->
+                            <ng-container *ngIf="searchQuery() && getMatchingSong(artist) as match">
+                                <!-- New Premium Top Badge for Songs -->
+                                <!-- Premium Top-Right Badge -->
+                                <div class="absolute top-3 right-3 z-30">
+                                    <span
+                                        class="px-2.5 py-1 rounded-full bg-emerald-500 text-zinc-950 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                                        <app-svg-icon name="music" width="10" height="10"></app-svg-icon>
+                                        Canción
+                                    </span>
+                                </div>
+
+                                <!-- Song Info in Blur Container -->
+                                <div
+                                    class="bg-zinc-950/60 backdrop-blur-md rounded-2xl p-3 border border-white/10 shadow-xl backdrop-saturate-150">
+                                    <h3
+                                        class="text-white font-black text-lg md:text-xl mb-1 truncate leading-tight group-hover:text-emerald-400 transition-colors">
+                                        <span [innerHTML]="highlightText(match.title, searchQuery())"></span>
+                                    </h3>
+                                    <span class="text-zinc-300 text-xs font-semibold truncate block">
+                                        {{ artist.name }}
+                                    </span>
+                                </div>
+                            </ng-container>
+
+                            <!-- When NOT searching or no song match (show artist normally) -->
+                            <ng-container *ngIf="!searchQuery() || !getMatchingSong(artist)">
+                                <h3
+                                    class="text-white font-bold text-lg md:text-xl mb-1 truncate leading-tight group-hover:text-emerald-400 transition-colors">
+                                    {{ artist.name }}
+                                </h3>
+
+                                <!-- Regular Genre Badge -->
+                                <span
+                                    class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] md:text-xs font-medium text-zinc-300 backdrop-blur-sm border border-white/10 w-fit">
+                                    {{ artist.genre || 'Artista' }}
+                                </span>
+                            </ng-container>
+                        </div>
+
+                        <!-- Enhanced Play Icon (Hover) -->
+                        <div (click)="searchQuery() ? playMatchingSong(artist, $event) : null"
+                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10">
+                            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-2xl text-black transition-all duration-300"
+                                [ngClass]="{
+                                    'bg-gradient-to-br from-emerald-400 to-green-600 shadow-emerald-500/60 animate-pulse': searchQuery() && getMatchingSong(artist),
+                                    'bg-emerald-500 shadow-emerald-500/30': !searchQuery() || !getMatchingSong(artist)
+                                }">
+                                <app-svg-icon name="play" width="32" height="32" class="ml-1"></app-svg-icon>
+                            </div>
+                        </div>
+                    </a>
+                </div>
                 }
             </div>
             }

@@ -68,9 +68,6 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   volume = 70;
   isShuffle = false;
   repeatMode: 'off' | 'all' | 'one' = 'off';
-  showTimerMenu = false;
-  sleepTimer: any = null;
-  timerMinutes = 0;
 
   @ViewChild('progressBarRef') progressBarRef!: ElementRef;
   isDragging = false;
@@ -115,9 +112,6 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.playerService.sleepTimerRemaining$.subscribe(mins => {
-      this.timerMinutes = mins;
-    });
 
     this.sub = this.route.params.subscribe(params => {
       // ... existing code ...
@@ -561,24 +555,6 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     this.playerService.toggleRepeat();
   }
 
-  // --- Sleep Timer ---
-
-  toggleTimerMenu(event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.showTimerMenu = !this.showTimerMenu;
-  }
-
-  setSleepTimer(minutes: number): void {
-    this.playerService.setSleepTimer(minutes);
-    this.showTimerMenu = false;
-  }
-
-  cancelTimer(): void {
-    this.playerService.cancelSleepTimer();
-    this.showTimerMenu = false;
-  }
 
   formatTime(seconds: number): string {
     return this.playerService.formatTime(seconds);
@@ -667,9 +643,6 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     }
     if (this.showMenu()) {
       this.showMenu.set(false);
-    }
-    if (this.showTimerMenu) {
-      this.showTimerMenu = false;
     }
   }
 }

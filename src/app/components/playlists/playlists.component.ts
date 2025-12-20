@@ -123,7 +123,7 @@ export class PlaylistsComponent implements OnInit {
       return;
     }
     // Set playlist and play first song
-    this.playerService.setPlaylist(this.favorites, true);
+    this.playerService.setPlaylist(this.favorites, true, 'playlists');
     this.playerService.playSong(this.favorites[0]);
     // Navigate to player
     this.router.navigate(['/player']);
@@ -135,7 +135,7 @@ export class PlaylistsComponent implements OnInit {
       return;
     }
     // Set playlist and play first song
-    this.playerService.setPlaylist(playlist.songs, false);
+    this.playerService.setPlaylist(playlist.songs, false, 'playlists');
     this.playerService.playSong(playlist.songs[0]);
     // Navigate to player
     this.router.navigate(['/player']);
@@ -143,7 +143,7 @@ export class PlaylistsComponent implements OnInit {
 
   playSong(song: Song): void {
     // Play single song
-    this.playerService.setPlaylist([song], false);
+    this.playerService.setPlaylist([song], false, 'playlists');
     this.playerService.playSong(song);
     // Navigate to player
     this.router.navigate(['/player']);

@@ -1,5 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { SeoService } from '../../services/seo.service';
+import { HapticService } from '../../services/haptic.service';
 
 interface Pad {
   id: number;
@@ -19,7 +22,12 @@ interface Pad {
   styleUrls: ['./dj-pad.component.css']
 })
 export class DjPadComponent implements OnInit, OnDestroy {
+  private seoService = inject(SeoService);
+  private hapticService = inject(HapticService);
+  private router = inject(Router);
+
   audioCtx: AudioContext | null = null;
+  masterVolume = signal(0.8);
 
   isEditing = false;
   editingPadId: number | null = null;
@@ -28,6 +36,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
 
   activeModalForPadId: number | null = null;
   activeModalTab: 'sounds' | 'colors' = 'sounds';
+  selectedPadId = signal<number | null>(null);
 
   // --- MÁS SONIDOS ---
   readonly SOUND_PRESETS = [
@@ -80,7 +89,22 @@ export class DjPadComponent implements OnInit, OnDestroy {
 
   constructor() { }
 
+  navigateTo(path: string) {
+    this.hapticService.light();
+    this.router.navigate([path]);
+  }
+
+  discardSelection() {
+    this.hapticService.light();
+    this.selectedPadId.set(null);
+  }
+
   ngOnInit() {
+    this.seoService.setSeoData(
+      'DJ Zone Pro - MPC Pad Virtual | DonMusica',
+      'Crea ritmos, experimenta con sonidos y personaliza tu propio MPC virtual. Sube tus propios samples y crea música urbana, trap o reggaeton directamente en tu navegador.'
+    );
+
     this.createGrid(4);
     this.loadBindings();
     if (typeof window !== 'undefined') {
@@ -103,8 +127,9 @@ export class DjPadComponent implements OnInit, OnDestroy {
     const newPads: Pad[] = [];
 
     for (let i = 0; i < totalPads; i++) {
-      if (this.pads[i]) {
-        newPads.push(this.pads[i]);
+      const existing = this.pads[i];
+      if (existing) {
+        newPads.push(existing);
       } else {
         newPads.push({
           id: i + 1,
@@ -120,6 +145,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
   }
 
   setGridSize(size: number) {
+    this.hapticService.light();
     this.createGrid(size);
     this.saveBindings();
   }
@@ -140,17 +166,25 @@ export class DjPadComponent implements OnInit, OnDestroy {
   // --- Modal Logic ---
 
   openSettings(padId: number, tab: 'sounds' | 'colors', event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
     this.activeModalForPadId = padId;
     this.activeModalTab = tab;
   }
 
+  setActiveTab(tab: 'sounds' | 'colors') {
+    this.hapticService.light();
+    this.activeModalTab = tab;
+  }
+
   closeModal() {
+    this.hapticService.light();
     this.activeModalForPadId = null;
   }
 
   // Solo reproduce, no asigna
   previewSound(soundId: string, event: Event) {
+    this.hapticService.light();
     event.stopPropagation();
     this.playSoundByType(soundId);
   }
@@ -164,12 +198,17 @@ export class DjPadComponent implements OnInit, OnDestroy {
       pad.label = label.toUpperCase();
       pad.customBuffer = undefined;
       this.playSound(pad);
-      this.closeModal();
+      this.closeModal(); // closeModal already has haptic, but playSound also has it. Maybe too much?
+      // playSound has light. closeModal has light.
+      // selectSound calls playSound then closeModal.
+      // playSound is enough for the selection confirmation feel.
+      // But closeModal clears modal.
       this.saveBindings();
     }
   }
 
   selectColor(padId: number, colorId: string) {
+    this.hapticService.light();
     const pad = this.pads.find(p => p.id === padId);
     if (pad) {
       pad.color = colorId;
@@ -179,8 +218,10 @@ export class DjPadComponent implements OnInit, OnDestroy {
   }
 
   toggleEditMode() {
+    this.hapticService.medium();
     this.isEditing = !this.isEditing;
     this.editingPadId = null;
+    this.selectedPadId.set(null);
     this.closeModal();
   }
 
@@ -221,6 +262,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
   }
 
   triggerUpload(padId: number, event: Event) {
+    this.hapticService.medium();
     event.stopPropagation();
     const fileInput = document.getElementById(`upload-${padId}`) as HTMLInputElement;
     if (fileInput) fileInput.click();
@@ -291,6 +333,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
   }
 
   playSound(pad: Pad) {
+    this.hapticService.light();
     this.triggerPadActive(pad);
     this.initAudio();
     if (!this.audioCtx) return;
@@ -309,7 +352,6 @@ export class DjPadComponent implements OnInit, OnDestroy {
     setTimeout(() => pad.active = false, 150);
   }
 
-  // Separated for Preview
   playSoundByType(type: string) {
     this.initAudio();
     if (!this.audioCtx) return;
@@ -364,10 +406,9 @@ export class DjPadComponent implements OnInit, OnDestroy {
       return;
     }
     event.stopPropagation();
+    this.selectedPadId.set(pad.id === this.selectedPadId() ? null : pad.id);
     this.editingPadId = pad.id;
   }
-
-  // --- Extended Synths ---
 
   createOsc(freqStart: number, freqEnd: number, dur: number, type: any, t: number, vol: number) {
     if (!this.audioCtx) return;
@@ -376,7 +417,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
     osc.type = type;
     osc.frequency.setValueAtTime(freqStart, t);
     osc.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
-    gain.gain.setValueAtTime(vol, t);
+    gain.gain.setValueAtTime(vol * this.masterVolume(), t);
     gain.gain.exponentialRampToValueAtTime(0.01, t + dur);
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
@@ -397,7 +438,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
     filter.type = type;
     filter.frequency.value = freq;
     const gain = this.audioCtx.createGain();
-    gain.gain.setValueAtTime(vol, t);
+    gain.gain.setValueAtTime(vol * this.masterVolume(), t);
     gain.gain.exponentialRampToValueAtTime(0.01, t + dur);
 
     noise.connect(filter);
@@ -444,7 +485,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
       osc.frequency.exponentialRampToValueAtTime(40, t + 0.5);
     }
 
-    gain.gain.setValueAtTime(0.8, t);
+    gain.gain.setValueAtTime(0.8 * this.masterVolume(), t);
     gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
 
     // Filter
@@ -477,7 +518,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
     osc.frequency.setValueAtTime(freq1, t);
     filter.type = 'bandpass';
     filter.frequency.setValueAtTime(freq2, t);
-    gain.gain.setValueAtTime(0.4, t);
+    gain.gain.setValueAtTime(0.4 * this.masterVolume(), t);
     gain.gain.exponentialRampToValueAtTime(0.01, t + dur);
 
     osc.connect(filter);

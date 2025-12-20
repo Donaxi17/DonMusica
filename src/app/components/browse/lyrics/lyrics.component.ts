@@ -16,17 +16,17 @@ import { AdsContainerComponent } from '../../shared/ads-container/ads-container.
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 import { OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { VoiceRecognitionService } from '../../../services/voice-recognition.service';
-import { VoiceWaveformComponent } from '../../shared/voice-waveform/voice-waveform.component';
+import { VoiceVisualizerComponent } from '../../shared/voice-waveform/voice-waveform.component';
 import { SvgIconComponent } from '../../shared/svg-icon/svg-icon.component';
 
 @Component({
-    selector: 'app-search',
+    selector: 'app-lyrics',
     standalone: true,
-    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent, VoiceWaveformComponent, SvgIconComponent],
-    templateUrl: './search.component.html',
-    styleUrl: './search.component.css'
+    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent, VoiceVisualizerComponent, SvgIconComponent],
+    templateUrl: './lyrics.component.html',
+    styleUrl: './lyrics.component.css'
 })
-export class SearchComponent implements OnInit, OnDestroy {
+export class LyricsComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private musicApi = inject(MusicApiService);
@@ -119,6 +119,9 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     playSong(song: Song) {
         this.hapticService.medium();
+        if (this.searchResults().length > 0) {
+            this.playerService.setPlaylist(this.searchResults(), false, 'lyrics');
+        }
         this.playerService.playSong(song);
     }
 
@@ -181,24 +184,10 @@ export class SearchComponent implements OnInit, OnDestroy {
         return this.lyricsService.isSaved(song.title, song.artist);
     }
 
-    toggleSaveLyrics(song: Song, event: Event) {
+    downloadLyrics(song: Song, event: Event) {
         event.stopPropagation();
-        if (this.isSongLyricsSaved(song)) {
-            this.hapticService.light();
-            this.toastService.info('Esta letra ya está guardada');
-            return;
-        }
         this.hapticService.light();
-        this.musicApi.getLyrics(song.artist, song.title).subscribe(lyrics => {
-            if (lyrics && lyrics.length > 50) {
-                this.hapticService.success();
-                this.lyricsService.saveLyric(song.title, song.artist, lyrics);
-                this.toastService.success('Letra guardada en tu colección');
-            } else {
-                this.hapticService.error();
-                this.toastService.error('No se pudo obtener la letra para guardar');
-            }
-        });
+        this.navigateToDownload(song, null, 'lyrics');
     }
 
     downloadProgress = this.offlineService.downloadProgress;
@@ -240,7 +229,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.navigateToDownload(song, song.url, 'offline');
     }
 
-    private navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline'): void {
+    private navigateToDownload(song: Song, url: string | null, mode: 'default' | 'offline' | 'lyrics'): void {
         const songWithUrl = { ...song, url: url || song.url };
         this.router.navigate(['/download'], {
             state: {

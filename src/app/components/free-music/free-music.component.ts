@@ -17,12 +17,12 @@ import { CacheService } from '../../services/cache.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
 import { HapticService } from '../../services/haptic.service';
-import { VoiceWaveformComponent } from '../shared/voice-waveform/voice-waveform.component';
+import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
 
 @Component({
   selector: 'app-free-music',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, VoiceWaveformComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, VoiceVisualizerComponent],
   templateUrl: './free-music.component.html',
   styleUrl: './free-music.component.css'
 })
@@ -214,7 +214,7 @@ export class FreeMusicComponent implements OnInit {
 
     if (currentPlaylist.length !== currentSongs.length ||
       (currentPlaylist.length > 0 && currentSongs.length > 0 && currentPlaylist[0].id !== currentSongs[0].id)) {
-      this.playerService.setPlaylist(currentSongs);
+      this.playerService.setPlaylist(currentSongs, false, 'free-music');
     }
 
     this.playerService.playSong(song);
@@ -223,7 +223,7 @@ export class FreeMusicComponent implements OnInit {
   playAll() {
     this.hapticService.medium();
     if (this.songs().length > 0) {
-      this.playerService.setPlaylist(this.songs());
+      this.playerService.setPlaylist(this.songs(), false, 'free-music');
       this.playerService.playSong(this.songs()[0]);
     }
   }

@@ -34,9 +34,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
   isShuffle = false;
   repeatMode: 'off' | 'all' | 'one' = 'off';
   isFavoritesPlaying = false;
-  showTimerMenu = false;
-  sleepTimer: any = null;
-  timerMinutes = 0;
   imageLoadError = false;
   isDragging = false;
 
@@ -109,9 +106,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.playerService.isFavoritesPlaying$.subscribe(isFav => {
         this.isFavoritesPlaying = isFav;
       }),
-      this.playerService.sleepTimerRemaining$.subscribe(mins => {
-        this.timerMinutes = mins;
-      })
+
     );
   }
 
@@ -128,7 +123,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (artistSongs.length > 0) {
       // Configurar playlist en el servicio
-      this.playerService.setPlaylist(artistSongs, false);
+      this.playerService.setPlaylist(artistSongs, false, 'artist');
 
       // Reproducir la primera canción automáticamente
       this.playerService.playSong(artistSongs[0]);
@@ -293,29 +288,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return this.playerService.formatTime(seconds);
   }
 
-  toggleTimerMenu(event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.showTimerMenu = !this.showTimerMenu;
-  }
 
-  @HostListener('document:click')
-  closeTimerMenu(): void {
-    if (this.showTimerMenu) {
-      this.showTimerMenu = false;
-    }
-  }
-
-  setSleepTimer(minutes: number): void {
-    this.playerService.setSleepTimer(minutes);
-    this.showTimerMenu = false;
-  }
-
-  cancelTimer(): void {
-    this.playerService.cancelSleepTimer();
-    this.showTimerMenu = false;
-  }
 
   onImageError(event: any) {
     this.imageLoadError = true;

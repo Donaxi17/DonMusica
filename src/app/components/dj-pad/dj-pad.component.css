@@ -34,6 +34,22 @@
     animation: fade-in 0.2s ease-out forwards;
 }
 
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Pulse Animation */
 @keyframes soft-pulse {
 
@@ -51,17 +67,8 @@
     animation: soft-pulse 2s infinite ease-in-out;
 }
 
-/* Hide Scrollbar but keep functionality */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
 
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-/* Dynamic TS classes safety (optional but good practice) */
-.bg-zinc-800 {
-    background-color: #27272a;
+/* Utility classes */
+.shadow-3xl {
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.7);
 }

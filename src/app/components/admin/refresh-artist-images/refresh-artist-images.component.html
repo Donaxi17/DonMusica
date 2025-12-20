@@ -1,0 +1,53 @@
+<div class="refresh-artist-images-container">
+    <div class="header">
+        <h1>🖼️ Actualizar Imágenes de Artistas</h1>
+        <p class="subtitle">Fuerza la actualización de imágenes desde Spotify</p>
+    </div>
+
+    <!-- Search and Actions -->
+    <div class="controls">
+        <div class="search-box">
+            <app-svg-icon name="search" class="search-icon"></app-svg-icon>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar artista..." class="search-input" />
+        </div>
+        <button class="btn-refresh-all" (click)="refreshAll()" [disabled]="loading()">
+            <app-svg-icon name="refresh-cw"></app-svg-icon>
+            Actualizar Todos
+        </button>
+    </div>
+
+    <!-- Artists Grid -->
+    <div class="artists-grid" *ngIf="!loading()">
+        <div class="artist-card" *ngFor="let artist of filteredArtists()">
+            <div class="artist-image-wrapper">
+                <img [src]="artist.image || '/assets/img/default-music.png'" [alt]="artist.name" class="artist-image" />
+                <div class="overlay" *ngIf="isRefreshing(artist.id!)">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="artist-info">
+                <h3 class="artist-name">{{ artist.name }}</h3>
+                <p class="artist-genre" *ngIf="artist.genre">{{ artist.genre }}</p>
+            </div>
+
+            <button class="btn-refresh" (click)="refreshArtistImage(artist)" [disabled]="isRefreshing(artist.id!)">
+                <app-svg-icon [name]="isRefreshing(artist.id!) ? 'loader' : 'refresh-cw'"
+                    [class.spinning]="isRefreshing(artist.id!)"></app-svg-icon>
+                {{ isRefreshing(artist.id!) ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading()">
+        <div class="spinner-large"></div>
+        <p>Cargando artistas...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading() && filteredArtists().length === 0">
+        <app-svg-icon name="search"></app-svg-icon>
+        <p>No se encontraron artistas</p>
+    </div>
+</div>

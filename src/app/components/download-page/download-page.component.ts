@@ -5,6 +5,8 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { OfflineService } from '../../services/offline.service';
 import { ToastService } from '../../services/toast.service';
+import { LyricsService } from '../../services/lyrics.service';
+import { MusicApiService } from '../../services/music-api.service';
 
 @Component({
   selector: 'app-download-page',
@@ -16,17 +18,20 @@ import { ToastService } from '../../services/toast.service';
 export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private offlineService = inject(OfflineService);
   private toastService = inject(ToastService);
+  private lyricsService = inject(LyricsService);
+  private musicApi = inject(MusicApiService);
 
   countdown: number = 0; // Sin countdown
   songTitle: string = '';
   artistName: string = '';
   downloadUrl: string = '';
 
-  // 'default' = green (file), 'offline' = blue (app storage)
-  mode: 'default' | 'offline' = 'default';
+  // 'default' = green (file), 'offline' = blue (app storage), 'lyrics' = pink (saved lyrics)
+  mode: 'default' | 'offline' | 'lyrics' = 'default';
 
   // Full song object for offline download
   songData: any = null;
+  lyricsContent: string = ''; // For lyrics mode
 
   private intervalId: any;
 
@@ -53,6 +58,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
       this.downloadUrl = state['downloadUrl'] || '';
       this.mode = state['mode'] || 'default';
       this.songData = state['songData'] || null;
+      this.lyricsContent = state['lyricsContent'] || '';
     }
   }
 
@@ -93,7 +99,36 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
-      if (this.mode === 'offline' && this.songData) {
+      if (this.mode === 'lyrics') {
+        // --- MODE LYRICS ---
+        try {
+          let content = this.lyricsContent;
+          if (!content && this.songTitle && this.artistName) {
+            // Fetch if not provided
+            const result = await this.musicApi.getLyrics(this.artistName, this.songTitle).toPromise();
+            content = typeof result === 'string' ? result : ((result as any)?.lyrics || '');
+          }
+
+          if (content) {
+            const saved = this.lyricsService.saveLyric(this.songTitle, this.artistName, content);
+            if (saved) {
+              this.toastService.success('¡Letra guardada en tu biblioteca!');
+              this.goBack();
+            } else {
+              this.toastService.warning('Límite de letras alcanzado (Upgrade Pro)');
+              this.goBack();
+            }
+          } else {
+            this.toastService.error('No se encontró letra para guardar.');
+            this.goBack();
+          }
+        } catch (e) {
+          console.error(e);
+          this.toastService.error('Error al guardar la letra');
+          this.goBack();
+        }
+
+      } else if (this.mode === 'offline' && this.songData) {
         // Mode Offline
         const success = await this.offlineService.downloadSong(this.songData);
         if (success) {

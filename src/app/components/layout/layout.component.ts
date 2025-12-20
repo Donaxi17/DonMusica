@@ -10,6 +10,7 @@ import { RedesSocialesComponent } from '../redes-sociales/redes-sociales.compone
 import { VideoPlayerComponent } from '../shared/video-player/video-player.component';
 import { SettingsService } from '../../services/settings.service';
 import { HapticService } from '../../services/haptic.service';
+import { ARTISTS_DATA } from '../../models/artists.data';
 
 @Component({
   selector: 'app-layout',
@@ -42,6 +43,14 @@ export class LayoutComponent implements OnInit {
   isMuted = false;
   volume = 1;
   isFavoritesPlaying = false;
+  isDragging = false;
+  playbackContext = 'unknown'; // Added to track where music is from
+
+  // Swipe Gestures for Mini Player
+  swipeStartX = 0;
+  swipeDeltaX = 0;
+  isSwiping = false;
+  wasSwiping = false; // Flag to prevent click after a real swipe
 
   private router = inject(Router);
   public playerService = inject(PlayerService);
@@ -98,8 +107,11 @@ export class LayoutComponent implements OnInit {
     });
 
     this.playerService.currentTime$.subscribe(time => {
-      this.currentTime = this.formatTime(time);
-      this.cdr.markForCheck();
+      // Only update if not dragging to prevent UI stutter
+      if (!this.isDragging) {
+        this.currentTime = this.formatTime(time);
+        this.cdr.markForCheck();
+      }
     });
 
     this.playerService.duration$.subscribe(dur => {
@@ -108,8 +120,11 @@ export class LayoutComponent implements OnInit {
     });
 
     this.playerService.progress$.subscribe(prog => {
-      this.progress = prog;
-      this.cdr.markForCheck();
+      // Only update if not dragging to prevent UI stutter
+      if (!this.isDragging) {
+        this.progress = prog;
+        this.cdr.markForCheck();
+      }
     });
 
     this.playerService.isMuted$.subscribe(muted => {
@@ -124,6 +139,11 @@ export class LayoutComponent implements OnInit {
 
     this.playerService.isFavoritesPlaying$.subscribe(fav => {
       this.isFavoritesPlaying = fav;
+      this.cdr.markForCheck();
+    });
+
+    this.playerService.playbackContext$.subscribe(ctx => {
+      this.playbackContext = ctx;
       this.cdr.markForCheck();
     });
   }
@@ -266,7 +286,9 @@ export class LayoutComponent implements OnInit {
 
   openPlayer() {
     this.hapticService.light();
-    if (this.playerService.playbackContext?.startsWith('smart-shuffle')) {
+
+    // Clicking the art/caratula should generally lead to the player experience
+    if (this.playbackContext?.startsWith('smart-shuffle')) {
       this.router.navigate(['/smart-shuffle']);
     } else {
       this.router.navigate(['/player']);
@@ -274,17 +296,74 @@ export class LayoutComponent implements OnInit {
   }
 
   goToArtistDetail(event: Event) {
+    if (this.wasSwiping) return; // Ignore if we just finished a swipe
+
     this.hapticService.medium();
     event.stopPropagation();
-    if (this.currentSong && (this.currentSong.artistId || this.currentSong.artist)) {
-      // If it's a dynamic artist from search/top charts, we might want to search it first
-      // but if we have an ID, we go directly.
-      if (this.currentSong.artistId && this.currentSong.artistId !== 0 && this.currentSong.artistId !== '0') {
-        this.router.navigate(['/artist', this.currentSong.artistId]);
-      } else {
-        // Fallback: search by name
-        this.router.navigate(['/artists'], { queryParams: { q: this.currentSong.artist } });
+
+    if (this.currentSong) {
+      // 1. Specific Contexts related to sections (User requests)
+      if (this.playbackContext === 'free-music') {
+        this.router.navigate(['/sin-copyright']);
+        return;
       }
+      if (this.playbackContext === 'upload-music') {
+        this.router.navigate(['/upload-music']);
+        return;
+      }
+      if (this.playbackContext === 'offline-music') {
+        this.router.navigate(['/offline-music']);
+        return;
+      }
+      if (this.playbackContext === 'playlists') {
+        this.router.navigate(['/playlists']);
+        return;
+      }
+      if (['charts', 'new-releases', 'trends', 'lyrics', 'browse'].includes(this.playbackContext)) {
+        this.router.navigate(['/browse/' + (this.playbackContext === 'browse' ? '' : this.playbackContext)]);
+        return;
+      }
+      if (this.playbackContext?.startsWith('home')) {
+        this.router.navigate(['/']);
+        return;
+      }
+      if (this.playbackContext?.startsWith('smart-shuffle')) {
+        this.router.navigate(['/smart-shuffle']);
+        return;
+      }
+
+      // 2. ID check: If we have an Artist ID (from DB or enrichment)
+      let artistId = this.currentSong.artistId || (this.currentSong as any).artistID;
+
+      // Rescue: If ID is missing but we have an artist name, try to find it in our local data
+      if (!artistId && this.currentSong.artist) {
+        const foundArtist = ARTISTS_DATA.find(a =>
+          a.name.toLowerCase() === this.currentSong.artist.toLowerCase()
+        );
+        if (foundArtist) {
+          artistId = foundArtist.id;
+        }
+      }
+
+      if (artistId && artistId !== 0 && artistId !== '0') {
+        this.router.navigate(['/artist', artistId]);
+        return;
+      }
+
+      // 3. Context check: If we are already in an artist context, try to stay there or extract ID
+      if (this.playbackContext === 'artist' && this.currentSong.artistId) {
+        this.router.navigate(['/artist', this.currentSong.artistId]);
+        return;
+      }
+
+      // 4. Fallback search by name if ID is missing (common for iTunes/external songs)
+      if (this.currentSong.artist) {
+        this.router.navigate(['/artists'], { queryParams: { q: this.currentSong.artist } });
+        return;
+      }
+
+      // 5. Final fallback
+      this.openPlayer();
     }
   }
 
@@ -317,35 +396,136 @@ export class LayoutComponent implements OnInit {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
+  getContextLabel(): string {
+    if (!this.playbackContext || this.playbackContext === 'unknown') return '';
+
+    const contextMap: { [key: string]: string } = {
+      'free-music': 'Sin Copyright',
+      'upload-music': 'Mis Archivos',
+      'offline-music': 'Modo Offline',
+      'playlists': 'Mis Playlists',
+      'charts': 'Rankings',
+      'new-releases': 'Novedades',
+      'trends': 'Tendencias',
+      'lyrics': 'Letras',
+      'artist': 'Artista',
+      'home-trends': 'Tendencias Home',
+      'home-recent': 'Recién Agregado'
+    };
+
+    if (this.playbackContext.startsWith('smart-shuffle')) return 'Smart Shuffle';
+
+    return contextMap[this.playbackContext] || '';
+  }
+
   // --- Progress Bar Dragging ---
 
   startDrag(event: MouseEvent | TouchEvent) {
     this.hapticService.light();
-    this.handleDrag(event);
+    this.isDragging = true;
+    this.updateProgressFromEvent(event);
+  }
 
-    if (isPlatformBrowser(this.platformId)) {
-      const moveHandler = (e: MouseEvent | TouchEvent) => this.handleDrag(e);
-      const endHandler = () => {
-        document.removeEventListener('mousemove', moveHandler);
-        document.removeEventListener('mouseup', endHandler);
-        document.removeEventListener('touchmove', moveHandler);
-        document.removeEventListener('touchend', endHandler);
-      };
-
-      document.addEventListener('mousemove', moveHandler);
-      document.addEventListener('mouseup', endHandler);
-      document.addEventListener('touchmove', moveHandler, { passive: false });
-      document.addEventListener('touchend', endHandler);
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDragMove(event: MouseEvent | TouchEvent) {
+    if (this.isDragging) {
+      this.updateProgressFromEvent(event);
     }
   }
 
-  private handleDrag(event: MouseEvent | TouchEvent) {
-    if (this.progressBarRef) {
-      const rect = this.progressBarRef.nativeElement.getBoundingClientRect();
-      const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
-      const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      this.playerService.seekTo(pos * 100);
-      this.cdr.detectChanges();
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  stopDrag() {
+    if (this.isDragging) {
+      this.isDragging = false;
+      // Final seek on the actual player service
+      this.playerService.seekTo(this.progress);
+      this.cdr.markForCheck();
     }
+  }
+
+  private updateProgressFromEvent(event: MouseEvent | TouchEvent) {
+    if (!this.progressBarRef) return;
+
+    const rect = this.progressBarRef.nativeElement.getBoundingClientRect();
+    const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
+
+    // Calculate relative position and percentage
+    const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const percentage = pos * 100;
+
+    // Update local state for immediate feedback
+    this.progress = percentage;
+
+    // Optional: approximate currentTime for UI if duration is available
+    // But since Layout holds formatted strings, we might need raw duration from service
+    // For now, updating progress is the main goal for the bar.
+
+    this.cdr.markForCheck();
+  }
+
+  // --- Mini Player Swipe Gestures (Works on Mobile and Desktop) ---
+
+  onSwipeStart(event: MouseEvent | TouchEvent) {
+    // Only swipe if not dragging the progress bar and not clicking buttons
+    const target = event.target as HTMLElement;
+    if (this.isDragging || target.closest('button')) return;
+
+    const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
+    this.swipeStartX = clientX;
+    this.isSwiping = true;
+    this.swipeDeltaX = 0;
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onSwipeMoveGlobal(event: MouseEvent | TouchEvent) {
+    if (!this.isSwiping || this.isDragging) return;
+
+    const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX;
+    const rawDelta = clientX - this.swipeStartX;
+
+    // Visual translation with rubber-band resistance
+    if (Math.abs(rawDelta) > 10) {
+      this.wasSwiping = true; // Mark as a "real" swipe/drag
+    }
+
+    if (Math.abs(rawDelta) > 120) {
+      this.swipeDeltaX = rawDelta > 0
+        ? 120 + (rawDelta - 120) * 0.3
+        : -120 + (rawDelta + 120) * 0.3;
+    } else {
+      this.swipeDeltaX = rawDelta;
+    }
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  onSwipeEndGlobal() {
+    if (!this.isSwiping) return;
+
+    const threshold = 100; // Distance to trigger action
+
+    if (this.swipeDeltaX > threshold) {
+      // Swipe Right -> Next (User's preferred logic)
+      this.hapticService.medium();
+      this.nextTrack();
+    } else if (this.swipeDeltaX < -threshold) {
+      // Swipe Left -> Previous
+      this.hapticService.medium();
+      this.previousTrack();
+    }
+
+    // Reset with animation
+    this.isSwiping = false;
+    this.swipeDeltaX = 0;
+
+    // Briefly keep wasSwiping=true to allow (click) event to check it and refuse action
+    setTimeout(() => {
+      this.wasSwiping = false;
+    }, 100);
+
+    this.cdr.markForCheck();
   }
 }

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HistoryService, HistoryItem } from '../../../services/history.service';
 import { PlayerService } from '../../../services/player.service';
+import { Song } from '../../../services/playlist.service';
 import { AdsContainerComponent } from '../ads-container/ads-container.component';
 import { ToastService } from '../../../services/toast.service';
 import { SkeletonComponent } from '../skeleton/skeleton.component';
@@ -137,13 +138,19 @@ export class RecentlyPlayedComponent {
     }
 
     play(item: HistoryItem) {
-        this.playerService.playSong({
+        const song: Song = {
             id: item.id,
             title: item.title,
             artist: item.artist,
             img: item.img,
-            url: item.url || ''
-        } as any);
+            url: item.url || '',
+            artistId: item.artistId as any,
+            duration: '0:00' // Placeholder
+        } as any;
+
+        // Restore context if available
+        this.playerService.setPlaylist([song], false, item.playbackContext || 'history');
+        this.playerService.playSong(song);
         this.close();
     }
 

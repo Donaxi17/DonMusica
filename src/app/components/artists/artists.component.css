@@ -33,6 +33,10 @@
     animation: fadeInUp 0.6s ease-out;
 }
 
+.recent-search-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
 /* Fade in animation */
 @keyframes fadeIn {
     from {
@@ -107,4 +111,12 @@ input:focus,
 input:focus-visible {
     outline: none !important;
     box-shadow: none !important;
+}
+
+/* Click Feedback Animation */
+.group:active .rounded-3xl {
+    transform: scale(0.95);
+    border-color: #34d399;
+    /* emerald-400 */
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
 }

@@ -116,9 +116,15 @@ export class OfflineMusicComponent implements OnInit {
       url: song.audioUrl || song.url,
       img: song.imageUrl || song.img
     };
-    // No sanitation needed at this level for now, typically handled by player service or sanitizer pipe in template
-    // But ensuring url is stringent string might help debugging if needed.
-    // song.audioUrl should be a blob: scheme string.
+
+    // Set playlist to current offline songs for context
+    const allOffline = this.offlineSongs().map(s => ({
+      ...s,
+      url: s.audioUrl || s.url,
+      img: s.imageUrl || s.img
+    }));
+
+    this.playerService.setPlaylist(allOffline, false, 'offline-music');
     this.playerService.playSong(offlineSongWithUrl);
   }
 
@@ -134,7 +140,7 @@ export class OfflineMusicComponent implements OnInit {
       img: song.imageUrl || song.img
     }));
 
-    this.playerService.setPlaylist(songs);
+    this.playerService.setPlaylist(songs, false, 'offline-music');
     this.playerService.playSong(songs[0]);
     this.toastService.success(`Reproduciendo ${songs.length} canciones offline`);
   }

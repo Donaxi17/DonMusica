@@ -69,7 +69,7 @@ export class ChartsComponent implements OnInit {
 
     playSong(song: Song) {
         // Set the full context so Next/Prev buttons and Auto-Play work
-        this.playerService.setPlaylist(this.chartSongs());
+        this.playerService.setPlaylist(this.chartSongs(), false, 'charts');
         this.playerService.playSong(song);
     }
 
@@ -79,7 +79,7 @@ export class ChartsComponent implements OnInit {
 
     playAll() {
         if (this.chartSongs().length > 0) {
-            this.playerService.setPlaylist(this.chartSongs());
+            this.playerService.setPlaylist(this.chartSongs(), false, 'charts');
             this.playerService.playSong(this.chartSongs()[0]);
         }
     }

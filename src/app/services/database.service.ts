@@ -1,6 +1,6 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs, getCountFromServer } from '@angular/fire/firestore';
 import { Storage, ref, uploadBytes, getDownloadURL, deleteObject, uploadBytesResumable } from '@angular/fire/storage';
 import { Observable, from, map, switchMap, of, shareReplay, tap, catchError, startWith } from 'rxjs';
 
@@ -80,6 +80,13 @@ export class DatabaseService {
             map(data => data as Artist[]),
             tap(data => this.saveToLocal(this.ARTISTS_KEY, data)),
             shareReplay(1)
+        );
+    }
+
+    getCollectionCount(collectionName: string): Observable<number> {
+        const collRef = collection(this.firestore, collectionName);
+        return from(getCountFromServer(collRef)).pipe(
+            map(snapshot => snapshot.data().count)
         );
     }
 

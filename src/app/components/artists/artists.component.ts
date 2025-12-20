@@ -1,4 +1,5 @@
 ﻿import { Component, inject, signal, OnInit, ChangeDetectorRef, computed } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
@@ -12,17 +13,18 @@ import { DatabaseService, Artist, Song } from '../../services/database.service';
 import { combineLatest } from 'rxjs';
 import { ItunesService } from '../../services/itunes.service';
 import { SpotifyService } from '../../services/spotify.service';
+import { PlayerService } from '../../services/player.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { HapticService } from '../../services/haptic.service';
 
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { SmartShuffleComponent } from '../shared/smart-shuffle/smart-shuffle.component';
-import { VoiceWaveformComponent } from '../shared/voice-waveform/voice-waveform.component';
+import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, SmartShuffleComponent, VoiceWaveformComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, SmartShuffleComponent, VoiceVisualizerComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })
@@ -35,8 +37,11 @@ export class ArtistsComponent implements OnInit {
   private itunesService = inject(ItunesService);
   private spotifyService = inject(SpotifyService);
   private hapticService = inject(HapticService);
+  private playerService = inject(PlayerService);
+  private sanitizer = inject(DomSanitizer);
 
   searchQuery = signal<string>('');
+  recentSearches = signal<string[]>([]);
   isListening = false;
   selectedGenre = signal<string>('all');
 
@@ -44,6 +49,9 @@ export class ArtistsComponent implements OnInit {
   artists = signal<Artist[]>([]);
   loading = signal<boolean>(true);
   showSmartShuffle = signal<boolean>(false);
+
+  // Cache to track which songs we've already tried to fetch artwork for
+  private artworkFetchCache = new Set<string>();
 
   genres = [
     { id: 'all', name: 'Todos', icon: 'grid', color: 'emerald' },
@@ -56,18 +64,49 @@ export class ArtistsComponent implements OnInit {
     { id: 'cristiana', name: 'Cristiana', icon: 'heart', color: 'indigo' }
   ];
 
+
+  // Normalize text: remove accents, apostrophes, and special characters
+  private normalize(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/['']/g, '') // Remove apostrophes
+      .trim();
+  }
+
   filteredArtists = computed(() => {
-    const query = this.searchQuery().toLowerCase();
+    const query = this.normalize(this.searchQuery());
     const genre = this.selectedGenre();
 
-    return this.artists().filter(artist => {
-      const matchesSearch = artist.name.toLowerCase().includes(query) ||
-        (artist.songs && artist.songs.some(s => s.title.toLowerCase().includes(query)));
+    // First filter by genre to narrow down the list
+    let filtered = this.artists();
+    if (genre !== 'all') {
+      filtered = filtered.filter(artist => artist.genre && artist.genre.toLowerCase().includes(genre));
+    }
 
-      const matchesGenre = genre === 'all' || (artist.genre && artist.genre.toLowerCase().includes(genre));
-      return matchesSearch && matchesGenre;
-    });
+    // Smart search: Search in both artist names AND song titles
+    if (query) {
+      filtered = filtered.filter(artist => {
+        // Check if artist name matches
+        const artistNameMatches = this.normalize(artist.name).includes(query);
+
+        // Check if any song title matches
+        const songMatches = artist.songs && artist.songs.some(s =>
+          this.normalize(s.title).includes(query)
+        );
+
+        // Return true if either matches
+        return artistNameMatches || songMatches;
+      });
+    }
+
+    return filtered;
   });
+
+
+
+
 
   ngOnInit() {
     this.seoService.setSeoData('Artistas', 'Explora artistas musicales.');
@@ -80,7 +119,86 @@ export class ArtistsComponent implements OnInit {
       }
     });
 
+    this.loadRecentSearches();
     this.loadArtists();
+  }
+
+  // --- Search History ---
+  loadRecentSearches() {
+    try {
+      const history = JSON.parse(localStorage.getItem('donmusic_search_history') || '[]');
+      this.recentSearches.set(history);
+    } catch (e) {
+      this.recentSearches.set([]);
+    }
+  }
+
+  saveSearch(query: string) {
+    if (!query || query.trim().length < 2) return;
+    const cleanQuery = query.trim();
+
+    // Create a copy to trigger reactivity safely
+    let history = [...this.recentSearches()];
+
+    // Remove if exists (case-insensitive)
+    history = history.filter(q => q.toLowerCase() !== cleanQuery.toLowerCase());
+
+    // Add to beginning
+    history.unshift(cleanQuery);
+
+    // Limit to 5
+    history = history.slice(0, 5);
+
+    // Update signal and storage
+    this.recentSearches.set(history);
+    localStorage.setItem('donmusic_search_history', JSON.stringify(history));
+    console.log('Saved search:', cleanQuery, history);
+  }
+
+  removeSearch(query: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const history = this.recentSearches().filter(q => q !== query);
+    this.recentSearches.set(history);
+    localStorage.setItem('donmusic_search_history', JSON.stringify(history));
+  }
+
+  selectSearch(query: string) {
+    this.hapticService.light();
+    this.searchQuery.set(query);
+  }
+
+  // --- Highlighting ---
+  // --- Highlighting ---
+  highlightText(text: string, query: string): SafeHtml {
+    if (!query || query.length < 2) return text;
+
+    // Escape special regex characters
+    const cleanQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Create a pattern where vowels match accent-insensitive versions
+    // filtering by base character
+    const pattern = cleanQuery
+      .split('')
+      .map(char => {
+        const lower = char.toLowerCase();
+        if (lower === 'a') return '[aáàäâ]';
+        if (lower === 'e') return '[eéèëê]';
+        if (lower === 'i') return '[iíìïî]';
+        if (lower === 'o') return '[oóòöô]';
+        if (lower === 'u') return '[uúùüû]';
+        return char;
+      })
+      .join('');
+
+    const regex = new RegExp(`(${pattern})`, 'gi');
+
+    // Safety check to avoid destroying HTML if something matches a tag (unlikely here but good practice)
+    const newText = text.replace(regex, '<span class="text-emerald-400 font-extrabold">$1</span>');
+
+    return this.sanitizer.bypassSecurityTrustHtml(newText);
   }
 
   toggleVoiceSearch() {
@@ -106,6 +224,89 @@ export class ArtistsComponent implements OnInit {
       }
     }
   }
+
+  onEnter() {
+    this.hapticService.light();
+    this.saveSearch(this.searchQuery());
+    // Hide keyboard on mobile
+    (document.activeElement as HTMLElement)?.blur();
+  }
+
+  playMatchingSong(artist: Artist, event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.hapticService.medium();
+
+    const query = this.normalize(this.searchQuery());
+    const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
+
+    if (matchingSong) {
+      // Ensure the song has the correct artistID
+      const songToPlay = { ...matchingSong, artistId: artist.id };
+
+      // Create a playlist with this song first, then the rest of the artist's songs
+      const otherSongs = artist.songs
+        ?.filter(s => s.id !== matchingSong.id)
+        .map(s => ({ ...s, artistId: artist.id })) || [];
+
+      const playlist = [songToPlay, ...otherSongs] as any[];
+
+      this.playerService.setPlaylist(playlist, false, 'artist');
+
+      // Save to history since this was a successful interaction
+      this.saveSearch(this.searchQuery());
+
+      this.playerService.playSong(songToPlay as any);
+    }
+  }
+
+  getMatchingSong(artist: Artist): Song | undefined {
+    const query = this.normalize(this.searchQuery());
+    if (!query) return undefined;
+
+    const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
+
+    // Fetch artwork from Spotify if not available
+    if (matchingSong && (!matchingSong.img || matchingSong.img.includes('default'))) {
+      this.fetchSongArtwork(matchingSong, artist);
+    }
+
+    return matchingSong;
+  }
+
+  private async fetchSongArtwork(song: Song, artist: Artist) {
+    // Create unique cache key
+    const cacheKey = `${artist.id}-${song.id}`;
+
+    // Skip if we already tried to fetch this song's artwork
+    if (this.artworkFetchCache.has(cacheKey)) {
+      return;
+    }
+
+    // Mark as fetching to prevent duplicate requests
+    this.artworkFetchCache.add(cacheKey);
+
+    try {
+      const metadata = await this.spotifyService.getTrackMetadata(song.title, song.artist || artist.name);
+      if (metadata?.image) {
+        // Update the song image in the artist's songs array
+        const updatedArtists = this.artists().map(a => {
+          if (a.id === artist.id) {
+            const updatedSongs = a.songs?.map(s =>
+              s.id === song.id ? { ...s, img: metadata.image } : s
+            );
+            return { ...a, songs: updatedSongs };
+          }
+          return a;
+        });
+        this.artists.set(updatedArtists);
+        this.cdr.markForCheck();
+      }
+    } catch (error) {
+      // Silently fail
+    }
+  }
+
 
   toggleSmartShuffle() {
     this.hapticService.medium();
@@ -198,5 +399,25 @@ export class ArtistsComponent implements OnInit {
       return newList;
     });
     this.cdr.markForCheck();
+  }
+
+  async clearAllArtistImagesCache() {
+    if (!confirm('¿Quieres actualizar todas las imágenes de artistas desde Spotify?\n\nEsto limpiará el caché y recargará la página.')) {
+      return;
+    }
+
+    // Clear ALL Spotify cache from localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('spotify_artist_stats') || key.includes('donmusic_cache_spotify')) {
+        localStorage.removeItem(key);
+        console.log('🗑️ Eliminado:', key);
+      }
+    });
+
+    console.log('✅ Caché de Spotify completamente limpiado');
+    console.log('🔄 Recargando página para buscar imágenes frescas...');
+
+    // Reload page to fetch fresh images
+    window.location.reload();
   }
 }

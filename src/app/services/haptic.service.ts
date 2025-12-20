@@ -36,6 +36,13 @@ export class HapticService {
     }
 
     /**
+     * Alias for heavy feedback.
+     */
+    impact(): void {
+        this.heavy();
+    }
+
+    /**
      * Triggers a specific vibration pattern.
      * @param pattern Array of vibration and pause durations.
      */

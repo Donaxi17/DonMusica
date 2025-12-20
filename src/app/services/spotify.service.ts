@@ -133,8 +133,9 @@ export class SpotifyService {
             const token = await this.getAccessToken();
             const queryStr = encodeURIComponent(artistName);
 
+            // Get top 5 results to find the best match
             const response = await fetch(
-                `${this.baseUrl}/search?q=${queryStr}&type=artist&limit=1`,
+                `${this.baseUrl}/search?q=${queryStr}&type=artist&limit=5`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }
@@ -145,7 +146,31 @@ export class SpotifyService {
             const data = await response.json();
 
             if (data.artists && data.artists.items && data.artists.items.length > 0) {
-                const artist = data.artists.items[0];
+                // Normalize function to compare names
+                const normalize = (name: string) => name.toLowerCase().trim()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+                    .replace(/[^a-z0-9\s]/g, ''); // Remove special chars
+
+                const searchName = normalize(artistName);
+
+                // Find exact match first
+                let artist = data.artists.items.find((a: any) =>
+                    normalize(a.name) === searchName
+                );
+
+                // If no exact match, find the closest match (starts with search name)
+                if (!artist) {
+                    artist = data.artists.items.find((a: any) =>
+                        normalize(a.name).startsWith(searchName)
+                    );
+                }
+
+                // If still no match, use the most popular one (first result)
+                if (!artist) {
+                    artist = data.artists.items[0];
+                }
+
                 const images = artist.images;
                 let image = images[0]?.url;
 
@@ -171,5 +196,10 @@ export class SpotifyService {
     getArtistStatsFromCache(artistName: string) {
         const cacheKey = `${this.ARTIST_STATS_CACHE_KEY}_${artistName.toLowerCase().trim()}`;
         return this.cacheService.get<any>(cacheKey);
+    }
+
+    clearArtistCache(artistName: string) {
+        const cacheKey = `${this.ARTIST_STATS_CACHE_KEY}_${artistName.toLowerCase().trim()}`;
+        this.cacheService.remove(cacheKey);
     }
 }

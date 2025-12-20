@@ -9,6 +9,8 @@ export interface HistoryItem {
     url?: string;
     timestamp: number;
     type: 'video' | 'audio';
+    playbackContext?: string; // Track where it was played from
+    artistId?: string | number;
 }
 
 @Injectable({
@@ -36,7 +38,7 @@ export class HistoryService {
         }
     }
 
-    addToHistory(song: any) {
+    addToHistory(song: any, context?: string) {
         if (!song || !song.title) return;
 
         const newItem: HistoryItem = {
@@ -46,7 +48,9 @@ export class HistoryService {
             img: song.img || song.thumbnail || 'assets/icons/icon-512x512.png',
             url: song.url || '',
             timestamp: Date.now(),
-            type: song.videoId ? 'video' : 'audio'
+            type: song.videoId ? 'video' : 'audio',
+            playbackContext: context || 'unknown',
+            artistId: song.artistId || song.artistID
         };
 
         let current = this.historySubject.value;

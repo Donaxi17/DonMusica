@@ -75,12 +75,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   loadStats() {
     this.loadingStats.set(true);
-    // Get stats
-    this.databaseService.getArtists().subscribe(artists => {
-      this.totalArtists.set(artists.length);
+
+    // Optimized: Use getCountFromServer to avoid reading all documents
+    this.databaseService.getCollectionCount('artists').subscribe(count => {
+      this.totalArtists.set(count);
     });
-    this.databaseService.getSongs().subscribe(songs => {
-      this.totalSongs.set(songs.length);
+
+    this.databaseService.getCollectionCount('songs').subscribe(count => {
+      this.totalSongs.set(count);
       this.loadingStats.set(false);
     });
 
@@ -221,6 +223,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   async installPwa() {
+    this.hapticService.light();
     if (!this.deferredPrompt) {
       this.toastService.info('Para instalar la App: Presiona "Añadir a pantalla de inicio" en las opciones de tu navegador o "Instalar Aplicación" en la barra de búsqueda.');
       return;
@@ -242,10 +245,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
 
   navigateToArtists(): void {
+    this.hapticService.light();
     this.router.navigate(['/artists']);
   }
 
   navigateTo(path: string): void {
+    this.hapticService.light();
     this.router.navigate([path]);
   }
 

@@ -17,7 +17,7 @@ export class ShareService {
         if (source === 'free-music') {
             deepLink = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
         } else {
-            deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+            deepLink = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
         }
 
         const shareData = {
@@ -45,7 +45,7 @@ export class ShareService {
      */
     async shareLyrics(title: string, artist: string, lyrics: string): Promise<void> {
         const preview = lyrics.length > 150 ? lyrics.substring(0, 150) + '...' : lyrics;
-        const deepLink = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(title + ' ' + artist)}`;
+        const deepLink = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(title + ' ' + artist)}`;
 
         const shareData = {
             title: `Letra: ${title} - ${artist}`,
@@ -128,7 +128,7 @@ export class ShareService {
         if (source === 'free-music') {
             url = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
         } else {
-            url = `${this.BASE_URL}/browse/search?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
+            url = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + song.artist)}`;
         }
 
         let shareUrl = '';
