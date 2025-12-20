@@ -11,11 +11,15 @@ export class ShareService {
      * Comparte una canción usando la Web Share API (si está disponible)
      * o copia el enlace al portapapeles como fallback
      */
-    async shareSong(song: Song, source: 'default' | 'free-music' = 'default'): Promise<void> {
+    async shareSong(song: Song, source: 'default' | 'free-music' | 'lyrics' = 'default'): Promise<void> {
         let deepLink = '';
+        let shareText = `🎵 Estoy escuchando "${song.title}" de ${song.artist} en DonMusica.\n\n¡Escúchala gratis aquí! 👇`;
 
         if (source === 'free-music') {
             deepLink = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
+        } else if (source === 'lyrics') {
+            deepLink = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + (song.artist || ''))}`;
+            shareText = `🎤 Mira la letra de "${song.title}" de ${song.artist} en DonMusica.\n\nVer completa aquí 👇`;
         } else {
             // Priority: direct artist link if artistId is available
             const artistId = song.artistId;
@@ -29,7 +33,7 @@ export class ShareService {
 
         const shareData = {
             title: `${song.title} - ${song.artist}`,
-            text: `🎵 Estoy escuchando "${song.title}" de ${song.artist} en DonMusica.\n\n¡Escúchala gratis aquí! 👇`,
+            text: shareText,
             url: deepLink
         };
 
@@ -128,12 +132,15 @@ export class ShareService {
     /**
      * Comparte en redes sociales específicas
      */
-    shareOnSocial(platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram', song: Song, source: 'default' | 'free-music' = 'default'): void {
-        const text = `🎵 Escucha "${song.title}" de ${song.artist} en DonMusica\n\n✨ Música gratis, letras y más`;
-
+    shareOnSocial(platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram', song: Song, source: 'default' | 'free-music' | 'lyrics' = 'default'): void {
+        let text = `🎵 Escucha "${song.title}" de ${song.artist} en DonMusica\n\n✨ Música gratis, letras y más`;
         let url = '';
+
         if (source === 'free-music') {
             url = `${this.BASE_URL}/sin-copyright?q=${encodeURIComponent(song.title)}`;
+        } else if (source === 'lyrics') {
+            url = `${this.BASE_URL}/browse/lyrics?q=${encodeURIComponent(song.title + ' ' + (song.artist || ''))}`;
+            text = `🎤 Mira la letra de "${song.title}" de ${song.artist} en DonMusica`;
         } else {
             const artistId = song.artistId;
             if (artistId && artistId !== '0') {

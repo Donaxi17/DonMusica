@@ -249,7 +249,7 @@ export class LyricsComponent implements OnInit, OnDestroy {
     async shareSong(song: Song, event: Event) {
         this.hapticService.medium();
         event.stopPropagation();
-        await this.shareService.shareSong(song);
+        await this.shareService.shareSong(song, 'lyrics' as any);
     }
 
     async shareLyrics() {

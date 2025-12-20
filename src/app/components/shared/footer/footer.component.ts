@@ -60,7 +60,7 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
               <li><a routerLink="/blog" class="hover:text-emerald-400 transition-colors">Blog</a></li>
               <li><a routerLink="/about" class="hover:text-emerald-400 transition-colors">Sobre Nosotros</a></li>
               <li><a routerLink="/contact" class="hover:text-emerald-400 transition-colors">Contacto</a></li>
-              <li><a href="#" class="hover:text-emerald-400 transition-colors">Para Artistas</a></li>
+              <li><a routerLink="/ads" class="hover:text-emerald-400 transition-colors">Ads</a></li>
             </ul>
           </div>
 

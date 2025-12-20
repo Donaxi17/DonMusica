@@ -54,7 +54,7 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
                             <p class="text-xs leading-relaxed text-slate-300">
                                 <strong class="text-emerald-400 text-sm">5 GB</strong> para Subir Música
                             </p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">vs 1 GB en plan FREE</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">vs 500 MB en plan FREE</p>
                         </div>
                     </div>
 
@@ -64,7 +64,7 @@ import { SvgIconComponent } from '../svg-icon/svg-icon.component';
                             <p class="text-xs leading-relaxed text-slate-300">
                                 <strong class="text-blue-400 text-sm">5 GB</strong> para Modo Offline
                             </p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">vs 20 canciones en plan FREE</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">vs 500 MB en plan FREE</p>
                         </div>
                     </div>
 
