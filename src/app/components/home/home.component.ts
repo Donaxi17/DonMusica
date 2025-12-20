@@ -80,9 +80,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     let artistsLoaded = false;
     let songsLoaded = false;
+    let recentLoaded = false;
 
     const checkLoadingFinished = () => {
-      if (artistsLoaded && songsLoaded) {
+      if (artistsLoaded && songsLoaded && recentLoaded) {
         this.loadingStats.set(false);
       }
     };
@@ -128,6 +129,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
         // Step 2: Show what we have initially (with placeholders if needed)
         this.recentlyAdded.set(initialMap);
+        recentLoaded = true;
+        checkLoadingFinished();
+
+        // RE-SCAN for reveal animations AFTER data is set on DOM
+        setTimeout(() => this.initScrollAnimations(), 200);
 
         // Step 3: Proactively fetch artwork for all songs and update one by one as they arrive
         initialMap.forEach(async (song) => {
@@ -153,8 +159,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }
           }
         });
+      },
+      error: () => {
+        // Ensure we don't get stuck in loading
+        this.loadingStats.set(false);
       }
     });
+
+    // Fallback: If after 5 seconds we are still loading stats, force show
+    setTimeout(() => {
+      if (this.recentlyAdded().length > 0) {
+        this.loadingStats.set(false);
+      }
+    }, 5000);
   }
 
   isGenericImage(img: string | undefined): boolean {
@@ -215,8 +232,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private initScrollAnimations() {
     const observerOptions = {
-      threshold: 0.2, // 20% del elemento debe estar visible
-      rootMargin: '0px 0px -150px 0px' // Se activa 150px DENTRO de la pantalla
+      threshold: 0.15, // 15% visibility triggers it
+      rootMargin: '0px 0px -100px 0px' // Slightly more forgiving for fast mobile scrolls
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -224,13 +241,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
         if (entry.isIntersecting) {
           this.renderer.addClass(entry.target, 'active');
 
-          // Trigger counter animations specifically
-          if (entry.target.id === 'stats-section') {
-            this.animateCounter(this.totalArtists(), this.displayArtists);
-            this.animateCounter(this.totalSongs(), this.displaySongs);
+          // Trigger counter animations individually when they come into view with a slight delay
+          if (entry.target.id === 'artists-counter' && this.displayArtists() === 0) {
+            setTimeout(() => this.animateCounter(this.totalArtists(), this.displayArtists), 400);
+          }
+          if (entry.target.id === 'songs-counter' && this.displaySongs() === 0) {
+            setTimeout(() => this.animateCounter(this.totalSongs(), this.displaySongs), 600);
           }
         } else {
+          // Remove active class when out of view to allow re-animation (Infinite feel)
           this.renderer.removeClass(entry.target, 'active');
+
+          // Optional: Reset counters to 0 when they leave the viewport to allow re-counting
+          if (entry.target.id === 'artists-counter') this.displayArtists.set(0);
+          if (entry.target.id === 'songs-counter') this.displaySongs.set(0);
         }
       });
     }, observerOptions);
