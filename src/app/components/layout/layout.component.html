@@ -394,7 +394,7 @@
         class="fixed left-2 right-2 md:left-auto md:right-8 md:bottom-8 md:w-96 
                bottom-[calc(4.6rem+env(safe-area-inset-bottom,20px))] 
                rounded-2xl p-2 z-[2050] 
-               flex items-center gap-3 animate-slide-up border overflow-hidden ultra-glass-player touch-none select-none"
+               flex items-center gap-2 md:gap-3 animate-slide-up border overflow-hidden ultra-glass-player touch-none select-none"
         [class.favorite-mode]="isFavorite(currentSong.id || '') || currentSong.isFavorite"
         [style.transform]="'translateX(' + swipeDeltaX + 'px)'"
         [style.transition]="isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.2, 1, 0.2, 1)'"
@@ -453,14 +453,16 @@
                 <span *ngIf="isFavoritesPlaying" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block ml-1"></span>
             </p>
 
-            <!-- Context Label (Recommendation #1) -->
-            <p *ngIf="getContextLabel()" class="text-[9px] uppercase tracking-wider font-black mt-0.5 opacity-80"
+            <!-- Context Label -->
+            <p *ngIf="getContextLabel()"
+                class="text-[9px] uppercase tracking-wider font-black mt-0.5 opacity-80 truncate"
                 [ngClass]="(currentSong && (isFavorite(currentSong.id || '') || currentSong.isFavorite)) ? 'text-rose-400' : 'text-emerald-500'">
                 {{getContextLabel()}}
             </p>
         </div>
 
-        <div class="flex items-center gap-1 md:gap-2 mr-1" (click)="$event.stopPropagation()">
+        <!-- CONTROLS -->
+        <div class="flex items-center gap-1 md:gap-2 shrink-0" (click)="$event.stopPropagation()">
             <button (click)="previousTrack()"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -483,7 +485,7 @@
                 </svg>
             </button>
             <button (click)="closePlayer()"
-                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-500 hover:text-red-400 transition-colors ml-1"
+                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-500 hover:text-red-400 transition-colors ml-0.5"
                 title="Cerrar">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path
@@ -497,7 +499,8 @@
             (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
 
             <!-- Visual Bar (Pinned to top-0) -->
-            <div class="absolute top-0 left-0 right-0 h-[6px] bg-white/10 group-hover/progress:h-[8px] transition-all">
+            <div
+                class="absolute top-0 left-0 right-0 h-[3.5px] bg-white/10 group-hover/progress:h-[5px] transition-all">
                 <!-- Progress Fill -->
                 <div class="h-full relative shadow-[0_4px_10px_rgba(0,0,0,0.3)]" [class.transition-all]="!isDragging"
                     [class.duration-100]="!isDragging" [class.ease-linear]="!isDragging" [ngClass]="[

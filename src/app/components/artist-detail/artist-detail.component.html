@@ -110,7 +110,7 @@
 
                 <!-- Title and Actions: Column on mobile, Row on desktop -->
                 <div
-                    class="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-6 mb-4 w-full">
+                    class="flex flex-col md:flex-row items-center justify-center md:justify-between gap-2 md:gap-6 mb-4 w-full">
                     <h2
                         class="text-2xl md:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-lg leading-tight md:max-w-[75%] text-center md:text-left break-words">
                         {{currentlyPlayingSong()?.title}}
@@ -118,18 +118,18 @@
 
                     <!-- Integrated Actions Group -->
                     <div
-                        class="flex items-center gap-1 md:gap-1.5 bg-black/20 p-1 md:p-1.5 rounded-full border border-white/5 backdrop-blur-sm shadow-inner mt-4 md:mt-2">
+                        class="flex items-center gap-1 md:gap-1.5 bg-black/20 p-1 md:p-1.5 rounded-full border border-white/5 backdrop-blur-sm shadow-inner mt-2 md:mt-2">
                         <!-- Favorite Button -->
                         <button (click)="$event.stopPropagation(); toggleFavorite(currentlyPlayingSong()!, $event)"
                             class="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all active:scale-75 group/fav"
                             title="Me encanta">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover/fav:text-red-400 transition-colors"
+                            <svg class="w-5 h-5 text-zinc-400 group-hover/fav:text-red-400 transition-colors"
                                 fill="currentColor" viewBox="0 0 24 24"
                                 *ngIf="!isFavorite(currentlyPlayingSong()?.id || '')">
                                 <path
                                     d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416zM12 18.586l-6.793-6.793c-1.562-1.563-1.562-4.095 0-5.657.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172l1.207 1.207 1.207-1.207c.76-.76 1.754-1.172 2.793-1.172s2.033.412 2.793 1.172c1.562 1.562 1.562 4.095 0 5.657L12 18.586z" />
                             </svg>
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-red-500 animate-heart-burst" fill="currentColor"
+                            <svg class="w-5 h-5 text-red-500 animate-heart-burst" fill="currentColor"
                                 viewBox="0 0 24 24" *ngIf="isFavorite(currentlyPlayingSong()?.id || '')">
                                 <path
                                     d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
@@ -149,7 +149,7 @@
                         <button (click)="$event.stopPropagation(); downloadSong(currentlyPlayingSong()!)"
                             class="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all group/dl"
                             title="Descargar MP3">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover/dl:text-blue-400 transition-colors"
+                            <svg class="w-5 h-5 text-zinc-400 group-hover/dl:text-blue-400 transition-colors"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -164,7 +164,7 @@
 
                             <!-- Checkmark if saved -->
                             <svg *ngIf="isOffline(currentlyPlayingSong()?.id || '')"
-                                class="w-5 h-5 md:w-6 md:h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]"
+                                class="w-5 h-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -172,7 +172,7 @@
 
                             <!-- Cloud icon if not saved -->
                             <svg *ngIf="!isOffline(currentlyPlayingSong()?.id || '')"
-                                class="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover/off:text-cyan-400 transition-colors"
+                                class="w-5 h-5 text-zinc-400 group-hover/off:text-cyan-400 transition-colors"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
