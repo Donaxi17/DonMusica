@@ -68,7 +68,7 @@ import { RouterModule } from '@angular/router';
                     <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0 1 1 0 002 0zM4.5 5A.5.5 0 004 5.5V11a.5.5 0 00.5.5H5V14a1 1 0 001 1h3a1 1 0 001-1v-2.5h.5a.5.5 0 00.5-.5V5.5a.5.5 0 00-.5-.5h-6z" /></svg>
                     Cookie de Google DoubleClick DART
                   </h3>
-                  <p class="text-sm">Google es uno de los proveedores externos en nuestro sitio. También utiliza cookies, conocidas como cookies de DART, para mostrar anuncios a los visitantes de nuestro sitio en función de su visita a www.website.com y otros sitios en Internet. Sin embargo, los visitantes pueden optar por rechazar el uso de cookies de DART visitando la Política de Privacidad de la red de contenido y anuncios de Google en la siguiente URL: <a href="https://policies.google.com/technologies/ads" class="text-purple-400 underline">https://policies.google.com/technologies/ads</a></p>
+                  <p class="text-sm">Google es uno de los proveedores externos en nuestro sitio. También utiliza cookies, conocidas como cookies de DART, para mostrar anuncios a los visitantes de nuestro sitio en función de su visita a <span class="text-white">www.donmusica.online</span> y otros sitios en Internet. Sin embargo, los visitantes pueden optar por rechazar el uso de cookies de DART visitando la Política de Privacidad de la red de contenido y anuncios de Google en la siguiente URL: <a href="https://policies.google.com/technologies/ads" class="text-purple-400 underline break-all">https://policies.google.com/technologies/ads</a></p>
                 </div>
               </div>
             </section>
@@ -99,11 +99,11 @@ import { RouterModule } from '@angular/router';
               <h2 class="text-xl font-black text-white mb-4">Consentimiento</h2>
               <p class="mb-6">Al utilizar nuestro sitio web, usted acepta nuestra Política de Privacidad y acepta sus Términos y Condiciones.</p>
               <a href="mailto:contacto&#64;donmusica.online" 
-                class="inline-flex items-center gap-4 bg-purple-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-purple-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                class="inline-flex items-center gap-3 bg-purple-600 text-white px-6 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-purple-500/20 w-full md:w-auto overflow-hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 flex-shrink-0">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                 </svg>
-                Privacidad DonMusica
+                <span class="break-all text-xs md:text-sm">Privacidad DonMusica</span>
               </a>
             </section>
           </div>

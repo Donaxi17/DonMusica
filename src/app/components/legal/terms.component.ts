@@ -98,11 +98,11 @@ import { RouterModule } from '@angular/router';
               <h2 class="text-xl font-black text-white mb-4">Contacto</h2>
               <p class="mb-6">Si tiene alguna pregunta sobre estos Términos, por favor contáctenos:</p>
               <a href="mailto:contacto&#64;donmusica.online" 
-                class="inline-flex items-center gap-4 bg-emerald-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-emerald-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                class="inline-flex items-center gap-3 bg-emerald-500 text-black px-6 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 w-full md:w-auto overflow-hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 flex-shrink-0">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                 </svg>
-                contacto&#64;donmusica.online
+                <span class="break-all text-xs md:text-sm">contacto&#64;donmusica.online</span>
               </a>
             </section>
           </div>
