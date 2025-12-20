@@ -133,7 +133,16 @@ export class DatabaseService {
         // a getCollectionCount solo activarán UNA lectura de Firestore para ambos contadores.
         return this.getSyncMetadata().pipe(
             map(metadata => {
-                const count = collectionName === 'artists' ? metadata.artistsCount : metadata.songsCount;
+                let count = collectionName === 'artists' ? metadata.artistsCount : metadata.songsCount;
+
+                // --- PROTECCIÓN ANTI-CERO ---
+                // Si el servidor nos dice que hay 0, pero en el caché anterior teníamos un número alto,
+                // ignoramos el 0 (probablemente un error de sync) y mantenemos el valor previo.
+                const previousCount = cachedCounts[collectionName]?.count || 0;
+                if (count === 0 && previousCount > 0) {
+                    console.warn(`Counter for ${collectionName} was reported as 0, but previous was ${previousCount}. Ignoring reset.`);
+                    count = previousCount;
+                }
 
                 // Actualizar caché de contadores para este nombre de colección
                 cachedCounts[collectionName] = { count, timestamp: now };
@@ -190,16 +199,25 @@ export class DatabaseService {
                 getCountFromServer(songsRef)
             ]);
 
+            const newArtistsCount = artistsSnap.data().count;
+            const newSongsCount = songsSnap.data().count;
+
+            // --- SANITY CHECK ---
+            // Si el conteo del servidor da 0 pero en local sabemos que tenemos más,
+            // probablemente sea un error temporal de Firestore. No sobreescribimos con 0.
+            const currentMetadata = this.getFromLocal(this.SYNC_METADATA_KEY) as SyncMetadata;
+
             const metadata: SyncMetadata = {
-                artistsCount: artistsSnap.data().count,
-                songsCount: songsSnap.data().count,
+                artistsCount: (newArtistsCount === 0 && currentMetadata?.artistsCount > 0) ? currentMetadata.artistsCount : newArtistsCount,
+                songsCount: (newSongsCount === 0 && currentMetadata?.songsCount > 0) ? currentMetadata.songsCount : newSongsCount,
                 lastUpdated: Date.now()
             };
 
-            // Intentar persistir en Firestore
+            // Intentar persistir en Firestore solo si los datos son plausibles
             const syncRef = doc(this.firestore, 'metadata', 'sync');
             try {
-                await setDoc(syncRef, { ...metadata });
+                // Usamos set con merge para evitar borrar campos si existen otros
+                await setDoc(syncRef, { ...metadata }, { merge: true });
             } catch (e) {
                 console.warn('Metadata sync document set failed:', e);
             }
@@ -207,13 +225,10 @@ export class DatabaseService {
             this.saveToLocal(this.SYNC_METADATA_KEY, metadata);
             return metadata;
         } catch (error) {
-            console.error('Error refreshing metadata:', error);
-            // Fallback razonable
-            const artists = this.getFromLocal(this.ARTISTS_KEY);
-            const songs = this.getFromLocal(this.SONGS_KEY);
-            return {
-                artistsCount: artists ? artists.length : 0,
-                songsCount: songs ? songs.length : 0,
+            console.error('Error refreshing metadata, keeping last known:', error);
+            return this.getFromLocal(this.SYNC_METADATA_KEY) as SyncMetadata || {
+                artistsCount: 0,
+                songsCount: 0,
                 lastUpdated: Date.now()
             };
         }
@@ -326,14 +341,19 @@ export class DatabaseService {
         delete cachedCounts['songs'];
         this.saveToLocal(this.COUNTS_KEY, cachedCounts);
 
-        // Actualizar metadata global de forma atómica (Sin depender de caché local)
+        // Actualizar metadata global de forma atómica
         const syncRef = doc(this.firestore, 'metadata', 'sync');
         updateDoc(syncRef, {
             songsCount: increment(1),
             lastUpdated: Date.now()
         }).catch(err => {
-            console.warn('Error incrementing songsCount, falling back to full refresh:', err);
-            this.refreshAndGetMetadata(); // Si falla (ej. doc no existe), recalculamos todo
+            console.warn('Error incrementing songsCount, document might not exist. Initializing...');
+            // Si el documento no existe, lo creamos con 1 en lugar de forzar refresh (que puede dar 0)
+            setDoc(syncRef, {
+                songsCount: 1,
+                artistsCount: this.getFromLocal(this.ARTISTS_KEY)?.length || 0,
+                lastUpdated: Date.now()
+            }, { merge: true });
         });
 
         return addDoc(songsRef, songWithDate);
@@ -356,8 +376,12 @@ export class DatabaseService {
             artistsCount: increment(1),
             lastUpdated: Date.now()
         }).catch(err => {
-            console.warn('Error incrementing artistsCount, falling back to full refresh:', err);
-            this.refreshAndGetMetadata();
+            console.warn('Error incrementing artistsCount, document might not exist. Initializing...');
+            setDoc(syncRef, {
+                artistsCount: 1,
+                songsCount: this.getFromLocal(this.SONGS_KEY)?.length || 0,
+                lastUpdated: Date.now()
+            }, { merge: true });
         });
 
         return addDoc(artistsRef, artistWithDate);
