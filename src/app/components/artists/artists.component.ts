@@ -86,18 +86,53 @@ export class ArtistsComponent implements OnInit {
 
     if (query) {
       return filtered.filter(artist => {
-        const artistNameMatches = this.normalize(artist.name).includes(query);
-        const songMatches = artist.songs && artist.songs.some(s =>
-          this.normalize(s.title).includes(query)
-        );
-        return artistNameMatches || songMatches;
+        const normalizedName = this.normalize(artist.name);
+
+        // 1. Coincidencia exacta o contenida (Rápido)
+        if (normalizedName.includes(query) || query.includes(normalizedName)) return true;
+
+        // 2. Coincidencia difusa inteligente (Palabra por palabra)
+        const nameWords = normalizedName.split(/\s+/);
+        const queryWords = query.split(/\s+/);
+
+        const hasFuzzyMatch = nameWords.some(nameWord => {
+          return queryWords.some(queryWord => {
+            if (queryWord.length < 3) return nameWord === queryWord;
+            const distance = this.getLevenshteinDistance(nameWord, queryWord);
+            const allowedErrors = queryWord.length > 6 ? 2 : 1;
+            return distance <= allowedErrors;
+          });
+        });
+
+        if (hasFuzzyMatch) return true;
+
+        // 3. Revisar canciones
+        const songMatches = artist.songs && artist.songs.some(s => {
+          const normalizedTitle = this.normalize(s.title);
+          if (normalizedTitle.includes(query)) return true;
+
+          // Fuzzy match para títulos de canciones también
+          const titleWords = normalizedTitle.split(/\s+/);
+          return titleWords.some(titleWord => {
+            return queryWords.some(queryWord => {
+              if (queryWord.length < 4) return false;
+              return this.getLevenshteinDistance(titleWord, queryWord) <= 1;
+            });
+          });
+        });
+
+        return songMatches;
       }).map(artist => {
-        // Encontrar la canción que coincide para guardarla en el objeto del artista
-        // y así no tener que calcularla en el HTML (evita loops y 429)
-        const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
+        // Encontrar la canción que mejor coincide
+        const matchingSong = artist.songs?.find(s => {
+          const normTitle = this.normalize(s.title);
+          if (normTitle.includes(query)) return true;
+          const titleWords = normTitle.split(/\s+/);
+          const queryWords = query.split(/\s+/);
+          return titleWords.some(tw => queryWords.some(qw => qw.length >= 4 && this.getLevenshteinDistance(tw, qw) <= 1));
+        });
 
         if (matchingSong && (!matchingSong.img || matchingSong.img.includes('default'))) {
-          // Disparar la búsqueda de imagen de forma controlada
           this.queueArtworkFetch(matchingSong, artist);
         }
 
@@ -107,6 +142,28 @@ export class ArtistsComponent implements OnInit {
 
     return filtered.map(artist => ({ ...artist, _matchingSong: undefined }));
   });
+
+  // Algoritmo de Levenshtein para medir similitud de palabras
+  private getLevenshteinDistance(s: string, t: string): number {
+    if (s === t) return 0;
+    if (s.length === 0) return t.length;
+    if (t.length === 0) return s.length;
+
+    const v0 = new Array(t.length + 1);
+    const v1 = new Array(t.length + 1);
+
+    for (let i = 0; i < v0.length; i++) v0[i] = i;
+
+    for (let i = 0; i < s.length; i++) {
+      v1[0] = i + 1;
+      for (let j = 0; j < t.length; j++) {
+        const cost = s[i] === t[j] ? 0 : 1;
+        v1[j + 1] = Math.min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
+      }
+      for (let j = 0; j < v0.length; j++) v0[j] = v1[j];
+    }
+    return v0[t.length];
+  }
 
   // Cola de peticiones para no saturar a Spotify
   private artworkQueue: { song: Song, artist: Artist }[] = [];
@@ -258,6 +315,11 @@ export class ArtistsComponent implements OnInit {
         target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
     }
+  }
+
+  clearSearch() {
+    this.hapticService.light();
+    this.searchQuery.set('');
   }
 
   onEnter() {
