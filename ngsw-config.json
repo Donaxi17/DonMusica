@@ -39,6 +39,13 @@
       }
     }
   ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/csp.withgoogle.com/**",
+    "!/**/pagead2.googlesyndication.com/**"
+  ],
   "dataGroups": [
     {
       "name": "api-cache",
