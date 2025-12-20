@@ -87,7 +87,22 @@ export class OfflineMusicComponent implements OnInit {
 
   get usedStorageGB(): string {
     const val = this.usedStorage / 1024;
-    return val < 0.01 && this.usedStorage > 0 ? '0.01' : val.toFixed(2);
+    return val.toFixed(2);
+  }
+
+  get formattedUsedStorage(): string {
+    if (this.maxStorage < 1024) {
+      return `${this.usedStorage.toFixed(1)} MB`;
+    }
+    const val = this.usedStorage / 1024;
+    return `${val.toFixed(2)} GB`;
+  }
+
+  get storageColor(): string {
+    // 0% -> Green (140)
+    // 100% -> Red (0)
+    const hue = Math.max(0, 140 - (this.storagePercentage * 1.4));
+    return `hsl(${hue}, 70%, 50%)`;
   }
 
   get maxStorageGB(): string {

@@ -103,9 +103,6 @@ export class UploadMusicComponent implements OnDestroy {
   showMoveModal = false;
   fileToMove: MusicFile | null = null;
 
-  showToast = false;
-  toastMessage = '';
-
   isUploading = false;
   uploadProgress = 0;
   currentUploadingFile = '';
@@ -216,7 +213,15 @@ export class UploadMusicComponent implements OnDestroy {
 
   get usedStorageGB(): string {
     const val = this.usedStorage / 1024;
-    return val < 0.01 && this.usedStorage > 0 ? '0.01' : val.toFixed(2);
+    return val.toFixed(2);
+  }
+
+  get formattedUsedStorage(): string {
+    if (this.maxStorage < 1024) {
+      return `${this.usedStorage.toFixed(1)} MB`;
+    }
+    const val = this.usedStorage / 1024;
+    return `${val.toFixed(2)} GB`;
   }
 
   get formattedMaxStorage(): string {
@@ -224,6 +229,14 @@ export class UploadMusicComponent implements OnDestroy {
       return `${Math.round(this.maxStorage)} MB`;
     }
     return `${(this.maxStorage / 1024).toFixed(1)} GB`;
+  }
+
+  get storageColor(): string {
+    // Smooth transition from Green (140) to Red (0)
+    // 0% -> hsl(140, 70%, 50%)
+    // 100% -> hsl(0, 70%, 50%)
+    const hue = Math.max(0, 140 - (this.storagePercentage * 1.4));
+    return `hsl(${hue}, 70%, 50%)`;
   }
 
   get storageWarningLevel(): 'safe' | 'warning' | 'danger' {
@@ -257,15 +270,6 @@ export class UploadMusicComponent implements OnDestroy {
     return !this.isPro;
   }
 
-  showToastNotification(message: string) {
-    this.toastMessage = message;
-    this.showToast = true;
-    this.cdr.markForCheck();
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.markForCheck();
-    }, 3000);
-  }
 
   upgradeToPro() {
     this.proService.showUpgradeModal();
@@ -363,7 +367,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     const spaceNeeded = this.usedStorage + totalSizeMB;
     if (spaceNeeded > this.maxStorage) {
-      this.showUpgradeModal();
+      this.toastService.error('¡Espacio insuficiente! Libera espacio o pásate a PRO para subir más música.');
       return;
     }
 
@@ -401,7 +405,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     this.isUploading = false;
     this.currentUploadingFile = '';
-    this.showToastNotification(`✅ ${processedCount} archivos organizados`);
+    this.toastService.success(`✅ ${processedCount} archivos organizados`);
     this.cdr.markForCheck();
   }
 
@@ -605,7 +609,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     } catch (error) {
       console.error('Error loading data:', error);
-      this.showToastNotification('Error cargando datos');
+      this.toastService.error('Error cargando datos');
     } finally {
       this.isUploading = false;
       this.cdr.markForCheck();
@@ -642,7 +646,7 @@ export class UploadMusicComponent implements OnDestroy {
       await this.storageService.updateFile(file);
       this.showEditModal = false;
       this.filterFiles();
-      this.showToastNotification('✅ Guardado');
+      this.toastService.success('✅ Guardado');
       this.cdr.markForCheck();
     }
   }
@@ -701,7 +705,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.newFolderName = '';
     this.showCreateFolderModal = false;
     this.saveToLocalStorage();
-    this.showToastNotification('Carpeta creada');
+    this.toastService.success('Carpeta creada');
     this.cdr.markForCheck();
   }
 
@@ -726,7 +730,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.calculateStorage();
     this.filterFiles();
     this.saveToLocalStorage();
-    this.showToastNotification('Carpeta eliminada');
+    this.toastService.success('Carpeta eliminada');
     this.cdr.markForCheck();
   }
 
@@ -762,11 +766,11 @@ export class UploadMusicComponent implements OnDestroy {
 
       if (songToPlay) {
         this.playerService.playSong(songToPlay);
-        this.showToastNotification(`▶️ ${file.name}`);
+        this.toastService.info(`▶️ ${file.name}`);
       }
     } catch (error) {
       console.error('Error loading playlist', error);
-      this.showToastNotification('Error al reproducir');
+      this.toastService.error('Error al reproducir');
     }
   }
 
@@ -808,7 +812,7 @@ export class UploadMusicComponent implements OnDestroy {
 
       this.showMoveModal = false;
       this.fileToMove = null;
-      this.showToastNotification(`Movido a "${folder.name}"`);
+      this.toastService.success(`Movido a "${folder.name}"`);
       this.cdr.markForCheck();
     }
   }
@@ -822,7 +826,7 @@ export class UploadMusicComponent implements OnDestroy {
       return;
     }
 
-    if (!confirm(`¿Eliminar "${file.name}"?`)) return;
+    // deleted confirmation as requested
 
     await this.storageService.deleteFile(file.id);
     this.uploadedMusicFiles = this.uploadedMusicFiles.filter(f => f.id !== file.id);
@@ -830,7 +834,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.recalculateFolderCounts();
     this.calculateStorage();
     this.filterFiles();
-    this.showToastNotification('Archivo eliminado');
+    this.toastService.success('Archivo eliminado');
     this.cdr.markForCheck();
   }
 
