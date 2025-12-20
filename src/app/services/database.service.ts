@@ -1,8 +1,14 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs, getCountFromServer } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs, getCountFromServer, setDoc } from '@angular/fire/firestore';
 import { Storage, ref, uploadBytes, getDownloadURL, deleteObject, uploadBytesResumable } from '@angular/fire/storage';
-import { Observable, from, map, switchMap, of, shareReplay, tap, catchError, startWith } from 'rxjs';
+import { Observable, from, map, switchMap, of, shareReplay, tap, catchError, startWith, firstValueFrom } from 'rxjs';
+
+export interface SyncMetadata {
+    artistsCount: number;
+    songsCount: number;
+    lastUpdated: number;
+}
 
 export interface Artist {
     id?: string;
@@ -45,6 +51,7 @@ export class DatabaseService {
     private songsCache$: Observable<Song[]> | null = null;
 
     private readonly COUNTS_KEY = 'donmusic_cache_counts';
+    private readonly SYNC_METADATA_KEY = 'donmusic_sync_metadata';
     private readonly COUNTS_TIMEOUT = 1000 * 60 * 60; // 1 hora de caché para contadores
 
     constructor() { }
@@ -79,11 +86,33 @@ export class DatabaseService {
 
     getArtists(): Observable<Artist[]> {
         const cached = this.getFromLocal(this.ARTISTS_KEY);
-        const artistsRef = collection(this.firestore, 'artists');
+        const lastSync = Number(this.getFromLocal('last_sync_artists_ts') || 0);
 
-        return collectionData(artistsRef, { idField: 'id' }).pipe(
-            map(data => data as Artist[]),
-            tap(data => this.saveToLocal(this.ARTISTS_KEY, data)),
+        return this.getSyncMetadata().pipe(
+            switchMap(metadata => {
+                const now = Date.now();
+                // Si tenemos caché y la metadata dice que no hay cambios desde nuestro lastSync, usamos caché
+                // Añadimos un pequeño margen de 5 segundos para evitar bucles de sincronización
+                if (cached && cached.length > 0 && metadata.lastUpdated <= lastSync) {
+                    return of(cached as Artist[]);
+                }
+
+                // Si no hay caché o hay cambios, leemos de Firestore
+                const artistsRef = collection(this.firestore, 'artists');
+                // Usamos getDocs para una lectura única y ahorrar cuota, 
+                // ya que la reactividad la dará el cambio en metadata si alguien más añade datos
+                return from(getDocs(artistsRef)).pipe(
+                    map(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Artist))),
+                    tap(data => {
+                        this.saveToLocal(this.ARTISTS_KEY, data);
+                        this.saveToLocal('last_sync_artists_ts', Date.now());
+                    }),
+                    catchError(err => {
+                        console.error('Error fetching artists, falling back to cache:', err);
+                        return of(cached ? (cached as Artist[]) : []);
+                    })
+                );
+            }),
             startWith(cached ? (cached as Artist[]) : []),
             shareReplay(1)
         );
@@ -94,28 +123,132 @@ export class DatabaseService {
         const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
         const now = Date.now();
 
+        // Si tenemos caché y no ha expirado, lo usamos
         if (cachedCounts[collectionName] && (now - cachedCounts[collectionName].timestamp < this.COUNTS_TIMEOUT)) {
+            // Pero si el contador es 0 y tenemos datos en el caché de la colección, corregimos
+            if (cachedCounts[collectionName].count === 0) {
+                const collCacheKey = collectionName === 'artists' ? this.ARTISTS_KEY : this.SONGS_KEY;
+                const collData = this.getFromLocal(collCacheKey);
+                if (collData && collData.length > 0) {
+                    return of(collData.length);
+                }
+            }
             return of(cachedCounts[collectionName].count);
         }
 
-        // 2. Si no hay caché o expiró, consultar al servidor
-        const collRef = collection(this.firestore, collectionName);
-        return from(getCountFromServer(collRef)).pipe(
-            map(snapshot => {
-                const count = snapshot.data().count;
-                // Guardar en caché
+        // 2. Si no hay caché o expiró, usamos el sistema de sincronización metadata
+        return this.getSyncMetadata().pipe(
+            map(metadata => {
+                if (!metadata) return 0;
+                const count = collectionName === 'artists' ? metadata.artistsCount : metadata.songsCount;
+
+                // Guardar en caché de contadores
                 cachedCounts[collectionName] = { count, timestamp: now };
                 this.saveToLocal(this.COUNTS_KEY, cachedCounts);
-                return count;
+
+                return count || 0;
             }),
             catchError(err => {
-                console.error(`Error fetching count for ${collectionName}:`, err);
-                // Fallback a los datos locales si el servidor falla
-                const cacheKey = collectionName === 'artists' ? this.ARTISTS_KEY : this.SONGS_KEY;
-                const cachedData = this.getFromLocal(cacheKey);
-                return of(cachedData ? cachedData.length : 0);
+                console.error(`Error with sync metadata for ${collectionName}:`, err);
+                // Fallback al método tradicional de conteo si falla la metadata
+                const collRef = collection(this.firestore, collectionName);
+                return from(getCountFromServer(collRef)).pipe(
+                    map(snapshot => {
+                        const count = snapshot.data().count;
+                        cachedCounts[collectionName] = { count, timestamp: now };
+                        this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+                        return count;
+                    }),
+                    catchError(() => {
+                        // Último recurso: caché de la colección completa
+                        const cacheKey = collectionName === 'artists' ? this.ARTISTS_KEY : this.SONGS_KEY;
+                        const cachedData = this.getFromLocal(cacheKey);
+                        return of(cachedData ? cachedData.length : 0);
+                    })
+                );
             })
         );
+    }
+
+    /**
+     * Obtiene los metadatos de sincronización globales.
+     * Si no existen, intenta crearlos (primer uso).
+     */
+    getSyncMetadata(): Observable<SyncMetadata> {
+        const syncRef = doc(this.firestore, 'metadata', 'sync');
+        return docData(syncRef).pipe(
+            switchMap(data => {
+                if (!data) {
+                    // Si no existe el documento de sync, lo inicializamos calculando los contadores reales
+                    return from(this.refreshAndGetMetadata());
+                }
+                return of(data as SyncMetadata);
+            }),
+            tap(metadata => this.saveToLocal(this.SYNC_METADATA_KEY, metadata)),
+            startWith(this.getFromLocal(this.SYNC_METADATA_KEY) as SyncMetadata),
+            shareReplay(1)
+        );
+    }
+
+    /**
+     * Recalcula los contadores y actualiza el documento de sincronización.
+     * Útil para cuando se añaden datos o para el primer inicio.
+     */
+    async refreshAndGetMetadata(): Promise<SyncMetadata> {
+        try {
+            const artistsRef = collection(this.firestore, 'artists');
+            const songsRef = collection(this.firestore, 'songs');
+
+            const [artistsSnap, songsSnap] = await Promise.all([
+                getCountFromServer(artistsRef),
+                getCountFromServer(songsRef)
+            ]);
+
+            const metadata: SyncMetadata = {
+                artistsCount: artistsSnap.data().count,
+                songsCount: songsSnap.data().count,
+                lastUpdated: Date.now()
+            };
+
+            // Intentar persistir en Firestore
+            const syncRef = doc(this.firestore, 'metadata', 'sync');
+            try {
+                await setDoc(syncRef, { ...metadata });
+            } catch (e) {
+                console.warn('Metadata sync document set failed:', e);
+            }
+
+            this.saveToLocal(this.SYNC_METADATA_KEY, metadata);
+            return metadata;
+        } catch (error) {
+            console.error('Error refreshing metadata:', error);
+            // Fallback razonable
+            const artists = this.getFromLocal(this.ARTISTS_KEY);
+            const songs = this.getFromLocal(this.SONGS_KEY);
+            return {
+                artistsCount: artists ? artists.length : 0,
+                songsCount: songs ? songs.length : 0,
+                lastUpdated: Date.now()
+            };
+        }
+    }
+
+    async updateSyncMetadata(changes: Partial<SyncMetadata>): Promise<void> {
+        const syncRef = doc(this.firestore, 'metadata', 'sync');
+        const current = this.getFromLocal(this.SYNC_METADATA_KEY) || await firstValueFrom(this.getSyncMetadata());
+
+        const updated = {
+            ...current,
+            ...changes,
+            lastUpdated: Date.now()
+        };
+
+        try {
+            await updateDoc(syncRef, updated);
+            this.saveToLocal(this.SYNC_METADATA_KEY, updated);
+        } catch (e) {
+            console.error('Error updating sync metadata:', e);
+        }
     }
 
     getArtist(id: string): Observable<Artist> {
@@ -132,11 +265,28 @@ export class DatabaseService {
 
     getSongs(): Observable<Song[]> {
         const cached = this.getFromLocal(this.SONGS_KEY);
-        const songsRef = collection(this.firestore, 'songs');
+        const lastSync = Number(this.getFromLocal('last_sync_songs_ts') || 0);
 
-        return collectionData(songsRef, { idField: 'id' }).pipe(
-            map(data => data as Song[]),
-            tap(data => this.saveToLocal(this.SONGS_KEY, data)),
+        return this.getSyncMetadata().pipe(
+            switchMap(metadata => {
+                // Similar a artistas: solo leer si hay cambios reales según metadata
+                if (cached && cached.length > 0 && metadata.lastUpdated <= lastSync) {
+                    return of(cached as Song[]);
+                }
+
+                const songsRef = collection(this.firestore, 'songs');
+                return from(getDocs(songsRef)).pipe(
+                    map(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Song))),
+                    tap(data => {
+                        this.saveToLocal(this.SONGS_KEY, data);
+                        this.saveToLocal('last_sync_songs_ts', Date.now());
+                    }),
+                    catchError(err => {
+                        console.error('Error fetching songs, falling back to cache:', err);
+                        return of(cached ? (cached as Song[]) : []);
+                    })
+                );
+            }),
             startWith(cached ? (cached as Song[]) : []),
             shareReplay(1)
         );
@@ -185,10 +335,16 @@ export class DatabaseService {
         const songsRef = collection(this.firestore, 'songs');
         const songWithDate = { ...song, createdAt: Date.now() };
 
-        // Invalidar caché de contadores
+        // Invalidar caché de contadores local
         const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
         delete cachedCounts['songs'];
         this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+
+        // Actualizar metadata global
+        const metadata = this.getFromLocal(this.SYNC_METADATA_KEY);
+        if (metadata) {
+            this.updateSyncMetadata({ songsCount: (metadata.songsCount || 0) + 1 }).catch(() => { });
+        }
 
         return addDoc(songsRef, songWithDate);
     }
@@ -199,22 +355,32 @@ export class DatabaseService {
         const artistsRef = collection(this.firestore, 'artists');
         const artistWithDate = { ...artist, createdAt: Date.now() };
 
-        // Invalidar caché de contadores
+        // Invalidar caché de contadores local
         const cachedCounts = this.getFromLocal(this.COUNTS_KEY) || {};
         delete cachedCounts['artists'];
         this.saveToLocal(this.COUNTS_KEY, cachedCounts);
+
+        // Actualizar metadata global
+        const metadata = this.getFromLocal(this.SYNC_METADATA_KEY);
+        if (metadata) {
+            this.updateSyncMetadata({ artistsCount: (metadata.artistsCount || 0) + 1 }).catch(() => { });
+        }
 
         return addDoc(artistsRef, artistWithDate);
     }
 
     async updateArtist(id: string, data: Partial<Artist>): Promise<void> {
         const artistRef = doc(this.firestore, `artists/${id}`);
-        return updateDoc(artistRef, data);
+        await updateDoc(artistRef, data);
+        // Notificar cambio en los metadatos globales
+        this.updateSyncMetadata({}).catch(() => { });
     }
 
     async updateSong(id: string, data: Partial<Song>): Promise<void> {
         const songRef = doc(this.firestore, `songs/${id}`);
-        return updateDoc(songRef, data);
+        await updateDoc(songRef, data);
+        // Notificar cambio en los metadatos globales
+        this.updateSyncMetadata({}).catch(() => { });
     }
 
     // Limpiar caché manualmente si es necesario
