@@ -1,5 +1,7 @@
-import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, Inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, Inject, HostListener, computed } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { skip } from 'rxjs';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 import { MusicApiService } from '../../../services/music-api.service';
@@ -8,6 +10,7 @@ import { PlayerService } from '../../../services/player.service';
 import { SeoService } from '../../../services/seo.service';
 import { Subscription } from 'rxjs';
 import { LanguageService } from '../../../services/language.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'app-new-releases',
@@ -18,21 +21,44 @@ import { LanguageService } from '../../../services/language.service';
 export class NewReleasesComponent implements OnInit, OnDestroy {
     private seoService = inject(SeoService);
     public languageService = inject(LanguageService);
+    public settingsService = inject(SettingsService);
     private playerSubscription?: Subscription;
 
     releases = signal<Song[]>([]);
-    private allReleases: Song[] = []; // Guardamos TODAS (29) aquí
+    private allReleases: Song[] = [];
     loading = signal(true);
     currentSongIndex = signal<number>(-1);
     isPlaying = signal(false);
     currentTime = signal(0);
     duration = signal(0);
 
+    // Filter options using global settings
+    selectedRegion = this.settingsService.selectedRegion;
+    regions = [
+        { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
+        { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
+        { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
+    ];
+
+    private regionSub: any;
+
+    translatedRegions = computed(() => {
+        return this.regions.map(r => ({
+            ...r,
+            name: r.code === 'US' ? this.languageService.get('trends.world') : r.name
+        }));
+    });
+
     constructor(
         private musicApi: MusicApiService,
         private player: PlayerService,
         @Inject(PLATFORM_ID) private platformId: Object
-    ) { }
+    ) {
+        // Move toObservable here to maintain Injection Context (Fixes NG0203)
+        this.regionSub = toObservable(this.selectedRegion).pipe(skip(1)).subscribe(region => {
+            this.loadReleases(region);
+        });
+    }
 
     ngOnInit() {
         // SEO optimization
@@ -41,25 +67,38 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
             this.languageService.get('releases.seo.desc')
         );
 
-        // ALWAYS fetch 29 (Max needed) and slice locally
-        this.musicApi.getNewReleases('CO', 29).subscribe({
-            next: (data) => {
-                this.allReleases = data;
-                // console.log(`[API START] Loaded ${data.length} songs. Target PC: 29, Mobile: 28.`);
-                this.updateVisibleItems(); // Calculate initial view immediately
-                this.loading.set(false);
-            },
-            error: (err) => {
-                console.error('Error loading new releases:', err);
-                this.loading.set(false);
-            }
-        });
+        // Initial Load
+        this.loadReleases(this.selectedRegion());
 
         // Subscribe to player state changes
         this.subscribeToPlayer();
     }
 
-    // LISTENER: Detects resize LIVE
+    changeRegion(region: 'CO' | 'US' | 'MX') {
+        if (this.selectedRegion() === region) return;
+        this.selectedRegion.set(region);
+    }
+
+    trackByRegionCode(index: number, region: any): string {
+        return region.code;
+    }
+
+    private loadReleases(region: string) {
+        this.loading.set(true);
+        this.musicApi.getNewReleases(region, 29).subscribe({
+            next: (data) => {
+                this.allReleases = data;
+                this.updateVisibleItems();
+                this.loading.set(false);
+            },
+            error: (err) => {
+                console.error('Error loading new releases:', err);
+                this.loading.set(false);
+                this.releases.set([]);
+            }
+        });
+    }
+
     @HostListener('window:resize', ['$event'])
     onResize(event: any) {
         this.updateVisibleItems();
@@ -67,46 +106,31 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
 
     private updateVisibleItems() {
         if (!isPlatformBrowser(this.platformId)) return;
-
         const width = window.innerWidth;
-
-        // Logic requested by User:
-        // PC (>= 1280px): Exactly 29 items (if available).
-        // Mobile/Laptop (< 1280px): Max 28 items, BUT must remain EVEN to avoid orphans in 2-col grid.
-
         let limit = 29;
 
         if (width >= 1280) {
             limit = 29;
         } else {
-            // Target is 28
             const target = 28;
             const available = this.allReleases.length;
-
-            // If we have plenty, just crop to 28
             if (available >= target) {
                 limit = target;
             } else {
-                // If we have fewer (e.g. 25), look for the nearest even number (24)
-                // This ensures the last row in mobile (2 cols) is always full
                 limit = Math.floor(available / 2) * 2;
             }
         }
-
-        // console.log(`[Resize Live] Width: ${width}px. Available: ${this.allReleases.length}. Limit calculated: ${limit}.`);
 
         if (this.allReleases.length > 0) {
             this.releases.set(this.allReleases.slice(0, limit));
         }
     }
 
-
     ngOnDestroy() {
         this.playerSubscription?.unsubscribe();
     }
 
     private subscribeToPlayer() {
-        // Listen for when current song changes (including auto-play)
         this.playerSubscription = this.player.currentSong$.subscribe(song => {
             if (song) {
                 const index = this.releases().findIndex(r => r.id === song.id);
@@ -116,7 +140,6 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
             }
         });
 
-        // Also subscribe to playing state to keep UI in sync
         this.player.isPlaying$.subscribe(playing => {
             this.isPlaying.set(playing);
         });
@@ -125,12 +148,8 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
     playSong(song: Song, index?: number) {
         const songIndex = index !== undefined ? index : this.releases().findIndex(r => r.id === song.id);
         this.currentSongIndex.set(songIndex);
-
-        // Play the song and set up auto-play for next
         this.player.playSong(song);
         this.isPlaying.set(true);
-
-        // Set up playlist for continuous playback
         this.player.setPlaylist(this.releases(), false, 'new-releases');
     }
 
@@ -140,36 +159,12 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
         }
     }
 
-    playNext() {
-        const nextIndex = this.currentSongIndex() + 1;
-        if (nextIndex < this.releases().length) {
-            this.playSong(this.releases()[nextIndex], nextIndex);
-        }
-    }
-
-    playPrevious() {
-        const prevIndex = this.currentSongIndex() - 1;
-        if (prevIndex >= 0) {
-            this.playSong(this.releases()[prevIndex], prevIndex);
-        }
-    }
-
-    togglePlayPause() {
-        if (this.isPlaying()) {
-            this.player.pause();
-            this.isPlaying.set(false);
-        } else {
-            this.player.resume();
-            this.isPlaying.set(true);
-        }
-    }
-
     handleImageError(event: any, title: string) {
         event.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=10b981&color=fff&size=300&font-size=0.33`;
     }
 
     isCurrentSong(song: Song): boolean {
-        const index = this.releases().findIndex(r => r.id === song.id);
-        return index === this.currentSongIndex();
+        const currentId = this.player.currentSong?.id;
+        return song.id === currentId;
     }
 }

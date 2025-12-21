@@ -1,7 +1,9 @@
-import { Component, inject, OnInit, AfterViewInit, ElementRef, Renderer2, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, ElementRef, Renderer2, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { skip } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { ToastService } from '../../services/toast.service';
@@ -17,6 +19,7 @@ import { DatabaseService } from '../../services/database.service';
 import { HapticService } from '../../services/haptic.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-home',
@@ -26,7 +29,7 @@ import { LanguageService } from '../../services/language.service';
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit, AfterViewInit {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private el = inject(ElementRef);
   private renderer = inject(Renderer2);
   private router = inject(Router);
@@ -39,6 +42,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private hapticService = inject(HapticService);
   private spotifyService = inject(SpotifyService);
   public languageService = inject(LanguageService);
+  public settingsService = inject(SettingsService);
 
   totalArtists = signal<number>(0);
   totalSongs = signal<number>(0);
@@ -54,8 +58,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   trendingSongs = signal<Song[]>([]);
   loadingTrends = signal(true);
 
-  // Filter options for Trends
-  selectedRegion = signal<'CO' | 'US' | 'MX'>('CO');
+  // Filter options for Trends - Linked to global settings
+  selectedRegion = this.settingsService.selectedRegion;
   regions = [
     { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
     { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
@@ -66,21 +70,26 @@ export class HomeComponent implements OnInit, AfterViewInit {
   canInstall = false;    // For the Hero button
   showInstallBanner = false; // For the bottom banner
 
-  // Parallax tracking (Signals for OnPush) - REMOVED for CSS optimization
-
   private observer: IntersectionObserver | null = null;
+  private regionSub: any;
+
+  constructor() {
+    // Moved to constructor to maintain Injection Context
+    this.regionSub = toObservable(this.selectedRegion).pipe(skip(1)).subscribe(region => {
+      this.loadTrends(region);
+    });
+  }
 
   ngOnInit() {
-    // Enhanced SEO with rich meta tags
+    // Enhanced SEO
     this.seoService.setSeoData(
       'DonMusica - Música Urbana Gratis | Descargar MP3, Letras y Videos',
       'Escucha y descarga música urbana gratis en DonMusica. Reggaeton, trap, rap y más. Rankings actualizados, letras de canciones, videos musicales y música sin copyright para tus proyectos. Artistas como Bad Bunny, Karol G, Feid y más en donmusica.online'
     );
 
-    // Initial check for PWA install capability
     this.listenForInstallPrompt();
 
-    // Load initial data
+    // Initial Load
     this.loadTrends(this.selectedRegion());
     this.loadStats();
   }
@@ -88,6 +97,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
   ngOnDestroy() {
     if (this.observer) {
       this.observer.disconnect();
+    }
+    if (this.regionSub) {
+      this.regionSub.unsubscribe();
     }
   }
 
@@ -104,7 +116,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     };
 
-    // Optimized: Use getCountFromServer to avoid reading all documents
     this.databaseService.getCollectionCount('artists').subscribe({
       next: count => {
         this.totalArtists.set(count);
@@ -129,12 +140,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Real-time Latest Songs subscription
     this.databaseService.getLatestSongs(6).subscribe({
       next: async songs => {
         const currentList = this.recentlyAdded();
-
-        // Step 1: Preliminary map with existing valid images
         const initialMap = songs.map(song => {
           const existing = currentList.find(s => s.id === song.id);
           if (existing && !this.isGenericImage(existing.img)) {
@@ -143,16 +151,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
           return { ...song };
         });
 
-        // Step 2: Show what we have initially (with placeholders if needed)
         this.recentlyAdded.set(initialMap);
         recentLoaded = true;
         checkLoadingFinished();
-
-        // RE-SCAN for reveal animations AFTER data is set on DOM
-        // Debounce to avoid thrashing if data comes in bursts
         requestAnimationFrame(() => this.initScrollAnimations());
 
-        // Step 3: Proactively fetch artwork for all songs and update one by one as they arrive
         initialMap.forEach(async (song) => {
           if (this.isGenericImage(song.img)) {
             try {
@@ -166,24 +169,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
                   }
                   return newList;
                 });
-                // Persist to database so it's permanent for all users
                 if (song.id) {
                   this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
                 }
               }
-            } catch (err) {
-              // Silence is golden
-            }
+            } catch (err) { }
           }
         });
       },
       error: () => {
-        // Ensure we don't get stuck in loading
         this.loadingStats.set(false);
       }
     });
 
-    // Fallback: If after 5 seconds we are still loading stats, force show
     setTimeout(() => {
       if (this.recentlyAdded().length > 0) {
         this.loadingStats.set(false);
@@ -209,7 +207,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.trendingSongs.set(previewSongs);
         this.loadingTrends.set(false);
 
-        // Pre-fetch artworks for trending songs immediately
         previewSongs.forEach(song => {
           if (this.isGenericImage(song.img)) {
             this.spotifyService.getTrackArtwork(song.title, song.artist).then(artwork => {
@@ -226,7 +223,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }).catch(() => { });
           }
         });
-        // After data is loaded, re-scan for reveal elements if needed
         requestAnimationFrame(() => this.initScrollAnimations());
       },
       error: (err) => {
@@ -237,37 +233,30 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Change region filter
   changeRegion(region: 'CO' | 'US' | 'MX') {
     if (this.selectedRegion() === region) return;
     this.hapticService.light();
     this.selectedRegion.set(region);
-    this.loadTrends(region);
   }
-
-
 
   ngAfterViewInit() {
     this.initScrollAnimations();
   }
 
   private initScrollAnimations() {
-    // 1. Cleanup existing observer to prevent memory leaks and duplicate callbacks
     if (this.observer) {
       this.observer.disconnect();
     }
 
     const observerOptions = {
-      threshold: 0.15, // 15% visibility triggers it
-      rootMargin: '0px 0px -100px 0px' // Slightly more forgiving for fast mobile scrolls
+      threshold: 0.15,
+      rootMargin: '0px 0px -100px 0px'
     };
 
     this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           this.renderer.addClass(entry.target, 'active');
-
-          // Trigger counter animations individually when they come into view with a slight delay
           if (entry.target.id === 'artists-counter' && this.displayArtists() === 0) {
             setTimeout(() => this.animateCounter(this.totalArtists(), this.displayArtists), 400);
           }
@@ -275,10 +264,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             setTimeout(() => this.animateCounter(this.totalSongs(), this.displaySongs), 600);
           }
         } else {
-          // Remove active class when out of view to allow re-animation (Infinite feel)
           this.renderer.removeClass(entry.target, 'active');
-
-          // Optional: Reset counters to 0 when they leave the viewport to allow re-counting
           if (entry.target.id === 'artists-counter') this.displayArtists.set(0);
           if (entry.target.id === 'songs-counter') this.displaySongs.set(0);
         }
@@ -290,12 +276,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   listenForInstallPrompt() {
-    // Check if it's iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
     if (isIOS && !isStandalone) {
-      // Show a hint for iOS users after 5 seconds
       setTimeout(() => {
         this.showInstallBanner = true;
       }, 5000);
@@ -304,8 +288,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
-
-      // Enable both button and banner
       this.canInstall = true;
       this.showInstallBanner = true;
     });
@@ -317,21 +299,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.toastService.info(this.languageService.get('home.toast.install_instructions'));
       return;
     }
-
-    // Show the install prompt
     this.deferredPrompt.prompt();
-
-    // Wait for the user to respond to the prompt
     const { outcome } = await this.deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-
-    // We've used the prompt, and can't use it again, throw it away
     this.deferredPrompt = null;
     this.canInstall = false;
     this.showInstallBanner = false;
   }
-
-
 
   navigateToArtists(): void {
     this.hapticService.light();
@@ -355,22 +328,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.toastService.warning(this.languageService.get('home.toast.fill_required'));
       return;
     }
-
     const message = `${this.languageService.get('home.whatsapp.message_header')}%0A%0A` +
       `${this.languageService.get('home.whatsapp.artist')} ${this.requestArtist}%0A` +
       `${this.languageService.get('home.whatsapp.song')} ${this.requestSong}`;
-
-    // Replace with your WhatsApp number, e.g., 573000000000
-    // Using a general format, user can change it.
     const phoneNumber = '573017966272';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-
     this.hapticService.success();
     this.toastService.success(this.languageService.get('home.toast.request_sent'));
-
     window.open(whatsappUrl, '_blank');
-
-    // Reset form after a slight delay to allow navigation
     setTimeout(() => {
       this.requestArtist = '';
       this.requestSong = '';
@@ -403,12 +368,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (millis === 0) return false;
     const now = new Date().getTime();
     const diff = now - millis;
-    return diff < (48 * 60 * 60 * 1000); // 48 hours
+    return diff < (48 * 60 * 60 * 1000);
   }
 
   getTimeAgo(date: any): string {
     if (!date) return this.languageService.get('time.new');
-
     let millis = 0;
     if (typeof date === 'number') millis = date;
     else if (date && typeof date.toMillis === 'function') millis = date.toMillis();
@@ -418,90 +382,34 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const d = new Date(date);
       millis = isNaN(d.getTime()) ? 0 : d.getTime();
     }
-
     if (millis === 0) return this.languageService.get('time.new');
-
     const now = new Date().getTime();
     const diff = now - millis;
     const seconds = Math.floor(diff / 1000);
-
     if (seconds < 60) return this.languageService.get('time.just_now');
-
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return this.languageService.get('time.min_ago', minutes);
-
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return this.languageService.get('time.hour_ago', hours);
-
     const days = Math.floor(hours / 24);
     if (days < 30) return this.languageService.get('time.day_ago', days);
-
     return this.languageService.get('time.long_ago');
   }
 
   private animateCounter(target: number, signalRef: any) {
     let current = 0;
-    const duration = 2000; // 2s para que se aprecie bien
+    const duration = 2000;
     const start = performance.now();
-
     const update = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
-      // Ease out cubic
       const easedProgress = 1 - Math.pow(1 - progress, 3);
-
       current = Math.round(easedProgress * target);
       signalRef.set(current);
-
       if (progress < 1) {
         requestAnimationFrame(update);
       }
     };
-
     requestAnimationFrame(update);
-  }
-
-  playUISound(type: 'click' | 'success' | 'nav' = 'click') {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      if (type === 'click') {
-        // Sonido de clic más orgánico y suave (tipo "pop" de interfaz de lujo)
-        oscillator.type = 'sine';
-        const now = audioCtx.currentTime;
-
-        oscillator.frequency.setValueAtTime(400, now);
-        oscillator.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-
-        // El secreto está en un ataque casi instantáneo pero con un decaimiento muy suave
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.06, now + 0.01); // Volumen más bajo y suave
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
-        oscillator.start(now);
-        oscillator.stop(now + 0.15);
-      } else if (type === 'nav') {
-        // Sonido de navegación más aireado y profesional
-        oscillator.type = 'sine';
-        const now = audioCtx.currentTime;
-
-        oscillator.frequency.setValueAtTime(440, now); // La nota 'La'
-        oscillator.frequency.exponentialRampToValueAtTime(550, now + 0.2);
-
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.03, now + 0.02);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-
-        oscillator.start(now);
-        oscillator.stop(now + 0.25);
-      }
-    } catch (e) {
-      // Audio not supported or blocked
-    }
   }
 
   downloadSong(song: Song) {
@@ -529,5 +437,36 @@ export class HomeComponent implements OnInit, AfterViewInit {
         songData: song
       }
     });
+  }
+
+  playUISound(type: 'click' | 'success' | 'nav' = 'click') {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      if (type === 'click') {
+        oscillator.type = 'sine';
+        const now = audioCtx.currentTime;
+        oscillator.frequency.setValueAtTime(400, now);
+        oscillator.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.06, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        oscillator.start(now);
+        oscillator.stop(now + 0.15);
+      } else if (type === 'nav') {
+        oscillator.type = 'sine';
+        const now = audioCtx.currentTime;
+        oscillator.frequency.setValueAtTime(440, now);
+        oscillator.frequency.exponentialRampToValueAtTime(550, now + 0.2);
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.03, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        oscillator.start(now);
+        oscillator.stop(now + 0.25);
+      }
+    } catch (e) { }
   }
 }

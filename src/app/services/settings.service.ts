@@ -7,6 +7,7 @@ export class SettingsService {
     private readonly STORAGE_KEY = 'donmusic_settings';
 
     dataSaver = signal<boolean>(false);
+    selectedRegion = signal<'CO' | 'US' | 'MX'>('CO');
 
     constructor() {
         // Load from localStorage
@@ -15,7 +16,14 @@ export class SettingsService {
             if (saved) {
                 try {
                     const settings = JSON.parse(saved);
+                    // console.log('SettingsService: Loading settings', settings);
                     this.dataSaver.set(!!settings.dataSaver);
+
+                    // User requested default to Colombia on reload, so we skip loading region from storage
+                    // if (settings.selectedRegion) {
+                    //     console.log('SettingsService: Setting region from storage', settings.selectedRegion);
+                    //     this.selectedRegion.set(settings.selectedRegion);
+                    // }
                 } catch (e) {
                     console.warn('Error loading settings', e);
                 }
@@ -24,7 +32,8 @@ export class SettingsService {
             // Save to localStorage when it changes
             effect(() => {
                 localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-                    dataSaver: this.dataSaver()
+                    dataSaver: this.dataSaver(),
+                    selectedRegion: this.selectedRegion()
                 }));
             });
         }

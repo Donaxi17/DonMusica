@@ -1,26 +1,34 @@
 <div class="space-y-4 md:space-y-8 animate-fade-in" appInfiniteScroll (scrolled)="loadMore()">
     <!-- SEO-optimized header with semantic HTML -->
-    <header class="mb-4 md:mb-8 px-1 text-center">
-        <h1
-            class="text-2xl md:text-3xl lg:text-4xl font-black bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+    <header class="mb-6 md:mb-10 px-1 text-center">
+        <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight">
             {{ languageService.get('trends.title') }}
+            <span class="text-emerald-500 italic">{{
+                selectedRegion() === 'CO' ? 'Colombia' :
+                (selectedRegion() === 'MX' ? 'México' : (languageService.currentLanguage() === 'es' ? 'Mundial' :
+                'Global'))
+                }}</span>
         </h1>
-        <p class="text-zinc-400 text-xs md:text-base mt-1">
+        <p class="text-zinc-500 text-xs md:text-base mt-2 font-medium">
             {{ languageService.get('trends.subtitle') }}
         </p>
     </header>
 
-    <!-- Region Filters - Compact Pills -->
-    <div class="flex gap-2 mb-4 md:mb-6 overflow-x-auto pb-2 no-scrollbar px-1">
-        <button *ngFor="let region of translatedRegions" (click)="changeRegion(region.code)"
-            class="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all duration-300 border backdrop-blur-md active:scale-95 whitespace-nowrap"
-            [ngClass]="{
-                'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20': selectedRegion() === region.code,
-                'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white': selectedRegion() !== region.code
-            }">
-            <span class="text-lg">{{region.flag}}</span>
-            <span>{{region.name}}</span>
-        </button>
+    <!-- Region Filters - Compact Pills (Matching Home Style) -->
+    <div class="flex justify-center mb-6 md:mb-10 px-1 relative z-20">
+        <div
+            class="flex items-center gap-1 md:gap-2 bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar max-w-full">
+            <button *ngFor="let region of translatedRegions(); trackBy: trackByRegionCode"
+                (click)="changeRegion(region.code)"
+                class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 active:scale-95 whitespace-nowrap cursor-pointer relative z-30"
+                [ngClass]="{
+                    'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20': selectedRegion() === region.code,
+                    'text-zinc-400 hover:text-white hover:bg-white/5': selectedRegion() !== region.code
+                }">
+                <span class="pointer-events-none">{{region.flag}}</span>
+                <span class="hidden sm:inline pointer-events-none">{{region.name.split(' ')[0]}}</span>
+            </button>
+        </div>
     </div>
 
     <!-- Loading state -->

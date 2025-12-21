@@ -13,18 +13,21 @@
         </p>
     </header>
 
-    <!-- Country Selector -->
-    <div class="flex gap-2 md:gap-3 overflow-x-auto pb-3 scrollbar-hide">
-        <button *ngFor="let country of translatedCountries" (click)="selectCountry(country.code)"
-            [class.bg-blue-600]="selectedCountry === country.code" [class.text-white]="selectedCountry === country.code"
-            [class.shadow-lg]="selectedCountry === country.code"
-            [class.shadow-blue-500]="selectedCountry === country.code"
-            [class.bg-zinc-800]="selectedCountry !== country.code"
-            [class.text-zinc-300]="selectedCountry !== country.code"
-            class="px-3.5 py-1 md:px-6 md:py-3 rounded-full font-bold transition-all hover:scale-105 flex items-center gap-2 min-w-max text-xs md:text-sm border border-transparent hover:border-blue-500/30">
-            <span class="text-lg md:text-xl">{{country.flag}}</span>
-            <span>{{country.name}}</span>
-        </button>
+    <!-- Country Selector (Matching Home Style) -->
+    <div class="flex justify-center md:justify-start mb-6 md:mb-8 px-1 relative z-20">
+        <div
+            class="flex items-center gap-1 md:gap-2 bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar max-w-full">
+            <button *ngFor="let country of translatedCountries(); trackBy: trackByCountryCode"
+                (click)="selectCountry(country.code)"
+                class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 active:scale-95 whitespace-nowrap cursor-pointer relative z-30"
+                [ngClass]="{
+                    'bg-blue-600 text-white shadow-lg shadow-blue-500/20': selectedCountry === country.code,
+                    'text-zinc-400 hover:text-white hover:bg-white/5': selectedCountry !== country.code
+                }">
+                <span class="pointer-events-none">{{country.flag}}</span>
+                <span class="hidden sm:inline pointer-events-none">{{country.name}}</span>
+            </button>
+        </div>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6 md:gap-8">
