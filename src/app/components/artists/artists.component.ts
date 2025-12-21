@@ -61,8 +61,8 @@ export class ArtistsComponent implements OnInit {
   // Cache to track which songs we've already tried to fetch artwork for
   private artworkFetchCache = new Set<string>();
 
-  genres = [
-    { id: 'all', name: 'Todos', icon: 'grid', color: 'emerald' },
+  genres = computed(() => [
+    { id: 'all', name: this.languageService.get('artists.genre.all'), icon: 'grid', color: 'emerald' },
     { id: 'reggaeton', name: 'Reggaeton', icon: 'fire', color: 'orange' },
     { id: 'trap', name: 'Trap', icon: 'microphone', color: 'purple' },
     { id: 'pop', name: 'Pop', icon: 'star', color: 'pink' },
@@ -70,7 +70,7 @@ export class ArtistsComponent implements OnInit {
     { id: 'salsa', name: 'Salsa', icon: 'music', color: 'red' },
     { id: 'champeta', name: 'Champeta', icon: 'trending-up', color: 'cyan' },
     { id: 'cristiana', name: 'Cristiana', icon: 'heart', color: 'indigo' }
-  ];
+  ]);
 
 
   // Normalize text: remove accents, apostrophes, and special characters
@@ -412,7 +412,7 @@ export class ArtistsComponent implements OnInit {
   }
 
   getGenreName(id: string): string {
-    return this.genres.find(g => g.id === id)?.name || 'Todos';
+    return this.genres().find(g => g.id === id)?.name || this.languageService.get('artists.genre.all');
   }
 
   isPlaceholder(url: string | undefined): boolean {

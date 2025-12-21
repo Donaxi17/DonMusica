@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { LanguageService } from './language.service';
 
 export interface LastFmArtistInfo {
     bio: {
@@ -26,6 +27,7 @@ export interface LastFmArtistInfo {
 export class LastFmService {
     private apiKey = 'd4091d3ee96fa8a6b0b75bb32f9a1069';
     private baseUrl = 'https://ws.audioscrobbler.com/2.0/';
+    private languageService = inject(LanguageService);
 
     constructor(private http: HttpClient) { }
 
@@ -39,7 +41,8 @@ export class LastFmService {
             return of(null);
         }
 
-        const url = `${this.baseUrl}?method=artist.getinfo&artist=${encodeURIComponent(artistName)}&api_key=${this.apiKey}&format=json&lang=es`;
+        const currentLang = this.languageService.currentLanguage() === 'es' ? 'es' : 'en';
+        const url = `${this.baseUrl}?method=artist.getinfo&artist=${encodeURIComponent(artistName)}&api_key=${this.apiKey}&format=json&lang=${currentLang}`;
 
         return this.http.get<any>(url).pipe(
             map(response => {

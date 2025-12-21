@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, delay, map, catchError } from 'rxjs';
+import { LanguageService } from './language.service';
 
 export interface BlogPost {
     id: number;
@@ -17,6 +18,8 @@ export interface BlogPost {
     providedIn: 'root'
 })
 export class BlogService {
+    private languageService = inject(LanguageService);
+
     // NewsAPI.org - Free tier: 100 requests/day
     private readonly NEWS_API_KEY = '61c9afaf56a340e0b397c879851fe922';
     private readonly NEWS_API_URL = 'https://newsapi.org/v2/everything';
@@ -99,8 +102,11 @@ export class BlogService {
             return of(this.mockPosts).pipe(delay(500));
         }
 
+        // Get current language (es or en)
+        const currentLang = this.languageService.currentLanguage();
+
         // Try to fetch real news, fallback to mock data
-        return this.http.get<any>(`${this.NEWS_API_URL}?q=music OR musician OR album OR concert&language=es&sortBy=publishedAt&pageSize=19&apiKey=${this.NEWS_API_KEY}`).pipe(
+        return this.http.get<any>(`${this.NEWS_API_URL}?q=music OR musician OR album OR concert&language=${currentLang}&sortBy=publishedAt&pageSize=19&apiKey=${this.NEWS_API_KEY}`).pipe(
             map(response => {
                 if (response.articles && response.articles.length > 0) {
                     return response.articles.map((article: any, index: number) => ({
@@ -127,12 +133,23 @@ export class BlogService {
 
     private getCategoryFromContent(content: string): string {
         const lowerContent = content.toLowerCase();
-        if (lowerContent.includes('concierto') || lowerContent.includes('festival') || lowerContent.includes('tour')) return 'EVENTOS';
-        if (lowerContent.includes('entrevista') || lowerContent.includes('habla')) return 'ENTREVISTAS';
-        if (lowerContent.includes('álbum') || lowerContent.includes('disco') || lowerContent.includes('lanzamiento')) return 'RESEÑAS';
-        if (lowerContent.includes('tecnología') || lowerContent.includes('streaming') || lowerContent.includes('app')) return 'TECNOLOGÍA';
-        if (lowerContent.includes('historia') || lowerContent.includes('años')) return 'HISTORIA';
-        return 'NOTICIAS';
+        const isSpanish = this.languageService.currentLanguage() === 'es';
+
+        if (isSpanish) {
+            if (lowerContent.includes('concierto') || lowerContent.includes('festival') || lowerContent.includes('tour')) return 'EVENTOS';
+            if (lowerContent.includes('entrevista') || lowerContent.includes('habla')) return 'ENTREVISTAS';
+            if (lowerContent.includes('álbum') || lowerContent.includes('disco') || lowerContent.includes('lanzamiento')) return 'RESEÑAS';
+            if (lowerContent.includes('tecnología') || lowerContent.includes('streaming') || lowerContent.includes('app')) return 'TECNOLOGÍA';
+            if (lowerContent.includes('historia') || lowerContent.includes('años')) return 'HISTORIA';
+            return 'NOTICIAS';
+        } else {
+            if (lowerContent.includes('concert') || lowerContent.includes('festival') || lowerContent.includes('tour')) return 'EVENTS';
+            if (lowerContent.includes('interview') || lowerContent.includes('talks')) return 'INTERVIEWS';
+            if (lowerContent.includes('album') || lowerContent.includes('release') || lowerContent.includes('launch')) return 'REVIEWS';
+            if (lowerContent.includes('technology') || lowerContent.includes('streaming') || lowerContent.includes('app')) return 'TECH';
+            if (lowerContent.includes('history') || lowerContent.includes('years')) return 'HISTORY';
+            return 'NEWS';
+        }
     }
 
     private getRelativeTime(dateString: string): string {
@@ -142,10 +159,20 @@ export class BlogService {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffDays = Math.floor(diffHours / 24);
 
-        if (diffHours < 1) return 'Hace unos minutos';
-        if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-        if (diffDays === 1) return 'Ayer';
-        if (diffDays < 7) return `Hace ${diffDays} días`;
-        return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+        const isSpanish = this.languageService.currentLanguage() === 'es';
+
+        if (isSpanish) {
+            if (diffHours < 1) return 'Hace unos minutos';
+            if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+            if (diffDays === 1) return 'Ayer';
+            if (diffDays < 7) return `Hace ${diffDays} días`;
+            return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+        } else {
+            if (diffHours < 1) return 'A few minutes ago';
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            return date.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+        }
     }
 }

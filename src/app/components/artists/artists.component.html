@@ -1,6 +1,6 @@
 <div class="min-h-screen bg-zinc-950 overflow-x-hidden">
     <!-- Hero Section with Animated Gradient -->
-    <div class="relative h-64 md:h-96 w-full overflow-hidden mb-8 md:mb-16">
+    <div class="relative h-64 md:h-96 w-full overflow-hidden mb-0">
         <div
             class="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-purple-900/40 to-black z-10 animate-gradient">
         </div>
@@ -116,7 +116,7 @@
         <div class="mb-10 md:mb-16">
             <div class="overflow-x-auto pb-4 no-scrollbar">
                 <div class="flex flex-nowrap gap-3 min-w-max px-1">
-                    @for (genre of genres; track genre.id) {
+                    @for (genre of genres(); track genre.id) {
                     <button (click)="onGenreChange(genre.id, $event)"
                         class="group relative flex items-center gap-2 px-3 py-2 text-xs md:px-5 md:py-3 md:text-sm rounded-xl font-bold transition-all duration-300 border-2 backdrop-blur-md active:scale-95 overflow-hidden select-none cursor-pointer"
                         [ngClass]="{
@@ -165,9 +165,10 @@
             </div>
             } @else if (filteredArtists().length === 0) {
             <!-- Empty State with Recommendations -->
-            <div class="text-center py-16 md:py-24 animate-fade-in">
+            <div class="text-center animate-fade-in">
                 <div
                     class="w-20 h-20 md:w-28 md:h-28 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-2xl">
+                    <app-svg-icon name="search" width="48" height="48" class="text-zinc-400"></app-svg-icon>
                 </div>
                 <h3 class="text-xl md:text-3xl font-black text-white mb-3">{{ languageService.get('artists.no_results')
                     }}</h3>
