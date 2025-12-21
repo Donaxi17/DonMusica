@@ -79,8 +79,7 @@
                     <!-- Image -->
                     <div
                         class="relative w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-800 shadow-lg">
-                        <img [src]="song.img" [alt]="song.title" (error)="onImageError($event)"
-                            class="w-full h-full object-cover">
+                        <img [src]="song.img" [alt]="song.title" appImgFallback class="w-full h-full object-cover">
                     </div>
 
                     <!-- Info -->

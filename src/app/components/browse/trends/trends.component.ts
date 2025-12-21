@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { skip } from 'rxjs';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 import { InfiniteScrollDirective } from '../../../directives/infinite-scroll.directive';
@@ -11,14 +11,16 @@ import { SeoService } from '../../../services/seo.service';
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 import { LanguageService } from '../../../services/language.service';
 import { SettingsService } from '../../../services/settings.service';
+import { ImgFallbackDirective } from '../../../directives/img-fallback.directive';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent],
+    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent, ImgFallbackDirective],
     templateUrl: './trends.component.html'
 })
-export class TrendsComponent implements OnInit, OnDestroy {
+export class TrendsComponent implements OnInit {
     private seoService = inject(SeoService);
     public languageService = inject(LanguageService);
     public settingsService = inject(SettingsService);
@@ -33,13 +35,6 @@ export class TrendsComponent implements OnInit, OnDestroy {
 
     // Filter options linked to global settings
     selectedRegion = this.settingsService.selectedRegion;
-    regions = [
-        { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
-        { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
-        { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
-    ];
-
-    private regionSub: any;
 
     // Computed signal to provide stable references and avoid re-renders
     translatedRegions = computed(() => {
@@ -48,7 +43,7 @@ export class TrendsComponent implements OnInit, OnDestroy {
         // Assuming languageService.currentLanguage is a signal or we want simple static list for now.
         // Ideally languageService should provide a signal for reactivity.
         // For now, let's keep it simple. Even a static list is better than a thrashing getter.
-        return this.regions.map(r => ({
+        return this.settingsService.regions.map(r => ({
             ...r,
             name: r.code === 'US' ? this.languageService.get('trends.world') : r.name
         }));
@@ -56,29 +51,28 @@ export class TrendsComponent implements OnInit, OnDestroy {
 
     constructor(
         private musicApi: MusicApiService,
-        private playerService: PlayerService
+        private playerService: PlayerService,
+        private toastService: ToastService
     ) {
-        // Sync with global region changes using RxJS (mimicking HomeComponent pattern)
-        this.regionSub = toObservable(this.selectedRegion).pipe(skip(1)).subscribe(region => {
-            this.loadInitialData(region);
-        });
+        // Sync with region changes automatically cleaning up subscription
+        toObservable(this.selectedRegion)
+            .pipe(skip(1), takeUntilDestroyed())
+            .subscribe(region => {
+                this.loadInitialData(region);
+            });
     }
 
     ngOnInit() {
         this.seoService.setSeoData(
             this.languageService.get('trends.seo.title'),
-            this.languageService.get('trends.seo.desc')
+            'Descubre las canciones más populares del momento en DonMusica. Escucha y descarga gratis los éxitos virales de TikTok, Spotify y más.'
         );
 
         // Initial Load
         this.loadInitialData(this.selectedRegion());
     }
 
-    ngOnDestroy() {
-        if (this.regionSub) {
-            this.regionSub.unsubscribe();
-        }
-    }
+    // No ngOnDestroy needed for the subscription thanks to takeUntilDestroyed
 
     loadInitialData(region: string) {
         this.loading.set(true);
@@ -99,6 +93,7 @@ export class TrendsComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Error loading trends:', err);
+                this.toastService.error(this.languageService.get('errors.loading_trends') || 'Error cargando tendencias');
                 this.loading.set(false);
                 this.trendingSongs.set([]);
             }
@@ -110,7 +105,7 @@ export class TrendsComponent implements OnInit, OnDestroy {
         this.selectedRegion.set(region);
     }
 
-    trackByRegionCode(index: number, region: any): string {
+    trackByRegionCode(index: number, region: { code: string }): string {
         return region.code;
     }
 
@@ -140,10 +135,5 @@ export class TrendsComponent implements OnInit, OnDestroy {
         event.stopPropagation();
         this.playerService.setPlaylist(this.trendingSongs(), false, 'trends');
         this.playerService.playSong(song);
-    }
-
-    onImageError(event: Event) {
-        const img = event.target as HTMLImageElement;
-        img.src = 'https://placehold.co/300x300/18181b/10b981?text=🎵';
     }
 }

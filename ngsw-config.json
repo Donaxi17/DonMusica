@@ -51,12 +51,14 @@
       "name": "api-cache",
       "urls": [
         "https://itunes.apple.com/search**",
-        "https://pipedapi.kavin.rocks/**"
+        "https://pipedapi.kavin.rocks/**",
+        "https://*.firebaseio.com/**",
+        "https://*.googleapis.com/**"
       ],
       "cacheConfig": {
-        "maxSize": 150,
-        "maxAge": "2h",
-        "timeout": "10s",
+        "maxSize": 200,
+        "maxAge": "6h",
+        "timeout": "5s",
         "strategy": "freshness"
       }
     },
@@ -67,12 +69,14 @@
         "https://i.scdn.co/image/**",
         "https://firebasestorage.googleapis.com/**",
         "https://is1-ssl.mzstatic.com/**",
-        "https://*.mzstatic.com/**"
+        "https://*.mzstatic.com/**",
+        "https://ui-avatars.com/api/**",
+        "https://placehold.co/**"
       ],
       "cacheConfig": {
-        "maxSize": 500,
-        "maxAge": "14d",
-        "timeout": "8s",
+        "maxSize": 600,
+        "maxAge": "30d",
+        "timeout": "10s",
         "strategy": "performance"
       }
     },
@@ -84,9 +88,9 @@
         "/assets/audio/**"
       ],
       "cacheConfig": {
-        "maxSize": 100,
-        "maxAge": "60d",
-        "timeout": "15s",
+        "maxSize": 50,
+        "maxAge": "7d",
+        "timeout": "20s",
         "strategy": "performance"
       }
     }

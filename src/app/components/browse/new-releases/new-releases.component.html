@@ -58,8 +58,8 @@
             [attr.aria-label]="'Reproducir ' + release.title + ' de ' + release.artist">
             <div
                 class="relative aspect-square rounded-lg md:rounded-xl overflow-hidden bg-zinc-800 mb-2 md:mb-4 shadow-lg group-hover:shadow-xl transition-shadow">
-                <img [src]="release.img" [alt]="'Portada de ' + release.album + ' por ' + release.artist"
-                    (error)="handleImageError($event, release.title)" loading="lazy"
+                <img [src]="release.img" [alt]="'Portada de ' + release.album + ' por ' + release.artist" appImgFallback
+                    loading="lazy"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
 
                 <!-- Play overlay -->

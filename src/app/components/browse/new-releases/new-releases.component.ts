@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, Inject, HostListener, computed } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, OnInit, signal, inject, PLATFORM_ID, Inject, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { skip } from 'rxjs';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
@@ -8,21 +8,21 @@ import { MusicApiService } from '../../../services/music-api.service';
 import { Song } from '../../../services/playlist.service';
 import { PlayerService } from '../../../services/player.service';
 import { SeoService } from '../../../services/seo.service';
-import { Subscription } from 'rxjs';
 import { LanguageService } from '../../../services/language.service';
 import { SettingsService } from '../../../services/settings.service';
+import { ImgFallbackDirective } from '../../../directives/img-fallback.directive';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
     selector: 'app-new-releases',
     standalone: true,
-    imports: [CommonModule, SkeletonComponent, AdsContainerComponent],
+    imports: [CommonModule, SkeletonComponent, AdsContainerComponent, ImgFallbackDirective],
     templateUrl: './new-releases.component.html'
 })
-export class NewReleasesComponent implements OnInit, OnDestroy {
+export class NewReleasesComponent implements OnInit {
     private seoService = inject(SeoService);
     public languageService = inject(LanguageService);
     public settingsService = inject(SettingsService);
-    private playerSubscription?: Subscription;
 
     releases = signal<Song[]>([]);
     private allReleases: Song[] = [];
@@ -34,16 +34,9 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
 
     // Filter options using global settings
     selectedRegion = this.settingsService.selectedRegion;
-    regions = [
-        { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
-        { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
-        { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
-    ];
-
-    private regionSub: any;
 
     translatedRegions = computed(() => {
-        return this.regions.map(r => ({
+        return this.settingsService.regions.map(r => ({
             ...r,
             name: r.code === 'US' ? this.languageService.get('trends.world') : r.name
         }));
@@ -52,12 +45,30 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
     constructor(
         private musicApi: MusicApiService,
         private player: PlayerService,
+        private toastService: ToastService,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
-        // Move toObservable here to maintain Injection Context (Fixes NG0203)
-        this.regionSub = toObservable(this.selectedRegion).pipe(skip(1)).subscribe(region => {
-            this.loadReleases(region);
-        });
+        // Sync region changes
+        toObservable(this.selectedRegion)
+            .pipe(skip(1), takeUntilDestroyed())
+            .subscribe(region => {
+                this.loadReleases(region);
+            });
+
+        // Sync player state
+        this.player.isPlaying$
+            .pipe(takeUntilDestroyed())
+            .subscribe(playing => {
+                this.isPlaying.set(playing);
+            });
+
+        // For time/duration we might need another approach if they are not exposed as observables or if we don't need them reactive here (template usually handles async pipe for these if they are observables).
+        // If currentTime/duration are needed for UI updates:
+        // Assuming PlayerService has currentTime$ and duration$
+        /* 
+        this.player.currentTime$.pipe(takeUntilDestroyed()).subscribe(t => this.currentTime.set(t));
+        this.player.duration$.pipe(takeUntilDestroyed()).subscribe(d => this.duration.set(d));
+        */
     }
 
     ngOnInit() {
@@ -69,9 +80,6 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
 
         // Initial Load
         this.loadReleases(this.selectedRegion());
-
-        // Subscribe to player state changes
-        this.subscribeToPlayer();
     }
 
     changeRegion(region: 'CO' | 'US' | 'MX') {
@@ -79,7 +87,7 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
         this.selectedRegion.set(region);
     }
 
-    trackByRegionCode(index: number, region: any): string {
+    trackByRegionCode(index: number, region: { code: string }): string {
         return region.code;
     }
 
@@ -88,83 +96,30 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
         this.musicApi.getNewReleases(region, 29).subscribe({
             next: (data) => {
                 this.allReleases = data;
-                this.updateVisibleItems();
+                this.releases.set(data);
                 this.loading.set(false);
             },
-            error: (err) => {
-                console.error('Error loading new releases:', err);
+            error: (error) => {
+                console.error('Error loading new releases', error);
+                this.toastService.error(this.languageService.get('errors.loading_releases') || 'Error cargando lanzamientos');
                 this.loading.set(false);
                 this.releases.set([]);
             }
         });
     }
 
-    @HostListener('window:resize', ['$event'])
-    onResize(event: any) {
-        this.updateVisibleItems();
-    }
-
-    private updateVisibleItems() {
-        if (!isPlatformBrowser(this.platformId)) return;
-        const width = window.innerWidth;
-        let limit = 29;
-
-        if (width >= 1280) {
-            limit = 29;
-        } else {
-            const target = 28;
-            const available = this.allReleases.length;
-            if (available >= target) {
-                limit = target;
-            } else {
-                limit = Math.floor(available / 2) * 2;
-            }
-        }
-
-        if (this.allReleases.length > 0) {
-            this.releases.set(this.allReleases.slice(0, limit));
-        }
-    }
-
-    ngOnDestroy() {
-        this.playerSubscription?.unsubscribe();
-    }
-
-    private subscribeToPlayer() {
-        this.playerSubscription = this.player.currentSong$.subscribe(song => {
-            if (song) {
-                const index = this.releases().findIndex(r => r.id === song.id);
-                if (index !== -1) {
-                    this.currentSongIndex.set(index);
-                }
-            }
-        });
-
-        this.player.isPlaying$.subscribe(playing => {
-            this.isPlaying.set(playing);
-        });
-    }
-
-    playSong(song: Song, index?: number) {
-        const songIndex = index !== undefined ? index : this.releases().findIndex(r => r.id === song.id);
-        this.currentSongIndex.set(songIndex);
-        this.player.playSong(song);
-        this.isPlaying.set(true);
+    playSong(song: Song, index: number) {
         this.player.setPlaylist(this.releases(), false, 'new-releases');
+        this.player.playSong(song);
     }
 
     playAll() {
-        if (this.releases().length > 0) {
-            this.playSong(this.releases()[0], 0);
-        }
-    }
-
-    handleImageError(event: any, title: string) {
-        event.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=10b981&color=fff&size=300&font-size=0.33`;
+        if (this.releases().length === 0) return;
+        this.player.setPlaylist(this.releases(), false, 'new-releases');
+        this.player.playSong(this.releases()[0]);
     }
 
     isCurrentSong(song: Song): boolean {
-        const currentId = this.player.currentSong?.id;
-        return song.id === currentId;
+        return this.player.currentSong?.id === song.id;
     }
 }

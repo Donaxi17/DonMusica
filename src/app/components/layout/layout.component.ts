@@ -12,6 +12,7 @@ import { SettingsService } from '../../services/settings.service';
 import { HapticService } from '../../services/haptic.service';
 import { ARTISTS_DATA } from '../../models/artists.data';
 import { LanguageService } from '../../services/language.service';
+import { PwaInstallService } from '../../services/pwa-install.service';
 
 @Component({
   selector: 'app-layout',
@@ -60,6 +61,7 @@ export class LayoutComponent implements OnInit {
   public settingsService = inject(SettingsService);
   private hapticService = inject(HapticService);
   public languageService = inject(LanguageService);
+  public pwaInstallService = inject(PwaInstallService); // Added
 
   constructor() {
     this.router.events.subscribe(event => {
@@ -539,5 +541,12 @@ export class LayoutComponent implements OnInit {
     }, 100);
 
     this.cdr.markForCheck();
+  }
+
+  installApp() {
+    this.hapticService.medium();
+    this.pwaInstallService.installApp();
+    this.closeMoreMenu();
+    this.closeMobileMoreMenu();
   }
 }

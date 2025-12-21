@@ -432,7 +432,7 @@
                                         class="aspect-square relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 group-hover:border-emerald-500/40 group-hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] shadow-2xl isolate">
                                         <img [src]="song.img" [alt]="song.title"
                                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                            onerror="this.src='https://placehold.co/400x400/18181b/10b981?text=Song'">
+                                            appImgFallback>
 
                                         <div class="absolute top-3 right-3 z-20">
                                             <div
@@ -501,7 +501,8 @@
                     <!-- Region Filters -->
                     <div
                         class="flex items-center gap-2 bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 reveal reveal-up delay-200">
-                        <button *ngFor="let reg of regions" (click)="changeRegion(reg.code)"
+                        <button *ngFor="let reg of translatedRegions(); trackBy: trackByRegionCode"
+                            (click)="changeRegion(reg.code)"
                             class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2"
                             [ngClass]="{
                                 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20': selectedRegion() === reg.code,
@@ -537,7 +538,7 @@
                                         class="aspect-square relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 group-hover:border-emerald-500/40 group-hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] shadow-2xl isolate">
                                         <img [src]="song.img" [alt]="song.title"
                                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                            onerror="this.src='https://placehold.co/400x400/18181b/10b981?text=Song'">
+                                            appImgFallback>
 
                                         <div class="absolute top-3 left-3 z-20">
                                             <div

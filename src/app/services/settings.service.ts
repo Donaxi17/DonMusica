@@ -9,6 +9,12 @@ export class SettingsService {
     dataSaver = signal<boolean>(false);
     selectedRegion = signal<'CO' | 'US' | 'MX'>('CO');
 
+    readonly regions = [
+        { code: 'CO' as const, name: 'Colombia', flag: '🇨🇴' },
+        { code: 'MX' as const, name: 'México', flag: '🇲🇽' },
+        { code: 'US' as const, name: 'Mundial', flag: '🌎' }
+    ];
+
     constructor() {
         // Load from localStorage
         if (typeof window !== 'undefined') {

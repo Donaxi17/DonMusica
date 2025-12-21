@@ -248,6 +248,17 @@
                             </svg> {{ languageService.get('nav.history') }}
                         </button>
 
+                        <div *ngIf="pwaInstallService.showInstallButton()" class="h-px bg-zinc-800 mx-4"></div>
+
+                        <button *ngIf="pwaInstallService.showInstallButton()" (click)="installApp()"
+                            class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-emerald-400 font-bold group animate-fade-in">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                            </svg>
+                            Instalar App
+                        </button>
+
                         <div class="h-px bg-zinc-800 mx-4"></div>
 
                         <button (click)="toggleDataSaver(); $event.stopPropagation()"
@@ -547,6 +558,23 @@
                         {{ languageService.get('layout.view_history') }}
                     </button>
                 </div>
+
+                <!-- PWA INSTALL BUTTON (MOBILE) -->
+                <button *ngIf="pwaInstallService.showInstallButton()" (click)="installApp()"
+                    class="w-full bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-emerald-900/40 mb-3 animate-fade-in group active:scale-95 transition-all">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-white font-black uppercase tracking-wide text-sm">Instalar App</div>
+                            <div class="text-white/80 text-xs">Añadir a pantalla de inicio</div>
+                        </div>
+                    </div>
+                </button>
 
                 <button (click)="navigateTo('/sin-copyright'); closeMobileMoreMenu()" class="menu-item-mobile group"
                     [ngClass]="{'bg-emerald-500/10 border-emerald-500/20': isActive('/sin-copyright')}">

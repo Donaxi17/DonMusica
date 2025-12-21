@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, AfterViewInit, OnDestroy, ElementRef, Renderer2, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, ElementRef, Renderer2, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { skip } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
@@ -20,11 +20,12 @@ import { HapticService } from '../../services/haptic.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LanguageService } from '../../services/language.service';
 import { SettingsService } from '../../services/settings.service';
+import { ImgFallbackDirective } from '../../directives/img-fallback.directive';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NoConnectionComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NoConnectionComponent, SkeletonComponent, ImgFallbackDirective],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,22 +61,23 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Filter options for Trends - Linked to global settings
   selectedRegion = this.settingsService.selectedRegion;
-  regions = [
-    { code: 'CO' as const, name: 'Colombia 🇨🇴', flag: '🇨🇴' },
-    { code: 'MX' as const, name: 'México 🇲🇽', flag: '🇲🇽' },
-    { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
-  ];
+
+  translatedRegions = computed(() => {
+    return this.settingsService.regions.map(r => ({
+      ...r,
+      name: r.code === 'US' ? this.languageService.get('trends.world') : r.name
+    }));
+  });
 
   deferredPrompt: any;
   canInstall = false;    // For the Hero button
   showInstallBanner = false; // For the bottom banner
 
   private observer: IntersectionObserver | null = null;
-  private regionSub: any;
 
   constructor() {
     // Moved to constructor to maintain Injection Context
-    this.regionSub = toObservable(this.selectedRegion).pipe(skip(1)).subscribe(region => {
+    toObservable(this.selectedRegion).pipe(skip(1), takeUntilDestroyed()).subscribe(region => {
       this.loadTrends(region);
     });
   }
@@ -97,9 +99,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.observer) {
       this.observer.disconnect();
-    }
-    if (this.regionSub) {
-      this.regionSub.unsubscribe();
     }
   }
 
@@ -239,6 +238,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedRegion.set(region);
   }
 
+  trackByRegionCode(index: number, region: any): string {
+    return region.code;
+  }
+
   ngAfterViewInit() {
     this.initScrollAnimations();
   }
@@ -328,9 +331,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toastService.warning(this.languageService.get('home.toast.fill_required'));
       return;
     }
-    const message = `${this.languageService.get('home.whatsapp.message_header')}%0A%0A` +
-      `${this.languageService.get('home.whatsapp.artist')} ${this.requestArtist}%0A` +
-      `${this.languageService.get('home.whatsapp.song')} ${this.requestSong}`;
+    const message = `${this.languageService.get('home.whatsapp.message_header')}% 0A % 0A` +
+      `${this.languageService.get('home.whatsapp.artist')} ${this.requestArtist}% 0A` +
+      `${this.languageService.get('home.whatsapp.song')} ${this.requestSong} `;
     const phoneNumber = '573017966272';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     this.hapticService.success();
