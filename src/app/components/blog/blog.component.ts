@@ -5,6 +5,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { SeoService } from '../../services/seo.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { LanguageService } from '../../services/language.service';
 
 interface EvergreenArticle {
     id: number;
@@ -26,6 +27,7 @@ export class BlogComponent implements OnInit {
     networkService = inject(NetworkService);
     private blogService = inject(BlogService);
     private seoService = inject(SeoService);
+    languageService = inject(LanguageService);
 
     posts = signal<BlogPost[]>([]);
     loading = signal(true);
@@ -33,7 +35,7 @@ export class BlogComponent implements OnInit {
     showModal = signal(false);
 
     // Artículos estáticos "evergreen" sobre música
-    evergreenArticles: EvergreenArticle[] = [
+    evergreenArticlesES: EvergreenArticle[] = [
         {
             id: 1,
             title: 'Historia del Reggaetón: De Puerto Rico al Mundo',
@@ -188,13 +190,174 @@ export class BlogComponent implements OnInit {
         }
     ];
 
+    evergreenArticlesEN: EvergreenArticle[] = [
+        {
+            id: 1,
+            title: 'History of Reggaeton: From Puerto Rico to the World',
+            excerpt: 'Discover how reggaeton went from an underground movement in Puerto Rico to becoming one of the most influential musical genres worldwide.',
+            category: 'History',
+            readTime: '8 min',
+            image: 'https://picsum.photos/seed/reggaeton-history/800/500',
+            content: `
+                <h2>Origins of Reggaeton</h2>
+                <p>Reggaeton was born in the neighborhoods of Puerto Rico during the 90s, fusioning Jamaican reggae, US hip hop, and Latin rhythms. This revolutionary genre changed the global music landscape forever.</p>
+                
+                <h3>The Pioneers</h3>
+                <p>Artists like Daddy Yankee, Don Omar, and Tego Calderon were fundamental in popularizing the genre. Daddy Yankee's "Gasolina" (2004) marked a turning point, bringing reggaeton to mainstream radio.</p>
+                
+                <h3>Global Evolution</h3>
+                <p>Since the mid-2010s, reggaeton experienced a global explosion with artists like Bad Bunny, J Balvin, and Ozuna dominating global playlists, collaborating with artists of all genres and breaking language barriers.</p>
+                
+                <h3>Reggaeton Today</h3>
+                <p>Today, reggaeton is one of the most listened genres on streaming platforms, with Latin American artists topping global charts and selling out stadiums worldwide.</p>
+            `
+        },
+        {
+            id: 2,
+            title: 'Complete Guide to Urban Music Genres',
+            excerpt: 'Learn to differentiate between trap, reggaeton, dembow, hip hop and the subgenres defining current urban music.',
+            category: 'Guides',
+            readTime: '10 min',
+            image: 'https://picsum.photos/seed/urban-genres/800/500',
+            content: `
+                <h2>Most Popular Urban Genres</h2>
+                
+                <h3>Reggaeton</h3>
+                <p>Characterized by its "Dem Bow" rhythm, reggaeton combines Spanish lyrics with electronic beats and Caribbean influences. It's the ultimate Latin urban genre.</p>
+                
+                <h3>Latin Trap</h3>
+                <p>Derived from US trap, Latin trap incorporates Spanish lyrics with heavy beats characterized by fast hi-hats and deep bass. Bad Bunny, Anuel AA, and Myke Towers are genre icons.</p>
+                
+                <h3>Dembow</h3>
+                <p>Originating in the Dominican Republic, dembow is known for its fast and repetitive rhythm. Artists like El Alfa have taken this genre to international audiences.</p>
+                
+                <h3>Latin Hip Hop</h3>
+                <p>The Latin version of classic hip hop, maintaining rap roots but with Spanish lyrics and themes resonating with Latin American culture.</p>
+            `
+        },
+        {
+            id: 3,
+            title: 'How to Create the Perfect Playlist: Expert Tips',
+            excerpt: 'Professional advice for creating playlists that flow perfectly, whether for a party, workout, or study.',
+            category: 'Tips',
+            readTime: '6 min',
+            image: 'https://picsum.photos/seed/playlist-tips/800/500',
+            content: `
+                <h2>The Art of Curating Playlists</h2>
+                
+                <h3>1. Define the Purpose</h3>
+                <p>Before adding songs, ask yourself: Is it for exercise? To study? For a party? The purpose will define the tempo, energy, and genre of the songs.</p>
+                
+                <h3>2. Consider Music Flow</h3>
+                <p>The best playlists have a narrative arc. Start with songs that set the mood, reach a climax in the middle, and close with memorable tracks.</p>
+                
+                <h3>3. Vary but Keep Coherence</h3>
+                <p>Include variety within the same genre or mood. Alternate between popular artists and new discoveries to keep the playlist fresh but cohesive.</p>
+                
+                <h3>4. Ideal Duration</h3>
+                <p>For workout playlists: 45-60 minutes. For work/study: 2-3 hours. For parties: 3-4 hours. Adjust to your needs.</p>
+                
+                <h3>5. Update Regularly</h3>
+                <p>The best playlists evolve. Add new releases, remove songs that no longer work, and keep your collection fresh.</p>
+            `
+        },
+        {
+            id: 4,
+            title: 'The Music Streaming Revolution: How It Changed the Industry',
+            excerpt: 'Deep analysis of how Spotify, Apple Music, and YouTube completely transformed how we consume and discover music.',
+            category: 'Industry',
+            readTime: '12 min',
+            image: 'https://picsum.photos/seed/streaming-revolution/800/500',
+            content: `
+                <h2>From CD to Streaming</h2>
+                
+                <h3>The End of the Physical Era</h3>
+                <p>In just 15 years, we went from buying physical CDs to having millions of songs in our pockets. Physical music sales dropped 80% while streaming grew exponentially.</p>
+                
+                <h3>Democratization of Access</h3>
+                <p>Streaming democratized access to music. For less than $10 a month, anyone can listen to practically any song ever recorded. This was unthinkable 20 years ago.</p>
+                
+                <h3>New Opportunities for Artists</h3>
+                <p>Independent artists can now reach global audiences without needing large record labels. Platforms like SoundCloud, Spotify, and YouTube have launched careers of artists who never had a traditional contract.</p>
+                
+                <h3>The Power of Algorithms</h3>
+                <p>Recommendation algorithms have changed how we discover music. Spotify's Discover Weekly and other recommendation systems expose listeners to artists they would never have found otherwise.</p>
+                
+                <h3>Challenges and Controversies</h3>
+                <p>Not everything is perfect. Artist compensation per stream remains controversial, with many musicians arguing they need millions of plays to earn what they previously made with one sold album.</p>
+            `
+        },
+        {
+            id: 5,
+            title: 'Music to Improve Productivity: What Science Says',
+            excerpt: 'Scientific studies reveal what type of music actually helps concentrate and be more productive at work or study.',
+            category: 'Science',
+            readTime: '7 min',
+            image: 'https://picsum.photos/seed/productivity-music/800/500',
+            content: `
+                <h2>The Science Behind Music and Productivity</h2>
+                
+                <h3>The Mozart Effect</h3>
+                <p>Studies have shown that listening to classical music, especially Mozart, can temporarily improve spatial reasoning and concentration capacity.</p>
+                
+                <h3>Lo-Fi Hip Hop: Student Favorite</h3>
+                <p>The relaxed and repetitive beats of lo-fi hip hop have shown to help maintain focus without distracting. Its predictable structure allows the brain to enter "work mode".</p>
+                
+                <h3>Music Without Lyrics</h3>
+                <p>For tasks requiring language processing (writing, reading), instrumental music is superior to music with lyrics, which can compete for the same cognitive resources.</p>
+                
+                <h3>Volume Matters</h3>
+                <p>The ideal volume to work is low to moderate (50-70 dB). Too loud causes cognitive fatigue, too low doesn't provide "ambient noise" benefits.</p>
+                
+                <h3>Every Brain Is Different</h3>
+                <p>Most important: what works for you is unique. Experiment with different genres and find your perfect combination of music and productivity.</p>
+            `
+        },
+        {
+            id: 6,
+            title: 'Music Festivals 2025: Guide to the Unmissables',
+            excerpt: 'Latin American and world music festivals you can\'t miss this year, from Coachella to Lollapalooza.',
+            category: 'Events',
+            readTime: '9 min',
+            image: 'https://picsum.photos/seed/festivals-2025/800/500',
+            content: `
+                <h2>The Best Festivals of the Year</h2>
+                
+                <h3>Coachella (California, USA)</h3>
+                <p>The world's most iconic festival returns in April with a spectacular lineup mixing global headliners with emerging artists. Two weekends of music, art, and fashion in the desert.</p>
+                
+                <h3>Lollapalooza (Multiple Cities)</h3>
+                <p>With editions in Chicago, Buenos Aires, Santiago, São Paulo and more, Lollapalooza brings the best of rock, pop, hip hop and electronic to multiple continents. Ideal for fans of musical diversity.</p>
+                
+                <h3>Tomorrowland (Belgium)</h3>
+                <p>Electronic music paradise. With impressive productions and the world's best DJs, Tomorrowland is a next-level experience for EDM lovers.</p>
+                
+                <h3>Estéreo Picnic (Colombia)</h3>
+                <p>Colombia's largest festival brings the best of alternative, rock, and urban music to Bogota. A must for the Latin American scene.</p>
+                
+                <h3>Festival Tips</h3>
+                <p>1. Buy early bird tickets for better prices<br>
+                   2. Study the lineup and make your itinerary<br>
+                   3. Arrive early for good spots<br>
+                   4. Hydrate constantly<br>
+                   5. Portable charger is essential</p>
+            `
+        }
+    ];
+
+    get evergreenArticles() {
+        return this.languageService.currentLanguage() === 'es'
+            ? this.evergreenArticlesES
+            : this.evergreenArticlesEN;
+    }
+
     selectedEvergreenArticle = signal<EvergreenArticle | null>(null);
     showEvergreenModal = signal(false);
 
     ngOnInit() {
         this.seoService.setSeoData(
-            'Blog de Música | Noticias, Guías y Artículos sobre Música',
-            'Las últimas noticias musicales, guías completas sobre géneros, historia de la música y consejos de expertos. Tu fuente definitiva de contenido musical.'
+            this.languageService.get('blog.seo.title'),
+            this.languageService.get('blog.seo.desc')
         );
 
         this.blogService.getPosts().subscribe(data => {

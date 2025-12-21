@@ -16,7 +16,8 @@
                 </div>
 
                 <div>
-                    <h1 class="text-3xl md:text-6xl font-bold text-white mb-2 md:mb-4 tracking-tight">Radio Mundial</h1>
+                    <h1 class="text-3xl md:text-6xl font-bold text-white mb-2 md:mb-4 tracking-tight">{{
+                        languageService.get('radio.title') }}</h1>
                     <div
                         class="flex flex-wrap justify-center items-center gap-2 md:gap-3 text-sm md:text-lg text-zinc-400 font-medium">
                         <span
@@ -25,12 +26,12 @@
                                 <path
                                     d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                                 <circle cx="12" cy="12" r="3" />
-                            </svg> En vivo
+                            </svg> {{ languageService.get('radio.live') }}
                         </span>
                         <span class="hidden md:inline text-zinc-600">•</span>
-                        <span>Sin límites</span>
+                        <span>{{ languageService.get('radio.no_limits') }}</span>
                         <span class="hidden md:inline text-zinc-600">•</span>
-                        <span class="text-blue-400">Gratis</span>
+                        <span class="text-blue-400">{{ languageService.get('radio.free') }}</span>
                     </div>
                 </div>
             </div>
@@ -44,11 +45,10 @@
                                 d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
                             <path
                                 d="M12 6c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm0 10c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z" />
-                        </svg> Conexión Global
+                        </svg> {{ languageService.get('radio.connection_title') }}
                     </h3>
                     <p class="text-xs md:text-sm text-zinc-400 leading-relaxed max-w-lg">
-                        Explora miles de estaciones de radio de todo el planeta. Música, noticias, deportes y cultura en
-                        tiempo real, sin interrupciones.
+                        {{ languageService.get('radio.connection_desc') }}
                     </p>
                 </div>
             </div>
@@ -63,7 +63,8 @@
         } @else {
         <!-- Genre Selector (Scroll Horizontal) -->
         <div class="mb-6">
-            <h3 class="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 ml-1">Estilos</h3>
+            <h3 class="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 ml-1">{{
+                languageService.get('radio.styles') }}</h3>
             <div class="flex overflow-x-auto pb-2 gap-2 scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
                 <button (click)="setGenre('favorites')" [class.bg-red-600]="genre === 'favorites'"
                     [class.text-white]="genre === 'favorites'" [class.bg-zinc-900]="genre !== 'favorites'"
@@ -75,7 +76,7 @@
                         <path
                             d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
-                    Favoritos
+                    {{ languageService.get('radio.favorites') }}
                 </button>
                 <button (click)="setGenre('reggaeton')" [class.bg-blue-600]="genre === 'reggaeton'"
                     [class.text-white]="genre === 'reggaeton'" [class.bg-zinc-900]="genre !== 'reggaeton'"
@@ -110,7 +111,7 @@
                     [class.text-zinc-400]="genre !== 'news'" [class.border-blue-500]="genre === 'news'"
                     [class.border-zinc-800]="genre !== 'news'"
                     class="flex-shrink-0 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-medium border transition-all flex items-center gap-1.5 active:scale-95 hover:bg-zinc-800">
-                    <span>📰</span> Noticias
+                    <span>📰</span> {{ languageService.get('radio.news') }}
                 </button>
             </div>
         </div>
@@ -166,7 +167,7 @@
                         </span>
                         <span *ngIf="currentStation === station && isPlaying"
                             class="text-[9px] md:text-[10px] text-emerald-400 animate-pulse font-bold flex items-center gap-1">
-                            EN VIVO
+                            {{ languageService.get('radio.live_indicator') }}
                         </span>
                     </div>
                 </div>
@@ -223,11 +224,12 @@
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-white mb-1">
-                {{ genre === 'favorites' ? 'No tienes favoritas' : 'No se encontraron emisoras' }}
+                {{ genre === 'favorites' ? languageService.get('radio.no_favorites_title') :
+                languageService.get('radio.no_stations_title') }}
             </h3>
             <p class="text-sm text-zinc-500 text-center max-w-xs">
-                {{ genre === 'favorites' ? 'Toca el corazón en las emisoras para agregarlas aquí.' : 'Intenta con otro
-                género.' }}
+                {{ genre === 'favorites' ? languageService.get('radio.no_favorites_desc') :
+                languageService.get('radio.no_stations_desc') }}
             </p>
         </div>
 
@@ -248,7 +250,7 @@
 
         <div class="flex-1 min-w-0">
             <h4 class="font-bold text-xs truncate text-white leading-tight mb-0.5">{{currentStation.name}}</h4>
-            <p class="text-[10px] text-blue-400 truncate">Radio en vivo</p>
+            <p class="text-[10px] text-blue-400 truncate">{{ languageService.get('radio.live_status') }}</p>
         </div>
 
         <button (click)="stopRadio()"

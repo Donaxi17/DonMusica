@@ -11,38 +11,35 @@
                             class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    <span class="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">Espacio Personal</span>
+                    <span class="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">{{
+                        languageService.get('upload.badge') }}</span>
                 </div>
                 <h1 class="text-4xl md:text-6xl font-black tracking-tighter text-white my-4 drop-shadow-2xl">
-                    <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-600">Mi</span>
-                    Música
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-600">{{
+                        languageService.get('upload.header.mi') }}</span>
+                    {{ languageService.get('upload.header.musica') }}
                 </h1>
                 <p class="text-zinc-400 text-sm md:text-base font-medium max-w-md mx-auto md:mx-0 leading-relaxed">
-                    Sube tus canciones favoritas, crea carpetas y organízalas. Todo se guarda en tu navegador.
+                    {{ languageService.get('upload.header.desc') }}
                 </p>
-
-
             </div>
 
-            <!-- Mobile Storage Indicator (Premium Design) -->
+            <!-- Mobile Storage Indicator -->
             <div class="md:hidden relative overflow-hidden rounded-3xl p-5 mt-8 border transition-all duration-300"
                 [ngClass]="{
                     'bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800': !isPro,
                     'bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20': isPro
                 }">
 
-                <!-- Background Glow Effect for Pro -->
                 <div *ngIf="isPro"
                     class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none">
                 </div>
 
                 <div class="relative z-10">
-                    <!-- Header -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
                         <div class="flex items-center gap-2">
-                            <div class="text-xs font-bold text-zinc-300 uppercase tracking-wider">Almacenamiento</div>
-                            <!-- Status Badge -->
+                            <div class="text-xs font-bold text-zinc-300 uppercase tracking-wider">{{
+                                languageService.get('upload.storage') }}</div>
                             <button (click)="toggleProDebug()"
                                 class="px-2.5 py-1 rounded text-[10px] font-black tracking-widest uppercase transition-all active:scale-95 border shadow-sm"
                                 [ngClass]="{
@@ -56,19 +53,16 @@
                             [style.color]="storageColor">{{ formattedUsedStorage }} / {{ formattedMaxStorage }}</div>
                     </div>
 
-                    <!-- Progress Bar -->
                     <div
                         class="w-full h-4 bg-zinc-900/50 rounded-full overflow-hidden mb-3 backdrop-blur-md ring-1 ring-white/10 shadow-inner p-0.5">
                         <div class="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                             [style.width.%]="storagePercentage" [style.backgroundColor]="storageColor">
-                            <!-- Shine effect -->
                             <div
                                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-full -translate-x-full animate-[shimmer_2s_infinite]">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Stats -->
                     <div
                         class="text-[10px] uppercase tracking-wide font-medium text-zinc-500 flex justify-between items-center mb-6 px-1">
                         <span class="flex items-center gap-1.5">
@@ -76,14 +70,14 @@
                                 <path
                                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                             </svg>
-                            ~{{ totalSongCapacity }} Canciones
+                            {{ languageService.get('upload.storage.total_songs', totalSongCapacity) }}
                         </span>
                         <span *ngIf="estimatedSongsRemaining > 0" class="flex items-center gap-1.5" [ngClass]="{
                             'text-emerald-400': storageWarningLevel === 'safe',
                             'text-yellow-400': storageWarningLevel === 'warning',
                             'text-red-400': storageWarningLevel === 'danger'
                         }">
-                            ~{{ estimatedSongsRemaining }} Restantes
+                            {{ languageService.get('upload.storage.remaining_songs', estimatedSongsRemaining) }}
                         </span>
                         <span *ngIf="estimatedSongsRemaining <= 0"
                             class="text-red-400 font-bold flex items-center gap-1">
@@ -91,7 +85,7 @@
                                 <path
                                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                             </svg>
-                            Espacio Lleno
+                            {{ languageService.get('upload.storage.full_title') }}
                         </span>
                     </div>
 
@@ -108,12 +102,11 @@
                             <path
                                 d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                         </svg>
-                        <span class="relative z-10">{{ upgradeButtonText }}</span>
+                        <span class="relative z-10">{{ languageService.get('upload.storage.upgrade_pro') }}</span>
                     </button>
-                    <!-- Upgrade Promo when Safe -->
                     <button *ngIf="!canUpgrade()"
                         class="w-full py-3 rounded-xl font-bold text-xs bg-zinc-800/50 text-zinc-500 cursor-default flex items-center justify-center gap-2 border border-zinc-800">
-                        <span>✨ Plan Profesional Activo</span>
+                        <span>{{ languageService.get('upload.storage.pro_active') }}</span>
                     </button>
                 </div>
             </div>
@@ -121,26 +114,23 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-            <!-- LEFT COLUMN (Controls & Upload) -->
+            <!-- LEFT COLUMN -->
             <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6">
 
-                <!-- UPLOAD WIDGET (Unified Box Style for Mobile & Desktop) -->
+                <!-- UPLOAD WIDGET -->
                 <div
                     class="bg-zinc-900/30 backdrop-blur-sm border border-zinc-800/50 hover:border-emerald-500/50 rounded-3xl p-2 transition-all duration-300 group/upload relative">
                     <label
                         class="block border-2 border-dashed border-zinc-700/50 group-hover/upload:border-emerald-500/40 rounded-2xl p-6 md:p-10 text-center cursor-pointer relative overflow-hidden bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
                         (dragover)="onDragOver($event)" (drop)="onDrop($event)">
 
-                        <!-- Main File Input (Files) -->
                         <input #fileInput type="file" multiple accept="audio/*, .mp3, .wav, .m4a, .aac, .ogg, .flac"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                             [disabled]="isUploading" (change)="onFileSelected($event)">
 
-                        <!-- Folder Input (Hidden, Triggered by Helper Button) -->
                         <input #folderInput type="file" multiple webkitdirectory directory class="hidden"
                             [disabled]="isUploading" (change)="onFileSelected($event)">
 
-                        <!-- Upload Overlay -->
                         <div *ngIf="isUploading"
                             class="absolute inset-0 bg-zinc-950/95 flex flex-col items-center justify-center z-20 animate-fade-in backdrop-blur-sm">
                             <div
@@ -152,7 +142,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="text-emerald-500 text-sm font-bold animate-pulse tracking-wide">SUBIENDO... {{
+                            <p class="text-emerald-500 text-sm font-bold animate-pulse tracking-wide">{{
+                                languageService.get('upload.status.uploading') }} {{
                                 uploadProgress }}%</p>
                         </div>
 
@@ -163,13 +154,13 @@
                                     <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
                                 </svg>
                             </div>
-                            <p class="text-white font-bold text-base md:text-lg mb-1">Subir Archivos</p>
-                            <p class="text-zinc-500 text-xs md:text-sm group-hover/upload:text-zinc-400">Toca para
-                                seleccionar</p>
+                            <p class="text-white font-bold text-base md:text-lg mb-1">{{
+                                languageService.get('upload.upload_files') }}</p>
+                            <p class="text-zinc-500 text-xs md:text-sm group-hover/upload:text-zinc-400">{{
+                                languageService.get('upload.btn.files_sub') }}</p>
                         </div>
                     </label>
 
-                    <!-- Helper Button for Folder Mode - Top Right Corner -->
                     <button (click)="folderInput.click()" type="button"
                         class="absolute top-4 right-4 z-[60] bg-zinc-800/40 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 text-[9px] font-black tracking-widest uppercase py-1.5 px-2.5 rounded-lg border border-zinc-700/50 hover:border-emerald-500/30 transition-all flex items-center gap-1.5 backdrop-blur-md active:scale-95 group">
                         <svg class="w-3 h-3 transition-transform group-hover:scale-110" fill="currentColor"
@@ -177,13 +168,12 @@
                             <path
                                 d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
                         </svg>
-                        <span>Carpeta</span>
+                        <span>{{ languageService.get('upload.btn.folder_label') }}</span>
                     </button>
                 </div>
 
                 <div
                     class="hidden md:block bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-xl relative overflow-hidden group">
-                    <!-- Subtle Glow Effect for Pro -->
                     <div *ngIf="isPro"
                         class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none">
                     </div>
@@ -198,7 +188,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-bold text-white text-sm leading-none">Almacenamiento</h3>
+                                <h3 class="font-bold text-white text-sm leading-none">{{
+                                    languageService.get('upload.storage') }}</h3>
                                 <p class="text-[10px] font-mono mt-1" [style.color]="storageColor">{{
                                     formattedUsedStorage }} / {{
                                     formattedMaxStorage }}</p>
@@ -211,29 +202,29 @@
                         </span>
                     </div>
 
-                    <!-- Modern Progress Bar -->
                     <div class="w-full h-2 bg-zinc-800/50 rounded-full overflow-hidden mb-4 relative">
                         <div class="h-full transition-all duration-1000 ease-out relative z-10"
                             [style.width.%]="storagePercentage" [style.backgroundColor]="storageColor"></div>
                     </div>
 
-                    <!-- Song Capacity Info Simplified -->
                     <div class="grid grid-cols-2 gap-2 mb-4">
                         <div class="bg-zinc-800/30 rounded-xl p-3 border border-zinc-800/50">
-                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Capacidad</p>
-                            <p class="text-xs font-bold text-white">~{{ totalSongCapacity }} songs</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">{{
+                                languageService.get('upload.storage') }}</p>
+                            <p class="text-xs font-bold text-white">{{ languageService.get('upload.storage.total_songs',
+                                totalSongCapacity) }}</p>
                         </div>
                         <div class="bg-zinc-800/30 rounded-xl p-3 border border-zinc-800/50">
-                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Disponible</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">{{
+                                languageService.get('offline.more_songs') }}</p>
                             <p class="text-xs font-bold" [ngClass]="{
                                 'text-emerald-400': storageWarningLevel === 'safe',
                                 'text-yellow-400': storageWarningLevel === 'warning',
                                 'text-red-400': storageWarningLevel === 'danger'
-                            }">~{{ estimatedSongsRemaining }} más</p>
+                            }">{{ languageService.get('upload.storage.remaining_songs', estimatedSongsRemaining) }}</p>
                         </div>
                     </div>
 
-                    <!-- Upgrade Button -->
                     <button *ngIf="canUpgrade()" (click)="upgradeToPro()"
                         class="w-full py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 group/btn relative overflow-hidden"
                         [ngClass]="{
@@ -242,29 +233,30 @@
                         <div
                             class="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300">
                         </div>
-                        <span class="relative z-10">👑 ACTUALIZAR A PRO</span>
+                        <span class="relative z-10">👑 {{ languageService.get('upload.storage.upgrade_pro') }}</span>
                     </button>
 
                     <button *ngIf="isPro"
                         class="w-full py-3 rounded-xl font-bold text-xs bg-zinc-800/50 text-zinc-500 cursor-default flex items-center justify-center gap-2">
-                        <span>✨ Plan Activo</span>
+                        <span>{{ languageService.get('upload.storage.pro_active') }}</span>
                     </button>
                 </div>
 
             </div>
 
-            <!-- RIGHT COLUMN (Content) -->
+            <!-- RIGHT COLUMN -->
             <div class="lg:col-span-8 xl:col-span-9 space-y-8">
 
                 <!-- Folders Sections -->
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                            Carpetas
+                            {{ languageService.get('upload.folders.title') }}
                         </h2>
                         <button (click)="showCreateFolderModal = true"
                             class="text-xs md:text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-4 py-2 rounded-xl text-white font-bold flex items-center gap-2 transition-transform active:scale-95">
-                            <span class="text-xl leading-none font-light">+</span> Nueva
+                            <span class="text-xl leading-none font-light">+</span> {{
+                            languageService.get('upload.folders.new') }}
                         </button>
                     </div>
 
@@ -282,7 +274,6 @@
                                 'bg-zinc-900 border-zinc-800 hover:border-zinc-600': folder.id !== selectedFolder?.id && (!folder.colorClass || folder.colorClass === 'zinc')
                                 }">
 
-                            <!-- Icon -->
                             <div class="flex justify-between items-start">
                                 <svg class="w-8 h-8 md:w-10 md:h-10" [ngClass]="{
                                             'text-emerald-500': folder.colorClass === 'emerald',
@@ -302,11 +293,10 @@
                                 </button>
                             </div>
 
-                            <!-- Info -->
                             <div>
                                 <p class="font-bold text-white truncate text-sm md:text-base">{{ folder.name }}</p>
                                 <p class="text-[10px] md:text-xs text-zinc-500 font-medium">{{ folder.fileCount }}
-                                    archivos</p>
+                                    {{ languageService.get('upload.folders.archivos') }}</p>
                             </div>
                         </div>
                     </div>
@@ -315,7 +305,6 @@
                 <!-- Files List Section -->
                 <div>
                     <div class="flex flex-col md:flex-row items-center gap-3 mb-6 pt-2">
-                        <!-- Folder Title -->
                         <div class="flex items-center gap-3 self-start md:self-auto min-w-0">
                             <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/20"
                                 [ngClass]="selectedFolder?.colorClass === 'red' ? 'bg-gradient-to-br from-red-500 to-red-600 text-white' : 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-black'">
@@ -326,10 +315,9 @@
                                 </svg>
                             </div>
                             <h3 class="text-2xl md:text-3xl font-bold text-white truncate">{{ selectedFolder ?
-                                selectedFolder.name : 'Todos' }}</h3>
+                                selectedFolder.name : (languageService.get('playlists.all') || 'All') }}</h3>
                         </div>
 
-                        <!-- Search & Sort Controls -->
                         <div class="flex-1 w-full md:w-auto flex gap-2 md:ml-auto">
                             <div class="relative flex-1 group">
                                 <span
@@ -339,7 +327,8 @@
                                             d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
                                     </svg>
                                 </span>
-                                <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar canción..."
+                                <input type="text" [(ngModel)]="searchTerm"
+                                    [placeholder]="languageService.get('upload.list.search')"
                                     class="w-full bg-zinc-900/50 border border-zinc-800 rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900 outline-none transition-all">
                             </div>
 
@@ -349,25 +338,24 @@
                                     class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
                                     [class.bg-zinc-800]="sortBy === 'date'" [class.text-white]="sortBy === 'date'"
                                     [class.text-zinc-500]="sortBy !== 'date'">
-                                    Fecha
+                                    {{ languageService.get('upload.list.sort_date') }}
                                 </button>
                                 <button (click)="setSort('name')"
                                     class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
                                     [class.bg-zinc-800]="sortBy === 'name'" [class.text-white]="sortBy === 'name'"
                                     [class.text-zinc-500]="sortBy !== 'name'">
-                                    Nombre
+                                    {{ languageService.get('upload.list.sort_name') }}
                                 </button>
                                 <button (click)="setSort('size')"
                                     class="hidden md:block px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
                                     [class.bg-zinc-800]="sortBy === 'size'" [class.text-white]="sortBy === 'size'"
                                     [class.text-zinc-500]="sortBy !== 'size'">
-                                    Tamaño
+                                    {{ languageService.get('upload.list.sort_size') }}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- File List Container -->
                     <div>
 
                         <!-- Empty State -->
@@ -375,25 +363,24 @@
                             class="flex flex-col items-center justify-center text-center py-20 text-zinc-500 bg-zinc-900/20 md:bg-zinc-900/30 border border-zinc-800/50 md:border-zinc-800 rounded-3xl overflow-hidden">
                             <div
                                 class="w-20 h-20 bg-zinc-900/80 rounded-full flex items-center justify-center mb-5 border border-zinc-800">
-                                <!-- Favorite Icon -->
                                 <svg *ngIf="selectedFolder?.id === '2'" class="w-8 h-8 text-red-500/30"
                                     fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                 </svg>
-                                <!-- Default Icon -->
                                 <svg *ngIf="selectedFolder?.id !== '2'" class="w-10 h-10 opacity-20" fill="currentColor"
                                     viewBox="0 0 24 24">
                                     <path
                                         d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                                 </svg>
                             </div>
-                            <h4 class="text-white font-bold mb-1">{{ selectedFolder?.id === '2' ? 'Sin favoritas' :
-                                'Carpeta vacía' }}</h4>
+                            <h4 class="text-white font-bold mb-1">{{ selectedFolder?.id === '2' ?
+                                languageService.get('upload.list.empty_favs') :
+                                languageService.get('upload.list.empty_folder') }}</h4>
                             <p class="text-xs text-zinc-500 max-w-[200px]">{{ emptyFolderMessage }}</p>
                         </div>
 
-                        <!-- File Items (Standard List to avoid inner scroll) -->
+                        <!-- File Items -->
                         <div *ngIf="filteredMusicFiles.length > 0" class="w-full">
                             <div class="flex flex-col">
                                 <div *ngFor="let file of filteredMusicFiles"
@@ -406,11 +393,9 @@
                                         'bg-emerald-500/5 hover:bg-emerald-500/10': !file.isFavorite && currentlyPlayingSong?.id !== file.id
                                     }">
 
-                                    <!-- Icon/Image -->
                                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm border border-white/5 relative group-active:scale-95 transition-transform"
                                         (click)="playFile(file)">
 
-                                        <!-- Image or Fallback -->
                                         <div class="absolute inset-0 z-0">
                                             <img *ngIf="file.coverUrl && !file.hasImageError" [src]="file.coverUrl"
                                                 (error)="handleImageError(file)" class="w-full h-full object-cover">
@@ -430,7 +415,6 @@
                                             [class.opacity-100]="currentlyPlayingSong?.id === file.id"
                                             [ngClass]="{'bg-black/60': currentlyPlayingSong?.id === file.id}">
 
-                                            <!-- Playing Equalizer (Only when playing this song) -->
                                             <div *ngIf="currentlyPlayingSong?.id === file.id && isPlaying"
                                                 class="flex gap-0.5 items-end h-4 group-hover:hidden">
                                                 <div class="w-1 animate-music-bar"
@@ -444,15 +428,12 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Play/Pause Icon -->
                                             <div class="hidden group-hover:block text-white drop-shadow-md"
                                                 [class.block]="currentlyPlayingSong?.id === file.id && !isPlaying">
-                                                <!-- Show Pause if playing and active -->
                                                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"
                                                     *ngIf="currentlyPlayingSong?.id === file.id && isPlaying">
                                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                                                 </svg>
-                                                <!-- Show Play otherwise -->
                                                 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"
                                                     *ngIf="currentlyPlayingSong?.id !== file.id || !isPlaying">
                                                     <path d="M8 5v14l11-7z" />
@@ -461,23 +442,21 @@
                                         </div>
                                     </div>
 
-                                    <!-- Info -->
                                     <div class="flex-1 min-w-0 pr-2" (click)="playFile(file)">
                                         <h4
                                             class="font-bold text-sm md:text-base text-zinc-100 truncate mb-0.5 leading-tight">
                                             {{ file.name }}
                                         </h4>
                                         <div class="flex items-center gap-2 text-xs text-zinc-500 font-medium">
-                                            <span class="truncate text-zinc-400">{{ file.artist || 'Desconocido'
+                                            <span class="truncate text-zinc-400">{{ file.artist ||
+                                                languageService.get('upload.list.unknown')
                                                 }}</span>
                                             <span class="hidden md:inline w-1 h-1 bg-zinc-600 rounded-full"></span>
                                             <span class="hidden md:inline opacity-70">{{ file.size }}</span>
                                         </div>
                                     </div>
 
-                                    <!-- Mobile Actions -->
                                     <div class="flex items-center">
-                                        <!-- Favorite -->
                                         <button (click)="toggleFavorite(file, $event)"
                                             class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-all active:scale-90 group/heart">
                                             <svg class="w-6 h-6 text-zinc-600 group-hover/heart:text-red-500 transition-colors"
@@ -493,7 +472,6 @@
                                             </svg>
                                         </button>
 
-                                        <!-- More Options (Kebab Menu) -->
                                         <button (click)="openFileOptions(file, $event)"
                                             class="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 active:bg-zinc-700 transition-all ml-1">
                                             <svg class="w-6 h-6 transform rotate-90" fill="currentColor"
@@ -514,28 +492,21 @@
         </div>
     </div>
 
-    <!-- Ad Container - Placed below grid for full width -->
     <div class="mt-12 flex justify-center">
         <app-ads-container [index]="1002"></app-ads-container>
     </div>
 
 </div>
 
-
-
 <!-- MODALS & TOASTS -->
 
-<!-- File Options Modal (Centered) -->
 <div *ngIf="showFileOptionsModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
     (click)="closeFileOptions()">
-    <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
 
-    <!-- Content -->
     <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-[320px] p-5 shadow-2xl relative animate-zoom-in"
         (click)="$event.stopPropagation()">
 
-        <!-- Header -->
         <div class="flex items-center gap-4 mb-6">
             <div class="w-14 h-14 rounded-xl overflow-hidden bg-zinc-800 shadow-lg border border-white/5 flex-shrink-0">
                 <img *ngIf="fileForOptions?.coverUrl" [src]="fileForOptions?.coverUrl"
@@ -554,7 +525,6 @@
             </div>
         </div>
 
-        <!-- Actions -->
         <div class="space-y-2">
             <button (click)="openEditModal(fileForOptions!)"
                 class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all font-medium border border-transparent hover:border-zinc-700/50 group">
@@ -565,7 +535,7 @@
                             d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                     </svg>
                 </div>
-                Editar información
+                {{ languageService.get('upload.modal.options_edit') }}
             </button>
             <button (click)="openMoveModal(fileForOptions!)"
                 class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all font-medium border border-transparent hover:border-zinc-700/50 group">
@@ -576,7 +546,7 @@
                             d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zM14 14l4-4-4-4v3h-4v2h4v3z" />
                     </svg>
                 </div>
-                Mover a carpeta
+                {{ languageService.get('upload.modal.options_move') }}
             </button>
             <div class="h-2"></div>
             <button (click)="deleteFile(fileForOptions!)"
@@ -587,7 +557,7 @@
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                     </svg>
                 </div>
-                Eliminar canción
+                {{ languageService.get('upload.modal.options_delete') }}
             </button>
         </div>
 
@@ -605,14 +575,18 @@
     (click)="showCreateFolderModal = false">
     <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
         (click)="$event.stopPropagation()">
-        <h3 class="text-xl font-bold text-white mb-6 text-center">Nueva Carpeta</h3>
-        <input [(ngModel)]="newFolderName" type="text" placeholder="Nombre..."
+        <h3 class="text-xl font-bold text-white mb-6 text-center">{{
+            languageService.get('upload.modal.new_folder_title') }}</h3>
+        <input [(ngModel)]="newFolderName" type="text"
+            [placeholder]="languageService.get('upload.modal.new_folder_placeholder')"
             class="w-full px-5 py-4 bg-zinc-950 border border-zinc-800 rounded-2xl text-white mb-6 text-base focus:border-emerald-500 outline-none transition-all text-center font-medium">
         <div class="flex gap-3">
             <button (click)="showCreateFolderModal = false"
-                class="flex-1 py-3.5 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">Cancelar</button>
+                class="flex-1 py-3.5 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">{{
+                languageService.get('upload.modal.btn_cancel') }}</button>
             <button (click)="createFolder()"
-                class="flex-1 py-3.5 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">Crear</button>
+                class="flex-1 py-3.5 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">{{
+                languageService.get('upload.modal.btn_create') }}</button>
         </div>
     </div>
 </div>
@@ -622,26 +596,33 @@
     (click)="showEditModal = false">
     <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
         (click)="$event.stopPropagation()">
-        <h3 class="text-xl font-bold text-white mb-6 text-center">Editar Info</h3>
+        <h3 class="text-xl font-bold text-white mb-6 text-center">{{ languageService.get('upload.modal.edit_info') }}
+        </h3>
 
         <div class="space-y-4 mb-6">
             <div>
-                <label class="block text-xs text-zinc-500 mb-1 ml-1">Título</label>
-                <input [(ngModel)]="editData.name" type="text" placeholder="Nombre de la canción..."
+                <label class="block text-xs text-zinc-500 mb-1 ml-1">{{ languageService.get('upload.modal.title')
+                    }}</label>
+                <input [(ngModel)]="editData.name" type="text"
+                    [placeholder]="languageService.get('upload.modal.placeholder_name')"
                     class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:border-emerald-500 outline-none transition-all">
             </div>
             <div>
-                <label class="block text-xs text-zinc-500 mb-1 ml-1">Artista</label>
-                <input [(ngModel)]="editData.artist" type="text" placeholder="Artista..."
+                <label class="block text-xs text-zinc-500 mb-1 ml-1">{{ languageService.get('upload.modal.artist')
+                    }}</label>
+                <input [(ngModel)]="editData.artist" type="text"
+                    [placeholder]="languageService.get('upload.modal.placeholder_artist')"
                     class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:border-emerald-500 outline-none transition-all">
             </div>
         </div>
 
         <div class="flex gap-3">
             <button (click)="showEditModal = false"
-                class="flex-1 py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">Cancelar</button>
+                class="flex-1 py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl active:scale-95 transition-transform">{{
+                languageService.get('upload.modal.btn_cancel') }}</button>
             <button (click)="saveEdit()"
-                class="flex-1 py-3 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">Guardar</button>
+                class="flex-1 py-3 bg-emerald-500 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-emerald-900/20">{{
+                languageService.get('upload.modal.btn_save') }}</button>
         </div>
     </div>
 </div>
@@ -651,7 +632,7 @@
     (click)="showMoveModal = false">
     <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-xs shadow-2xl"
         (click)="$event.stopPropagation()">
-        <h3 class="text-lg font-bold text-white mb-4 text-center">Mover a...</h3>
+        <h3 class="text-lg font-bold text-white mb-4 text-center">{{ languageService.get('upload.modal.move_to') }}</h3>
         <div class="space-y-2 mb-6 max-h-[50vh] overflow-y-auto pr-1">
             <div *ngFor="let folder of availableFoldersToMove" (click)="moveFileToFolder(folder)"
                 class="flex items-center gap-4 p-4 rounded-2xl bg-zinc-800/40 active:bg-emerald-500/20 border border-transparent active:border-emerald-500/50 cursor-pointer transition-all">
@@ -662,10 +643,11 @@
                 <span class="text-base text-white font-bold">{{ folder.name }}</span>
             </div>
             <div *ngIf="availableFoldersToMove.length === 0" class="text-center py-4 text-zinc-500 text-sm">
-                No hay otras carpetas.
+                {{ languageService.get('upload.modal.no_folders') }}
             </div>
         </div>
         <button (click)="showMoveModal = false"
-            class="w-full py-3.5 bg-zinc-800 text-white font-bold rounded-xl active:scale-95 transition-transform">Cancelar</button>
+            class="w-full py-3.5 bg-zinc-800 text-white font-bold rounded-xl active:scale-95 transition-transform">{{
+            languageService.get('upload.modal.btn_cancel') }}</button>
     </div>
 </div>

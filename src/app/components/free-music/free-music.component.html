@@ -14,18 +14,18 @@
 
                 <div>
                     <h1 class="text-3xl md:text-6xl font-bold text-white mb-2 md:mb-4 tracking-tight leading-tight">
-                        Música Sin Copyright</h1>
+                        {{ languageService.get('free_music.title') }}</h1>
                     <div
                         class="flex flex-wrap justify-center items-center gap-2 md:gap-3 text-sm md:text-lg text-zinc-400 font-medium">
                         <span
                             class="flex items-center gap-1.5 px-3 py-1 bg-zinc-900/80 rounded-full border border-zinc-800">
                             <app-svg-icon name="shield" class="text-emerald-500" width="16" height="16"></app-svg-icon>
-                            100% Legal
+                            {{ languageService.get('free_music.legal') }}
                         </span>
                         <span class="hidden md:inline text-zinc-600">•</span>
-                        <span>Para Creadores</span>
+                        <span>{{ languageService.get('free_music.creators') }}</span>
                         <span class="hidden md:inline text-zinc-600">•</span>
-                        <span class="text-emerald-400">Descarga Gratis</span>
+                        <span class="text-emerald-400">{{ languageService.get('free_music.free_download') }}</span>
                     </div>
                 </div>
             </div>
@@ -35,11 +35,10 @@
                 <div class="flex flex-col items-center gap-2">
                     <h3 class="text-white font-bold text-sm md:text-base flex items-center gap-2">
                         <app-svg-icon name="info-circle" class="text-emerald-400" width="18" height="18"></app-svg-icon>
-                        Catálogo Seguro
+                        {{ languageService.get('free_music.secure_catalog') }}
                     </h3>
                     <p class="text-xs md:text-sm text-zinc-400 leading-relaxed max-w-lg">
-                        Música de alta calidad para tus videos de YouTube, Twitch y redes sociales. Pop, rock,
-                        electrónica y más, powered by Jamendo.
+                        {{ languageService.get('free_music.secure_catalog_desc') }}
                     </p>
                 </div>
             </div>
@@ -58,13 +57,14 @@
                 </div>
                 <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="searchMusic()" [disabled]="isListening()"
                     class="block w-full pl-10 pr-24 py-2.5 border border-zinc-800 rounded-xl bg-zinc-900/80 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:bg-black focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-medium"
-                    placeholder="Buscar canción...">
+                    [placeholder]="languageService.get('free_music.search_placeholder')">
 
                 <!-- Voice Waveform Overlay -->
                 <div *ngIf="isListening()"
                     class="absolute inset-y-0 left-10 right-12 bg-black/90 backdrop-blur-sm flex items-center px-4 rounded-xl animate-fade-in z-20">
                     <app-voice-visualizer class="flex-1"></app-voice-visualizer>
-                    <span class="text-xs text-emerald-400 font-bold animate-pulse ml-2">Escuchando...</span>
+                    <span class="text-xs text-emerald-400 font-bold animate-pulse ml-2">{{
+                        languageService.get('free_music.listening') }}</span>
                 </div>
 
                 <div class="absolute inset-y-1 right-1 flex items-center gap-1">
@@ -78,7 +78,7 @@
 
                     <button *ngIf="searchQuery() && !isListening()" (click)="searchMusic()"
                         class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-bold transition-colors">
-                        Buscar
+                        {{ languageService.get('free_music.search_btn') }}
                     </button>
                 </div>
             </div>
@@ -86,7 +86,8 @@
 
         <!-- Genre Filters (Scroll horizontal) -->
         <div class="mb-6">
-            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 ml-1">Géneros</h3>
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 ml-1">{{
+                languageService.get('free_music.genres') }}</h3>
             <div class="flex overflow-x-auto pb-2 gap-2 scrollbar-hide -mx-3 px-3">
                 <button *ngFor="let genre of latinGenres" (click)="loadMusicByGenre(genre.id)"
                     [class.bg-emerald-600]="selectedGenre() === genre.id"
@@ -96,7 +97,7 @@
                     [class.border-zinc-800]="selectedGenre() !== genre.id"
                     class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95">
                     <span class="text-sm shadow-sm">{{genre.icon}}</span>
-                    <span>{{genre.name}}</span>
+                    <span>{{ languageService.get('free_music.genre.' + genre.id) }}</span>
                 </button>
             </div>
         </div>
@@ -112,12 +113,12 @@
         <div *ngIf="!isLoading() && songs().length > 0">
             <div class="flex items-center justify-between mb-3 px-1">
                 <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                    {{songs().length}} resultados
+                    {{ languageService.get('free_music.results', songs().length) }}
                 </h3>
                 <button (click)="playAll()"
                     class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 active:opacity-70">
                     <app-svg-icon name="play" width="18" height="18"></app-svg-icon>
-                    Reproducir Todo
+                    {{ languageService.get('free_music.play_all') }}
                 </button>
             </div>
 
@@ -165,7 +166,8 @@
                         </h4>
                         <div class="flex items-center gap-1.5">
                             <span
-                                class="px-1.5 py-0.5 rounded-md bg-zinc-800 text-[10px] text-zinc-400 font-bold border border-zinc-700/50">Free</span>
+                                class="px-1.5 py-0.5 rounded-md bg-zinc-800 text-[10px] text-zinc-400 font-bold border border-zinc-700/50">{{
+                                languageService.get('free_music.badge_free') }}</span>
                             <p class="text-xs text-zinc-500 truncate group-hover:text-zinc-400 transition-colors">
                                 {{song.artist}}</p>
                         </div>
@@ -176,7 +178,7 @@
                         <!-- Download (Stream/Open) -->
                         <button (click)="openDownloadModal(song); $event.stopPropagation()"
                             class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-zinc-800/80 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-700 flex items-center justify-center transition-all border border-white/5 hover:scale-110 active:scale-90"
-                            title="Descargar">
+                            [title]="languageService.get('free_music.download_tooltip')">
                             <app-svg-icon name="download" width="16" height="16" md:width="20"
                                 md:height="20"></app-svg-icon>
                         </button>
@@ -185,7 +187,7 @@
                         <button (click)="downloadForOffline(song, $event)" [disabled]="isDownloadingOffline()[song.id]"
                             class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center transition-all border border-white/5 relative hover:scale-110 active:scale-90"
                             [class.text-blue-500]="isOffline(song.id)" [class.text-zinc-400]="!isOffline(song.id)"
-                            title="Guardar Offline">
+                            [title]="languageService.get('free_music.offline_tooltip')">
                             <app-svg-icon *ngIf="!isOffline(song.id) && !isDownloadingOffline()[song.id]"
                                 name="cloud-download" width="16" height="16"></app-svg-icon>
                             <app-svg-icon *ngIf="isOffline(song.id) && !isDownloadingOffline()[song.id]" name="check"
@@ -199,7 +201,7 @@
                         <!-- Share Button -->
                         <button (click)="shareSong(song, $event)"
                             class="hidden sm:flex w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700 items-center justify-center transition-all border border-white/5 hover:scale-110 active:scale-90"
-                            title="Compartir">
+                            [title]="languageService.get('free_music.share_tooltip')">
                             <app-svg-icon name="share" width="16" height="16" md:width="20"
                                 md:height="20"></app-svg-icon>
                         </button>
@@ -214,7 +216,7 @@
                 class="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
                 <app-svg-icon name="music" class="text-zinc-600" width="30" height="30"></app-svg-icon>
             </div>
-            <p class="text-sm text-zinc-400">No se encontraron canciones</p>
+            <p class="text-sm text-zinc-400">{{ languageService.get('free_music.no_songs') }}</p>
         </div>
 
         <!-- 📍 ANUNCIO FINAL -->

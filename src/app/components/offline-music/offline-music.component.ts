@@ -7,6 +7,7 @@ import { ToastService } from '../../services/toast.service';
 import { SeoService } from '../../services/seo.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-offline-music',
@@ -21,6 +22,7 @@ export class OfflineMusicComponent implements OnInit {
   private toastService = inject(ToastService);
   private seoService = inject(SeoService);
   private proService = inject(DonMusicaProService);
+  public languageService = inject(LanguageService);
 
   offlineSongs = this.offlineService.offlineSongs;
   totalSize = signal('0 B');
@@ -54,8 +56,8 @@ export class OfflineMusicComponent implements OnInit {
 
   ngOnInit() {
     this.seoService.setSeoData(
-      'Música Offline | DonMusica',
-      'Accede a tu música descargada sin conexión en DonMusica. Escucha tus canciones favoritas en cualquier momento y lugar, incluso sin internet. donmusica.online'
+      this.languageService.get('offline.seo.title'),
+      this.languageService.get('offline.seo.desc')
     );
 
     this.updateTotalSize();
@@ -153,7 +155,7 @@ export class OfflineMusicComponent implements OnInit {
 
   playAll() {
     if (this.offlineSongs().length === 0) {
-      this.toastService.info('No tienes canciones descargadas');
+      this.toastService.info(this.languageService.get('offline.toast.no_songs'));
       return;
     }
 
@@ -165,7 +167,7 @@ export class OfflineMusicComponent implements OnInit {
 
     this.playerService.setPlaylist(songs, false, 'offline-music');
     this.playerService.playSong(songs[0]);
-    this.toastService.success(`Reproduciendo ${songs.length} canciones offline`);
+    this.toastService.success(this.languageService.get('offline.toast.playing', songs.length));
   }
 
   async deleteSong(song: OfflineSong, event: Event) {
@@ -174,22 +176,22 @@ export class OfflineMusicComponent implements OnInit {
     // Removed confirmation alert as requested
     const success = await this.offlineService.deleteSong(String(song.id));
     if (success) {
-      this.toastService.success('Canción eliminada de descargas');
+      this.toastService.success(this.languageService.get('offline.toast.deleted'));
       this.updateTotalSize();
     } else {
-      this.toastService.error('Error al eliminar la canción');
+      this.toastService.error(this.languageService.get('offline.toast.delete_error'));
     }
   }
 
   async clearAll() {
     if (this.offlineSongs().length === 0) {
-      this.toastService.info('No hay canciones para eliminar');
+      this.toastService.info(this.languageService.get('offline.toast.no_songs_delete'));
       return;
     }
 
     // Removed confirmation alert as requested
     await this.offlineService.clearAll();
-    this.toastService.success('Todas las descargas eliminadas');
+    this.toastService.success(this.languageService.get('offline.toast.all_deleted'));
     this.updateTotalSize();
   }
 

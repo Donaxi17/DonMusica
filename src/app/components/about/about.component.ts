@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-about',
@@ -30,7 +31,7 @@ import { SeoService } from '../../services/seo.service';
           </h1>
           
           <p class="text-lg md:text-xl text-zinc-400 max-w-xl mx-auto font-light leading-relaxed">
-            Conectando pasiones, una canción a la vez.
+            {{ languageService.get('about.subtitle') }}
           </p>
         </div>
 
@@ -45,10 +46,10 @@ import { SeoService } from '../../services/seo.service';
                <div class="relative z-10">
                  <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
                    <span class="w-8 h-1 bg-emerald-500 rounded-full"></span>
-                   Misión
+                   {{ languageService.get('about.mision.title') }}
                  </h2>
                  <p class="text-zinc-300 leading-relaxed text-justify">
-                   Democratizar el acceso a la música de alta calidad, proporcionando una plataforma intuitiva y poderosa donde artistas emergentes puedan ser escuchados y los oyentes disfruten sin límites.
+                   {{ languageService.get('about.mision.desc') }}
                  </p>
                </div>
             </div>
@@ -61,10 +62,10 @@ import { SeoService } from '../../services/seo.service';
                <div class="relative z-10">
                  <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
                    <span class="w-8 h-1 bg-blue-500 rounded-full"></span>
-                   Visión
+                   {{ languageService.get('about.vision.title') }}
                  </h2>
                  <p class="text-zinc-300 leading-relaxed text-justify">
-                   Ser la plataforma de referencia en Latinoamérica para la música independiente y comercial, reconocida por nuestra innovación tecnológica y compromiso inquebrantable con la comunidad artística.
+                   {{ languageService.get('about.vision.desc') }}
                  </p>
                </div>
             </div>
@@ -76,18 +77,18 @@ import { SeoService } from '../../services/seo.service';
              <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
              
              <div class="relative z-10 max-w-4xl mx-auto text-center md:text-left space-y-6">
-                <h3 class="text-3xl font-bold text-white mb-6">Nuestro Compromiso</h3>
+                <h3 class="text-3xl font-bold text-white mb-6">{{ languageService.get('about.commitment.title') }}</h3>
                 
                 <p class="text-zinc-300 text-lg leading-relaxed">
-                    En un mundo digital saturado de algoritmos invasivos y suscripciones complejas, <strong>DonMusica</strong> nace como una respuesta honesta: volver a lo esencial. No creemos en cajas negras que deciden tu gusto musical por ti; creemos en herramientas transparentes que te empoderan para <strong>explorar, curar y redescubrir</strong> tu propia banda sonora personal.
+                    {{ languageService.get('about.commitment.para1') }}
                 </p>
 
                 <p class="text-zinc-300 text-lg leading-relaxed">
-                    Más allá de ser solo un reproductor, nos comprometemos a ofrecer una experiencia libre de distracciones, donde la calidad de audio no sea un lujo reservado para pocos, sino el estándar para todos. Desde la capacidad de llevar tu biblioteca a cualquier rincón del mundo <strong>sin conexión</strong>, hasta utilidades profesionales pensadas para músicos, cada función está diseñada con un propósito claro: libertad absoluta.
+                    {{ languageService.get('about.commitment.para2') }}
                 </p>
 
                 <p class="text-zinc-300 text-lg leading-relaxed">
-                    Defendemos firmemente que la tecnología debe ser un puente, no una barrera, entre el artista y su audiencia. Trabajamos incansablemente para eliminar la fricción técnica, asegurando que lo único que importe sea la emoción pura de la próxima canción. Porque en DonMusica, entendemos que la música no es solo contenido de fondo; es la banda sonora de tu vida, y merece ser vivida bajo tus propios términos.
+                    {{ languageService.get('about.commitment.para3') }}
                 </p>
              </div>
           </div>
@@ -96,7 +97,7 @@ import { SeoService } from '../../services/seo.service';
         <!-- Features Grid -->
         <section class="mb-20">
           <div class="text-center mb-10">
-            <h2 class="text-2xl font-bold text-white">¿Por qué DonMusica?</h2>
+            <h2 class="text-2xl font-bold text-white">{{ languageService.get('about.why.title') }}</h2>
           </div>
           
           <div class="grid md:grid-cols-3 gap-6">
@@ -107,8 +108,8 @@ import { SeoService } from '../../services/seo.service';
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                 </svg>
               </div>
-              <h3 class="font-bold text-white mb-2">Modo Offline</h3>
-              <p class="text-sm text-zinc-400">Lleva tu música a donde vayas.</p>
+              <h3 class="font-bold text-white mb-2">{{ languageService.get('about.features.offline.title') }}</h3>
+              <p class="text-sm text-zinc-400">{{ languageService.get('about.features.offline.desc') }}</p>
             </div>
 
             <!-- Tools -->
@@ -119,8 +120,8 @@ import { SeoService } from '../../services/seo.service';
                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
                 </svg>
               </div>
-              <h3 class="font-bold text-white mb-2">Herramientas</h3>
-              <p class="text-sm text-zinc-400">Utilidades para músicos.</p>
+              <h3 class="font-bold text-white mb-2">{{ languageService.get('about.features.tools.title') }}</h3>
+              <p class="text-sm text-zinc-400">{{ languageService.get('about.features.tools.desc') }}</p>
             </div>
 
             <!-- Lyrics -->
@@ -130,8 +131,8 @@ import { SeoService } from '../../services/seo.service';
                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 class="font-bold text-white mb-2">Letras</h3>
-              <p class="text-sm text-zinc-400">Canta en tiempo real.</p>
+              <h3 class="font-bold text-white mb-2">{{ languageService.get('about.features.lyrics.title') }}</h3>
+              <p class="text-sm text-zinc-400">{{ languageService.get('about.features.lyrics.desc') }}</p>
             </div>
           </div>
         </section>
@@ -139,7 +140,7 @@ import { SeoService } from '../../services/seo.service';
         <!-- CTA -->
         <div class="text-center">
              <a routerLink="/" class="inline-flex items-center gap-2 px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-full transition-all hover:scale-105 shadow-lg shadow-emerald-500/20">
-                <span>Comenzar ahora</span>
+                <span>{{ languageService.get('about.cta') }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -147,7 +148,7 @@ import { SeoService } from '../../services/seo.service';
         </div>
 
         <div class="mt-16 text-center text-zinc-600 text-xs">
-           <p>&copy; 2025 DonMusica. Todos los derechos reservados.</p>
+           <p>{{ languageService.get('footer.rights') }}</p>
         </div>
 
       </div>
@@ -179,15 +180,16 @@ import { SeoService } from '../../services/seo.service';
         animation: float 5s ease-in-out infinite;
       }
     </style>
-    `
+    `,
 })
 export class AboutComponent implements OnInit {
   private seoService = inject(SeoService);
+  public languageService = inject(LanguageService);
 
   ngOnInit() {
     this.seoService.setSeoData(
-      'Sobre Nosotros - DonMusica | Plataforma de Música Sin Límites',
-      'Conoce la historia de DonMusica, nuestra misión de democratizar el acceso a la música de calidad y cómo estamos ayudando a artistas y oyentes a conectar en todo el mundo.'
+      this.languageService.get('about.seo.title'),
+      this.languageService.get('about.seo.desc')
     );
   }
 }

@@ -8,6 +8,7 @@ import { ToastService } from '../../services/toast.service';
 import { LyricsService } from '../../services/lyrics.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-download-page',
@@ -22,6 +23,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private lyricsService = inject(LyricsService);
   private musicApi = inject(MusicApiService);
   private proService = inject(DonMusicaProService);
+  public languageService = inject(LanguageService);
 
   countdown: number = 0; // Sin countdown
   songTitle: string = '';
@@ -55,8 +57,8 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
     const state = navigation?.extras?.state as any;
 
     if (state) {
-      this.songTitle = state['songTitle'] || 'Canción';
-      this.artistName = state['artistName'] || 'Artista';
+      this.songTitle = state['songTitle'] || this.languageService.get('download.default_song');
+      this.artistName = state['artistName'] || this.languageService.get('download.default_artist');
       this.downloadUrl = state['downloadUrl'] || '';
       this.mode = state['mode'] || 'default';
       this.songData = state['songData'] || null;
@@ -99,7 +101,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // 2. Now check if storage is full for offline mode
     if (this.mode === 'offline' && this.offlineService.isStorageFull()) {
-      this.toastService.error('¡Almacenamiento lleno! Libera espacio para continuar.');
+      this.toastService.error(this.languageService.get('download.toast.storage_full'));
       this.isDownloading = false;
       return;
     }
@@ -121,19 +123,19 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
           if (content) {
             const saved = this.lyricsService.saveLyric(this.songTitle, this.artistName, content);
             if (saved) {
-              this.toastService.success('¡Letra guardada en tu biblioteca!');
+              this.toastService.success(this.languageService.get('download.toast.lyrics_saved'));
               this.goBack();
             } else {
-              this.toastService.warning('Límite de letras alcanzado (Upgrade Pro)');
+              this.toastService.warning(this.languageService.get('download.toast.lyrics_limit'));
               this.goBack();
             }
           } else {
-            this.toastService.error('No se encontró letra para guardar.');
+            this.toastService.error(this.languageService.get('download.toast.lyrics_not_found'));
             this.goBack();
           }
         } catch (e) {
           console.error(e);
-          this.toastService.error('Error al guardar la letra');
+          this.toastService.error(this.languageService.get('download.toast.lyrics_error'));
           this.goBack();
         }
 
@@ -141,15 +143,15 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
         // Mode Offline
         const success = await this.offlineService.downloadSong(this.songData);
         if (success) {
-          this.toastService.success('¡Canción guardada correctamente!');
+          this.toastService.success(this.languageService.get('download.toast.offline_success'));
           this.goBack();
         } else {
-          this.toastService.error('Error al guardar. Intenta con otra canción.');
+          this.toastService.error(this.languageService.get('download.toast.offline_error'));
           this.goBack();
         }
       } else if (this.downloadUrl) {
         // Mode File (Default) - Using Blob approach for better compatibility with cross-origin Piped/Dropbox
-        this.toastService.info('Iniciando descarga...');
+        this.toastService.info(this.languageService.get('download.toast.download_started'));
 
         try {
           let urlToFetch = this.downloadUrl;
@@ -176,7 +178,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
 
-          this.toastService.success('Descarga iniciada');
+          this.toastService.success(this.languageService.get('download.toast.download_success'));
           setTimeout(() => this.goBack(), 1000);
         } catch (fetchError) {
           console.error('Fetch download failed, falling back to direct link', fetchError);
@@ -193,7 +195,7 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     } catch (error) {
       console.error('General download error', error);
-      this.toastService.error('Error al procesar la descarga.');
+      this.toastService.error(this.languageService.get('download.toast.generic_error'));
       this.goBack();
     } finally {
       this.isDownloading = false;

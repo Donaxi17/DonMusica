@@ -16,7 +16,7 @@
             <!-- Title -->
             <h1
                 class="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">
-                Letras Guardadas</h1>
+                {{ languageService.get('saved_lyrics.title') }}</h1>
 
             <!-- Stats -->
             <div class="flex items-center justify-center gap-4 text-sm mb-4">
@@ -24,28 +24,32 @@
                     <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
                     </svg>
-                    <span class="text-zinc-300">{{ savedLyrics().length }} letras</span>
+                    <span class="text-zinc-300">{{ savedLyrics().length }} {{
+                        languageService.get('saved_lyrics.lyrics_count') }}</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-500/20">
                     <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M21 3h-7a2.98 2.98 0 0 0-2 .78A2.98 2.98 0 0 0 10 3H3a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h5.758c.526 0 1.042.214 1.414.586l1.121 1.121c.009.009.021.012.03.021.086.079.182.149.294.196h.002a.996.996 0 0 0 .762 0h.002c.112-.047.208-.117.294-.196.009-.009.021-.012.03-.021l1.121-1.121A2.015 2.015 0 0 1 15.242 20H21a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8.758 18H4V5h6c.552 0 1 .449 1 1v12.689A4.032 4.032 0 0 0 8.758 18zM20 18h-4.758c-.799 0-1.584.246-2.242.689V6c0-.551.448-1 1-1h6v13z" />
                     </svg>
-                    <span class="text-pink-300 font-semibold">Disponible Offline</span>
+                    <span class="text-pink-300 font-semibold">{{ languageService.get('saved_lyrics.offline_available')
+                        }}</span>
                 </div>
             </div>
 
             <!-- Description -->
             <p class="text-zinc-400 text-sm max-w-md mx-auto mb-6">
-                Tu colección personal de letras de canciones. Lee y canta tus favoritas en cualquier momento.
+                {{ languageService.get('saved_lyrics.description') }}
             </p>
 
             <!-- Storage Meter -->
             <div class="max-w-xs mx-auto mb-6 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
                 <div class="flex justify-between text-xs mb-2">
-                    <span class="text-zinc-400">Almacenamiento ({{limitInfo().isPro ? 'PRO' : 'Gratis'}})</span>
+                    <span class="text-zinc-400">{{ languageService.get('saved_lyrics.storage') }} ({{ limitInfo().isPro
+                        ? languageService.get('saved_lyrics.pro') : languageService.get('saved_lyrics.free') }})</span>
                     <span class="{{limitInfo().isPro ? 'text-pink-400 font-bold' : 'text-zinc-400'}}">
-                        {{limitInfo().isPro ? 'ILIMITADO' : limitInfo().current + ' / ' + limitInfo().max}}
+                        {{limitInfo().isPro ? languageService.get('saved_lyrics.unlimited') : limitInfo().current + ' /
+                        ' + limitInfo().max}}
                     </span>
                 </div>
 
@@ -56,11 +60,12 @@
                 </div>
                 <p class="text-[10px] text-zinc-500 mt-2 text-center"
                     [class.text-red-400]="limitInfo().remaining === 0">
-                    {{limitInfo().remaining === 0 ? '¡Espacio lleno! Actualiza a PRO' : 'Te quedan ' +
-                    limitInfo().remaining + ' espacios'}}
+                    {{limitInfo().remaining === 0 ? languageService.get('saved_lyrics.storage_full') :
+                    languageService.get('saved_lyrics.remaining', limitInfo().remaining)}}
                 </p>
                 } @else {
-                <div class="text-xs text-pink-400 text-center font-bold tracking-wider mt-1">∞ ESPACIO INFINITO</div>
+                <div class="text-xs text-pink-400 text-center font-bold tracking-wider mt-1">{{
+                    languageService.get('saved_lyrics.infinite_space') }}</div>
                 }
 
                 <!-- Upgrade Button for Free Users -->
@@ -71,14 +76,15 @@
                         <path
                             d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                     </svg>
-                    AUMENTAR ESPACIO
+                    {{ languageService.get('saved_lyrics.increase_space') }}
                 </button>
                 }
             </div>
 
             <!-- Dev Toggle (Hidden in prod ideally) -->
             <button (click)="toggleProMode()" class="text-[10px] text-zinc-600 hover:text-white underline mb-6">
-                [DEV] Cambiar a modo {{limitInfo().isPro ? 'GRATIS' : 'PRO'}}
+                {{ languageService.get('saved_lyrics.dev_toggle', limitInfo().isPro ?
+                languageService.get('saved_lyrics.free') : languageService.get('saved_lyrics.pro')) }}
             </button>
 
             <!-- Navigation Tabs Removed as per request -->
@@ -92,7 +98,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
-                    Importar archivo de letra (.txt, .lrc)
+                    {{ languageService.get('saved_lyrics.import_file') }}
                 </label>
             </div>
         </div>
@@ -143,15 +149,15 @@
                     <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-white mb-2">No tienes letras guardadas</h3>
-            <p class="text-zinc-500 mb-6">Busca canciones y guarda sus letras para verlas aquí.</p>
+            <h3 class="text-xl font-bold text-white mb-2">{{ languageService.get('saved_lyrics.empty_title') }}</h3>
+            <p class="text-zinc-500 mb-6">{{ languageService.get('saved_lyrics.empty_subtitle') }}</p>
             <a routerLink="/browse/lyrics"
                 class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-full hover:from-pink-400 hover:to-rose-400 transition-all shadow-lg shadow-pink-500/30">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
                 </svg>
-                Buscar Letras
+                {{ languageService.get('saved_lyrics.search_lyrics') }}
             </a>
         </div>
     </div>
@@ -181,7 +187,7 @@
                 </div>
                 <div class="min-w-0 flex-1">
                     <h3 class="text-base md:text-xl font-bold text-white truncate">
-                        Letra Guardada
+                        {{ languageService.get('saved_lyrics.modal_title') }}
                     </h3>
                     <p class="text-xs md:text-sm text-pink-100 truncate">
                         {{selectedLyric()?.title}} - {{selectedLyric()?.artist}}

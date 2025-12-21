@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Playlist, Song } from '../../services/playlist.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
     selector: 'app-playlist-detail',
@@ -9,6 +10,7 @@ import { Playlist, Song } from '../../services/playlist.service';
     templateUrl: './playlist-detail.component.html'
 })
 export class PlaylistDetailComponent {
+    public languageService = inject(LanguageService);
     @Input() playlist!: Playlist;
     @Input() currentSongId: number | string | null = null;
     @Input() isPlaying: boolean = false;

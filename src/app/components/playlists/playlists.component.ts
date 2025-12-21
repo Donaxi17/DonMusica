@@ -11,6 +11,7 @@ import { OfflineService } from '../../services/offline.service';
 import { MusicApiService } from '../../services/music-api.service';
 
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-playlists',
@@ -26,6 +27,7 @@ export class PlaylistsComponent implements OnInit {
   private router = inject(Router);
   private toastService = inject(ToastService);
   private musicApi = inject(MusicApiService);
+  public languageService = inject(LanguageService);
 
   userPlaylists: Playlist[] = [];
   favorites: Song[] = [];
@@ -71,14 +73,14 @@ export class PlaylistsComponent implements OnInit {
 
   createPlaylist(): void {
     if (!this.newPlaylistName.trim()) {
-      this.toastService.warning('Por favor ingresa un nombre para la playlist');
+      this.toastService.warning(this.languageService.get('playlists.toast.name_required'));
       return;
     }
 
     this.playlistService.createPlaylist(this.newPlaylistName, this.newPlaylistDescription);
     this.loadData();
     this.closeCreateModal();
-    this.toastService.success('Playlist creada correctamente');
+    this.toastService.success(this.languageService.get('playlists.toast.created'));
   }
 
   deletePlaylist(playlistId: string): void {
@@ -88,7 +90,7 @@ export class PlaylistsComponent implements OnInit {
     if (this.selectedPlaylist?.id === playlistId) {
       this.selectedPlaylist = null;
     }
-    this.toastService.success('Playlist eliminada');
+    this.toastService.success(this.languageService.get('playlists.toast.deleted'));
   }
 
   selectPlaylist(playlist: Playlist): void {
@@ -103,23 +105,23 @@ export class PlaylistsComponent implements OnInit {
     if (this.selectedPlaylist?.id === playlistId) {
       this.selectedPlaylist = this.userPlaylists.find(p => p.id === playlistId) || null;
     }
-    this.toastService.success('Canción eliminada de la playlist');
+    this.toastService.success(this.languageService.get('playlists.toast.song_removed'));
   }
 
   removeFromFavorites(songId: number | string): void {
     this.playlistService.removeFromFavorites(songId);
     this.loadData();
-    this.toastService.success('Eliminada de favoritos');
+    this.toastService.success(this.languageService.get('playlists.toast.removed_from_favorites'));
   }
 
   sharePlaylist(playlist: Playlist): void {
     this.playlistService.sharePlaylist(playlist);
-    this.toastService.success('Enlace de playlist copiado');
+    this.toastService.success(this.languageService.get('playlists.toast.link_copied'));
   }
 
   playFavorites(): void {
     if (this.favorites.length === 0) {
-      this.toastService.info('No tienes canciones en favoritos');
+      this.toastService.info(this.languageService.get('playlists.toast.no_favorites'));
       return;
     }
     // Set playlist and play first song
@@ -131,7 +133,7 @@ export class PlaylistsComponent implements OnInit {
 
   playPlaylistSongs(playlist: Playlist): void {
     if (playlist.songs.length === 0) {
-      this.toastService.info('Esta playlist está vacía');
+      this.toastService.info(this.languageService.get('playlists.toast.empty_playlist'));
       return;
     }
     // Set playlist and play first song
@@ -162,7 +164,7 @@ export class PlaylistsComponent implements OnInit {
         if (url) {
           this.navigateToDownload(song, url, 'default');
         } else {
-          this.toastService.error('No se pudo encontrar un enlace válido para esta canción');
+          this.toastService.error(this.languageService.get('playlists.toast.download_error'));
         }
       });
       return;
@@ -178,7 +180,7 @@ export class PlaylistsComponent implements OnInit {
         if (url) {
           this.navigateToDownload(song, url, 'offline');
         } else {
-          this.toastService.error('No se pudo encontrar una fuente para guardar offline');
+          this.toastService.error(this.languageService.get('playlists.toast.offline_error'));
         }
       });
       return;

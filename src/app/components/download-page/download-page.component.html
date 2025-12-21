@@ -39,8 +39,8 @@
                           'from-cyan-400 via-blue-400 to-cyan-500': mode === 'offline',
                           'from-pink-400 via-rose-400 to-pink-500': mode === 'lyrics'
                       }">
-                    {{ mode === 'lyrics' ? 'Guardando Letra' : (mode === 'offline' ? 'Guardando Offline' : 'Preparando
-                    descarga') }}
+                    {{ mode === 'lyrics' ? languageService.get('download.saving_lyrics') : (mode === 'offline' ?
+                    languageService.get('download.saving_offline') : languageService.get('download.preparing')) }}
                 </span>
             </h1>
 
@@ -95,10 +95,11 @@
                 <!-- Status Text -->
                 <div class="space-y-1">
                     <p class="text-zinc-300 font-medium">
-                        {{ mode === 'lyrics' ? 'Obteniendo letra...' : (mode === 'offline' ? 'Preparando
-                        almacenamiento...' : 'Generando enlace seguro...') }}
+                        {{ mode === 'lyrics' ? languageService.get('download.status.getting_lyrics') : (mode ===
+                        'offline' ? languageService.get('download.status.preparing_storage') :
+                        languageService.get('download.status.generating_link')) }}
                     </p>
-                    <p class="text-xs text-zinc-500">Por favor espera un momento</p>
+                    <p class="text-xs text-zinc-500">{{ languageService.get('download.status.wait') }}</p>
                 </div>
             </div>
 
@@ -117,8 +118,9 @@
 
                     <app-svg-icon [name]="mode === 'lyrics' ? 'document' : 'download'" width="20" height="20"
                         class="relative z-20"></app-svg-icon>
-                    <span class="relative z-20">{{ mode === 'lyrics' ? 'GUARDAR LETRA' : (mode === 'offline' ? 'GUARDAR
-                        EN APP' : 'DESCARGAR AHORA') }}</span>
+                    <span class="relative z-20">{{ mode === 'lyrics' ? languageService.get('download.btn.save_lyrics') :
+                        (mode === 'offline' ? languageService.get('download.btn.save_offline') :
+                        languageService.get('download.btn.download_now')) }}</span>
                 </button>
                 <p class="text-zinc-500 text-xs mt-4 font-medium flex items-center justify-center gap-1.5 opacity-80">
                     <span class="w-1.5 h-1.5 rounded-full animate-pulse" [ngClass]="{
@@ -126,8 +128,9 @@
                             'bg-pink-500': mode === 'lyrics',
                             'bg-emerald-500': mode === 'default'
                         }"></span>
-                    {{ mode === 'lyrics' ? 'Lista para guardar' : (mode === 'offline' ? 'Listo para guardar offline' :
-                    'Enlace listo para descargar') }}
+                    {{ mode === 'lyrics' ? languageService.get('download.ready.lyrics') : (mode === 'offline' ?
+                    languageService.get('download.ready.offline') :
+                    languageService.get('download.ready.link')) }}
                 </p>
             </div>
         </div>
@@ -141,7 +144,7 @@
                 class="group px-6 py-2.5 rounded-full bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 text-zinc-400 hover:text-white transition-all flex items-center gap-2 backdrop-blur-sm">
                 <app-svg-icon name="arrow-back" width="18" height="18"
                     class="group-hover:-translate-x-1 transition-transform"></app-svg-icon>
-                <span class="text-sm font-medium">Volver</span>
+                <span class="text-sm font-medium">{{ languageService.get('download.back') }}</span>
             </button>
         </div>
 

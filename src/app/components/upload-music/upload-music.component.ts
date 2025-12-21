@@ -3,6 +3,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SeoService } from '../../services/seo.service';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
@@ -12,6 +13,7 @@ import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import * as mm from 'music-metadata-browser';
 import { Buffer } from 'buffer';
 import { Subscription } from 'rxjs';
+import { LanguageService } from '../../services/language.service';
 
 // Polyfill Buffer for the browser if needed (often handled by build tools, but good to ensure)
 (window as any).Buffer = Buffer;
@@ -57,6 +59,8 @@ export class UploadMusicComponent implements OnDestroy {
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private proService = inject(DonMusicaProService);
+  private seoService = inject(SeoService);
+  public languageService = inject(LanguageService);
 
   maxStorage = 1024; // in MB
   usedStorage = 0;   // in MB
@@ -76,10 +80,7 @@ export class UploadMusicComponent implements OnDestroy {
 
   uploadedMusicFiles: MusicFile[] = [];
 
-  folders: Folder[] = [
-    { id: '1', name: 'General', fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'emerald' },
-    { id: '2', name: 'Favoritas', fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'red' },
-  ];
+  folders: Folder[] = [];
 
   selectedFolder: Folder | null = this.folders[0];
   showCreateFolderModal = false;
@@ -108,6 +109,16 @@ export class UploadMusicComponent implements OnDestroy {
   currentUploadingFile = '';
 
   constructor() {
+    this.seoService.setSeoData(
+      this.languageService.get('upload.seo.title'),
+      this.languageService.get('upload.seo.desc')
+    );
+
+    this.folders = [
+      { id: '1', name: 'General', fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'emerald' },
+      { id: '2', name: this.languageService.get('upload.list.empty_favs'), fileCount: 0, createdAt: new Date(), isSystem: true, colorClass: 'red' },
+    ];
+
     this.loadFromLocalStorage();
 
     // React to Pro status changes automatically
@@ -367,7 +378,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     const spaceNeeded = this.usedStorage + totalSizeMB;
     if (spaceNeeded > this.maxStorage) {
-      this.toastService.error('¡Espacio insuficiente! Libera espacio o pásate a PRO para subir más música.');
+      this.toastService.error(this.languageService.get('upload.toast.storage_full'));
       return;
     }
 
@@ -405,7 +416,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     this.isUploading = false;
     this.currentUploadingFile = '';
-    this.toastService.success(`✅ ${processedCount} archivos organizados`);
+    this.toastService.success(this.languageService.get('upload.toast.files_organized', processedCount));
     this.cdr.markForCheck();
   }
 
@@ -609,7 +620,7 @@ export class UploadMusicComponent implements OnDestroy {
 
     } catch (error) {
       console.error('Error loading data:', error);
-      this.toastService.error('Error cargando datos');
+      this.toastService.error(this.languageService.get('upload.toast.load_error'));
     } finally {
       this.isUploading = false;
       this.cdr.markForCheck();
@@ -646,7 +657,7 @@ export class UploadMusicComponent implements OnDestroy {
       await this.storageService.updateFile(file);
       this.showEditModal = false;
       this.filterFiles();
-      this.toastService.success('✅ Guardado');
+      this.toastService.success(this.languageService.get('upload.toast.saved'));
       this.cdr.markForCheck();
     }
   }
@@ -705,7 +716,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.newFolderName = '';
     this.showCreateFolderModal = false;
     this.saveToLocalStorage();
-    this.toastService.success('Carpeta creada');
+    this.toastService.success(this.languageService.get('upload.toast.folder_created'));
     this.cdr.markForCheck();
   }
 
@@ -730,7 +741,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.calculateStorage();
     this.filterFiles();
     this.saveToLocalStorage();
-    this.toastService.success('Carpeta eliminada');
+    this.toastService.success(this.languageService.get('upload.toast.folder_deleted'));
     this.cdr.markForCheck();
   }
 
@@ -766,11 +777,11 @@ export class UploadMusicComponent implements OnDestroy {
 
       if (songToPlay) {
         this.playerService.playSong(songToPlay);
-        this.toastService.info(`▶️ ${file.name}`);
+        this.toastService.info(this.languageService.get('upload.toast.playing', file.name));
       }
     } catch (error) {
       console.error('Error loading playlist', error);
-      this.toastService.error('Error al reproducir');
+      this.toastService.error(this.languageService.get('upload.toast.play_error'));
     }
   }
 
@@ -812,7 +823,7 @@ export class UploadMusicComponent implements OnDestroy {
 
       this.showMoveModal = false;
       this.fileToMove = null;
-      this.toastService.success(`Movido a "${folder.name}"`);
+      this.toastService.success(this.languageService.get('upload.toast.moved_to', folder.name));
       this.cdr.markForCheck();
     }
   }
@@ -834,7 +845,7 @@ export class UploadMusicComponent implements OnDestroy {
     this.recalculateFolderCounts();
     this.calculateStorage();
     this.filterFiles();
-    this.toastService.success('Archivo eliminado');
+    this.toastService.success(this.languageService.get('upload.toast.file_deleted'));
     this.cdr.markForCheck();
   }
 

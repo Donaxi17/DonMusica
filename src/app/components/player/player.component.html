@@ -6,7 +6,7 @@
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21z" />
         </svg>
-        <span>Volver</span>
+        <span>{{ languageService.get('player.back') }}</span>
     </button>
 
     <!-- Now Playing - Album Art & Info -->
@@ -28,7 +28,8 @@
 
             <!-- Song Info -->
             <div class="flex-grow w-full text-center md:text-left min-w-0">
-                <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Reproduciendo ahora</p>
+                <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">{{
+                    languageService.get('player.now_playing') }}</p>
                 <div class="flex items-center justify-center md:justify-between gap-4 mb-2 w-full px-2 md:px-0">
                     <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold truncate min-w-0 max-w-[65%]">
                         {{currentSong.title}}</h2>
@@ -40,7 +41,7 @@
                         <button *ngIf="currentSong.album !== 'Uploads'"
                             (click)="$event.stopPropagation(); toggleFavorite(currentSong)"
                             class="flex-shrink-0 w-7 h-7 md:w-9 md:h-9 rounded-full hover:bg-white/10 flex items-center justify-center transition-all active:scale-75 group/fav"
-                            title="Me encanta">
+                            [title]="languageService.get('player.favorite')">
                             <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover/fav:text-red-400 transition-colors"
                                 fill="currentColor" viewBox="0 0 24 24" *ngIf="!isFavorite(currentSong.id)">
                                 <path
@@ -56,7 +57,7 @@
                         <!-- Normal Download -->
                         <button (click)="$event.stopPropagation(); downloadMusic(currentSong)"
                             class="w-7 h-7 md:w-9 md:h-9 rounded-full hover:bg-white/10 flex items-center justify-center transition-all group/dl"
-                            title="Descargar MP3">
+                            [title]="languageService.get('player.download_mp3')">
                             <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover/dl:text-blue-400 transition-colors"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -68,7 +69,7 @@
                         <button
                             (click)="$event.stopPropagation(); !isOffline(currentSong.id) ? downloadOffline(currentSong) : null"
                             class="w-7 h-7 md:w-9 md:h-9 rounded-full hover:bg-white/10 flex items-center justify-center transition-all group/off"
-                            [title]="isOffline(currentSong.id) ? 'Disponible Offline' : 'Guardar en App'">
+                            [title]="isOffline(currentSong.id) ? languageService.get('player.offline_available') : languageService.get('player.save_offline')">
 
                             <!-- Checkmark if saved -->
                             <svg *ngIf="isOffline(currentSong.id)"
@@ -124,7 +125,8 @@
                 <button (click)="toggleShuffle()" [class.text-red-400]="isShuffle && isFavorite(currentSong.id)"
                     [class.text-emerald-400]="isShuffle && !isFavorite(currentSong.id)"
                     [class.text-zinc-400]="!isShuffle"
-                    class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110" title="Aleatorio">
+                    class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110"
+                    [title]="languageService.get('player.shuffle')">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M17 17h-1.559l-9.7-10.673A1 1 0 0 0 5.001 6H2v2h2.559l4.09 4.5-4.09 4.501H2v2h3.001a1 1 0 0 0 .74-.327L10 13.987l4.259 4.686a1 1 0 0 0 .74.327H17v3l5-4-5-4v3z" />
@@ -134,7 +136,8 @@
                     [class.text-red-400]="repeatMode !== 'off' && isFavorite(currentSong.id)"
                     [class.text-emerald-400]="repeatMode !== 'off' && !isFavorite(currentSong.id)"
                     [class.text-zinc-400]="repeatMode === 'off'"
-                    class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110 relative" title="Repetir">
+                    class="p-2 hover:bg-zinc-900 rounded-lg transition-all hover:scale-110 relative"
+                    [title]="languageService.get('player.repeat')">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"
                         *ngIf="repeatMode === 'off' || repeatMode === 'all'">
                         <path
@@ -156,7 +159,7 @@
             <div class="flex items-center gap-2 md:gap-3 order-1 md:order-2">
                 <button (click)="previousTrack()"
                     class="p-2 md:p-3 hover:bg-zinc-900 rounded-full transition-all hover:scale-110 text-zinc-300 hover:text-white"
-                    title="Anterior">
+                    [title]="languageService.get('player.previous')">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M16 7v10l-7-5zm-7 10V7h2v10z" />
                     </svg>
@@ -175,7 +178,7 @@
                 </button>
                 <button (click)="nextTrack()"
                     class="p-2 md:p-3 hover:bg-zinc-900 rounded-full transition-all hover:scale-110 text-zinc-300 hover:text-white"
-                    title="Siguiente">
+                    [title]="languageService.get('player.next')">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M7 7v10l7-5zm9 10V7h-2v10z" />
                     </svg>
@@ -223,8 +226,9 @@
     <!-- Playlist Section -->
     <section class="pb-4">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base md:text-lg font-semibold">Lista de reproducción</h3>
-            <span class="text-xs md:text-sm text-zinc-500">{{playlist.length}} canciones</span>
+            <h3 class="text-base md:text-lg font-semibold">{{ languageService.get('player.playlist.title') }}</h3>
+            <span class="text-xs md:text-sm text-zinc-500">{{playlist.length}} {{
+                languageService.get('player.playlist.songs') }}</span>
         </div>
 
         <div class="space-y-1">
@@ -275,7 +279,7 @@
                     <!-- Favorite Button -->
                     <button *ngIf="song.album !== 'Uploads'" (click)="$event.stopPropagation(); toggleFavorite(song)"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-all active:scale-75 group/btn"
-                        title="Favorito">
+                        [title]="languageService.get('player.favorite')">
                         <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-500 group-hover/btn:text-red-400 transition-colors"
                             fill="currentColor" viewBox="0 0 24 24" *ngIf="!isFavorite(song.id)">
                             <path
@@ -291,7 +295,7 @@
                     <!-- Normal Download Button -->
                     <button (click)="$event.stopPropagation(); downloadMusic(song)"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-colors group/dl"
-                        title="Descargar MP3">
+                        [title]="languageService.get('player.download_mp3')">
                         <svg class="w-4 h-4 md:w-5 md:h-5 text-zinc-500 group-hover/dl:text-emerald-400" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -302,7 +306,7 @@
                     <!-- Offline Download Button / Status -->
                     <button (click)="$event.stopPropagation(); !isOffline(song.id) ? downloadOffline(song) : null"
                         class="p-1.5 md:p-2 hover:bg-zinc-800 rounded-full transition-all group/off"
-                        [title]="isOffline(song.id) ? 'Disponible Offline' : 'Guardar en App'">
+                        [title]="isOffline(song.id) ? languageService.get('player.offline_available') : languageService.get('player.save_offline')">
 
                         <!-- Checkmark (Saved) -->
                         <svg *ngIf="isOffline(song.id)"

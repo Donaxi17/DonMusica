@@ -7,6 +7,7 @@ import { Song } from '../../../services/playlist.service';
 import { PlayerService } from '../../../services/player.service';
 import { SeoService } from '../../../services/seo.service';
 import { Subscription } from 'rxjs';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-new-releases',
@@ -16,6 +17,7 @@ import { Subscription } from 'rxjs';
 })
 export class NewReleasesComponent implements OnInit, OnDestroy {
     private seoService = inject(SeoService);
+    public languageService = inject(LanguageService);
     private playerSubscription?: Subscription;
 
     releases = signal<Song[]>([]);
@@ -35,8 +37,8 @@ export class NewReleasesComponent implements OnInit, OnDestroy {
     ngOnInit() {
         // SEO optimization
         this.seoService.setSeoData(
-            'Nuevos Lanzamientos Musicales 2025 | Últimos Estrenos | DonMusica',
-            'Descubre los últimos lanzamientos musicales de 2025 en DonMusica. Escucha previews de los estrenos más recientes de reggaetón, trap, pop urbano y música latina. ¡Actualizado diariamente en donmusica.online!'
+            this.languageService.get('releases.seo.title'),
+            this.languageService.get('releases.seo.desc')
         );
 
         // ALWAYS fetch 29 (Max needed) and slice locally

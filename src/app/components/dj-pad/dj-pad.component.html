@@ -20,15 +20,15 @@
             </button>
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-white tracking-widest uppercase leading-none">
-                    DJ ZONE <span class="text-emerald-500 font-black ml-1">PRO</span>
+                    {{ languageService.get('dj_pad.title') }} <span class="text-emerald-500 font-black ml-1">PRO</span>
                 </h1>
-                <p class="text-[8px] md:text-[10px] text-zinc-500 font-black tracking-[0.3em] uppercase mt-1">Audio
-                    Studio MPC</p>
+                <p class="text-[8px] md:text-[10px] text-zinc-500 font-black tracking-[0.3em] uppercase mt-1">{{
+                    languageService.get('dj_pad.subtitle') }}</p>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <!-- Master Volume Knob (Hidden on very small screens, visible on md+) -->
+            <!-- Master Volume Knob -->
             <div
                 class="hidden sm:flex items-center gap-3 bg-zinc-900 border border-white/5 py-2.5 px-4 rounded-2xl shadow-inner">
                 <svg class="w-4 h-4 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
@@ -45,8 +45,10 @@
                 <span class="w-2 h-2 rounded-full"
                     [class]="isEditing ? 'bg-black' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'"
                     [class.animate-pulse]="isEditing"></span>
-                <span class="hidden md:inline">{{ isEditing ? 'GUARDAR' : 'MAPEAR TECLAS' }}</span>
-                <span class="md:hidden">{{ isEditing ? 'LISTO' : 'MAPEAR' }}</span>
+                <span class="hidden md:inline">{{ isEditing ? languageService.get('dj_pad.btn.save') :
+                    languageService.get('dj_pad.btn.map') }}</span>
+                <span class="md:hidden">{{ isEditing ? languageService.get('dj_pad.btn.ready') :
+                    languageService.get('dj_pad.btn.map_mobile') }}</span>
             </button>
         </div>
     </header>
@@ -68,8 +70,9 @@
 
             <div class="flex flex-col items-end">
                 <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest animate-pulse-soft">●
-                    Engine Live</span>
-                <span class="text-[7px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Latency: 5ms</span>
+                    {{ languageService.get('dj_pad.status.live') }}</span>
+                <span class="text-[7px] font-bold text-zinc-600 uppercase tracking-[0.3em]">{{
+                    languageService.get('dj_pad.status.latency') }}</span>
             </div>
         </div>
 
@@ -93,25 +96,21 @@
                         [class.ring-[6px]]="isEditing && selectedPadId() === pad.id"
                         [class.ring-emerald-500]="isEditing && selectedPadId() === pad.id">
 
-                        <!-- Physical Texture Overlay -->
                         <div
                             class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50 pointer-events-none">
                         </div>
 
-                        <!-- Main Label / Note -->
                         <span
                             class="text-white text-xl md:text-4xl font-black uppercase tracking-tighter pointer-events-none z-10"
                             [class.opacity-100]="pad.active" [class.opacity-20]="!pad.active">
                             {{ pad.key }}
                         </span>
 
-                        <!-- Sound Name (Only show on larger grids if not too crowded) -->
                         <span *ngIf="!isEditing"
                             class="absolute bottom-2 md:bottom-5 px-3 text-[7px] md:text-[10px] font-black text-zinc-600 uppercase tracking-widest truncate max-w-full opacity-60">
                             {{ pad.label }}
                         </span>
 
-                        <!-- Edit Indicator -->
                         <div *ngIf="isEditing"
                             class="absolute top-2 right-2 md:top-4 md:right-4 w-2 h-2 rounded-full border border-white/20"
                             [class.bg-emerald-500]="selectedPadId() === pad.id"
@@ -134,14 +133,15 @@
                         {{ pads[selectedPadId()! - 1].key }}
                     </div>
                     <div>
-                        <h4 class="text-xs font-black text-white uppercase tracking-widest">Editando PAD {{
-                            selectedPadId() }}</h4>
+                        <h4 class="text-xs font-black text-white uppercase tracking-widest">{{
+                            languageService.get('dj_pad.edit.title').replace('{0}', selectedPadId()!.toString()) }}</h4>
                         <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">{{ pads[selectedPadId()!
                             - 1].label }}</p>
                     </div>
                 </div>
                 <button (click)="discardSelection()"
-                    class="text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-widest">Descartar</button>
+                    class="text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-widest">{{
+                    languageService.get('dj_pad.btn.discard') }}</button>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -152,7 +152,8 @@
                         <path
                             d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                     </svg>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Cambiar Sonido</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">{{
+                        languageService.get('dj_pad.btn.change_sound') }}</span>
                 </button>
 
                 <button (click)="openSettings(selectedPadId()!, 'colors', $event)"
@@ -162,7 +163,8 @@
                         <path
                             d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z" />
                     </svg>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Color LED</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">{{
+                        languageService.get('dj_pad.btn.color_led') }}</span>
                 </button>
 
                 <button (click)="triggerUpload(selectedPadId()!, $event)"
@@ -171,7 +173,8 @@
                         stroke-width="2.5" viewBox="0 0 24 24">
                         <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Subir WAV/MP3</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">{{
+                        languageService.get('dj_pad.btn.upload') }}</span>
                 </button>
 
                 <div class="flex items-center justify-center p-4 bg-zinc-950/50 border border-white/5 rounded-2xl">
@@ -180,26 +183,28 @@
             </div>
         </div>
 
-        <!-- Help Instructions (Refined) -->
+        <!-- Help Instructions -->
         <div *ngIf="!isEditing"
             class="mt-12 flex flex-col md:flex-row items-center gap-6 opacity-30 text-center md:text-left animate-fade-in">
             <div class="flex items-center gap-3">
                 <div
                     class="px-3 py-1 bg-zinc-800 rounded-lg text-[10px] font-black text-emerald-500 border border-emerald-500/20">
                     KEYBOARD</div>
-                <span class="text-[9px] font-black tracking-widest uppercase">Utiliza tu teclado para disparar</span>
+                <span class="text-[9px] font-black tracking-widest uppercase">{{
+                    languageService.get('dj_pad.help.keyboard') }}</span>
             </div>
             <div class="hidden md:block w-px h-6 bg-white/10"></div>
             <div class="flex items-center gap-3">
                 <div
                     class="px-3 py-1 bg-zinc-800 rounded-lg text-[10px] font-black text-indigo-500 border border-indigo-500/20">
                     TOUCH</div>
-                <span class="text-[9px] font-black tracking-widest uppercase">Toca los pads para masterizar</span>
+                <span class="text-[9px] font-black tracking-widest uppercase">{{
+                    languageService.get('dj_pad.help.touch') }}</span>
             </div>
         </div>
     </main>
 
-    <!-- SETTINGS MODAL (Redesigned) -->
+    <!-- SETTINGS MODAL -->
     <div *ngIf="activeModalForPadId !== null"
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-fade-in"
         (click)="closeModal()">
@@ -210,9 +215,10 @@
             <!-- Modal Header -->
             <div class="flex items-center justify-between px-10 py-8 border-b border-white/5 bg-white/[0.01]">
                 <div>
-                    <h3 class="text-2xl font-black text-white uppercase tracking-tighter">CONFIGURAR PAD</h3>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] mt-1">Personalización de
-                        motor de audio</p>
+                    <h3 class="text-2xl font-black text-white uppercase tracking-tighter">{{
+                        languageService.get('dj_pad.modal.title') }}</h3>
+                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] mt-1">{{
+                        languageService.get('dj_pad.modal.subtitle') }}</p>
                 </div>
                 <button (click)="closeModal()"
                     class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-red-500 text-zinc-400 hover:text-white transition-all active:scale-90">
@@ -227,12 +233,12 @@
                 <button (click)="setActiveTab('sounds')" [class.bg-white]="activeModalTab === 'sounds'"
                     [class.text-black]="activeModalTab === 'sounds'" [class.text-zinc-500]="activeModalTab !== 'sounds'"
                     class="flex-1 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-lg">
-                    Librería de Sonidos
+                    {{ languageService.get('dj_pad.modal.tab.sounds') }}
                 </button>
                 <button (click)="setActiveTab('colors')" [class.bg-white]="activeModalTab === 'colors'"
                     [class.text-black]="activeModalTab === 'colors'" [class.text-zinc-500]="activeModalTab !== 'colors'"
                     class="flex-1 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-lg">
-                    Motor Visual LED
+                    {{ languageService.get('dj_pad.modal.tab.colors') }}
                 </button>
             </div>
 

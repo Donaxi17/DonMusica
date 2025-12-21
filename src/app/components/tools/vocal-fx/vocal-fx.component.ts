@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../services/toast.service';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
+import { LanguageService } from '../../../services/language.service';
 
 interface Effect {
     id: string;
@@ -29,8 +30,8 @@ interface Effect {
                 </svg>
             </button>
             <div class="text-right">
-                <h1 class="text-xs font-black text-white tracking-widest uppercase">Audio Studio <span class="text-pink-500">PRO</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Elite Vocal Processor</p>
+                <h1 class="text-xs font-black text-white tracking-widest uppercase">{{ languageService.get('vocal_fx.subtitle') }} <span class="text-pink-500">PRO</span></h1>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{{ languageService.get('vocal_fx.subtitle') }}</p>
             </div>
         </header>
 
@@ -38,7 +39,7 @@ interface Effect {
         <main class="relative z-10 max-w-xl w-full px-6 py-8 md:py-12 flex flex-col items-center">
             
             <div class="text-center mb-8">
-                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">Vocal <span class="text-pink-500 italic">Master</span></h2>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">{{ languageService.get('vocal_fx.title') }} <span class="text-pink-500 italic">Master</span></h2>
                 <div class="flex items-center justify-center gap-3">
                     <span class="px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-[9px] font-black text-pink-400 uppercase tracking-widest">DSP High-End</span>
                     <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-zinc-400 uppercase tracking-widest">Privacy First</span>
@@ -51,13 +52,13 @@ interface Effect {
                     [class.bg-pink-500]="viewMode() === 'changer'" 
                     [class.text-white]="viewMode() === 'changer'"
                     class="flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                    Changer
+                    {{ languageService.get('vocal_fx.mode.changer') }}
                 </button>
                 <button (click)="setMode('studio')" 
                     [class.bg-indigo-500]="viewMode() === 'studio'" 
                     [class.text-white]="viewMode() === 'studio'"
                     class="flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                    Studio Pro
+                    {{ languageService.get('vocal_fx.mode.studio') }}
                 </button>
             </div>
 
@@ -69,13 +70,13 @@ interface Effect {
                     <canvas #vfxCanvas class="w-full h-full opacity-60"></canvas>
                     
                     <div *ngIf="!isRecording() && !audioData()" class="absolute inset-0 flex items-center justify-center pointer-events-none px-4 text-center">
-                        <div class="text-[8px] md:text-[10px] font-black text-zinc-600 tracking-[0.3em] uppercase">Ready for Signal</div>
+                        <div class="text-[8px] md:text-[10px] font-black text-zinc-600 tracking-[0.3em] uppercase">{{ languageService.get('vocal_fx.status.ready') }}</div>
                     </div>
                     
                     <!-- RECOGNITION STATUS -->
                     <div *ngIf="isRecording()" class="absolute top-3 left-4 md:top-4 md:left-6 flex items-center gap-2">
                         <div class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse"></div>
-                        <span class="text-[8px] md:text-[9px] font-black text-red-500 uppercase tracking-widest">Rec In Progress</span>
+                        <span class="text-[8px] md:text-[9px] font-black text-red-500 uppercase tracking-widest">{{ languageService.get('vocal_fx.status.recording') }}</span>
                     </div>
                 </div>
 
@@ -87,7 +88,7 @@ interface Effect {
                         [class.bg-pink-500]="!isRecording() && audioData()"
                         class="flex-1 h-12 md:h-14 rounded-xl md:rounded-2xl transition-all flex items-center justify-center gap-2 md:gap-3 active:scale-95 shadow-2xl relative overflow-hidden group/btn text-zinc-950 font-black uppercase text-[10px] md:text-[11px] tracking-widest">
                         <div *ngIf="isRecording()" class="w-2 md:w-2.5 h-2 md:h-2.5 bg-white rounded-full animate-ping"></div>
-                        <span>{{ isRecording() ? 'Detener' : (audioData() ? 'Nueva Toma' : 'Grabar') }}</span>
+                        <span>{{ isRecording() ? languageService.get('vocal_fx.btn.stop') : (audioData() ? languageService.get('vocal_fx.btn.new_take') : languageService.get('vocal_fx.btn.record')) }}</span>
                     </button>
 
                     <button (click)="clearAudio()" [disabled]="!audioData()"
@@ -119,12 +120,12 @@ interface Effect {
                 
                 <!-- Rack Presets -->
                 <div class="flex items-center justify-between px-3 md:px-4 bg-zinc-900/30 py-3 md:py-4 rounded-[1.5rem] md:rounded-[2rem] border border-white/5">
-                    <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest">Presets</span>
+                    <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest">{{ languageService.get('vocal_fx.presets') }}</span>
                     <div class="flex gap-1.5 md:gap-2">
                          <button *ngFor="let p of ['natural', 'trap', 'radio']" (click)="applyPreset(p)" 
                             [class]="activePreset === p ? (p === 'natural' ? 'bg-white text-black' : p === 'trap' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white') : 'bg-white/5 text-zinc-500'"
                             class="text-[8px] md:text-[9px] font-bold uppercase px-2.5 py-1.5 rounded-lg transition-all relative">
-                            {{ p === 'radio' ? 'Vintage' : p === 'trap' ? 'Trap' : 'Natural' }}
+                            {{ p === 'radio' ? languageService.get('vocal_fx.preset.vintage') : p === 'trap' ? languageService.get('vocal_fx.preset.trap') : languageService.get('vocal_fx.preset.natural') }}
                             <div *ngIf="activePreset === p" class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-black animate-pulse"
                                 [class]="p === 'natural' ? 'bg-indigo-500' : p === 'trap' ? 'bg-pink-500' : 'bg-white'"></div>
                          </button>
@@ -137,13 +138,13 @@ interface Effect {
                     <div class="space-y-3 md:space-y-4">
                         <div class="p-5 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-indigo-500/5 border border-indigo-500/10 space-y-4 md:space-y-5">
                             <div class="flex items-center justify-between">
-                                <span class="text-[8px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest">Auto-Tune</span>
+                                <span class="text-[8px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.autotune') }}</span>
                                 <div (click)="studioConfig.autotune = !studioConfig.autotune; hapticService.light()" class="w-7 h-4 bg-zinc-800 rounded-full relative cursor-pointer">
                                     <div [class.translate-x-3]="studioConfig.autotune" [class.bg-indigo-500]="studioConfig.autotune" class="w-3 h-3 bg-zinc-600 rounded-full absolute top-0.5 left-0.5 transition-all"></div>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-[8px] md:text-[9px] font-black text-pink-400 uppercase tracking-widest">Harmonizer</span>
+                                <span class="text-[8px] md:text-[9px] font-black text-pink-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.harmonizer') }}</span>
                                 <div (click)="studioConfig.harmonizer = !studioConfig.harmonizer; hapticService.light()" class="w-7 h-4 bg-zinc-800 rounded-full relative cursor-pointer">
                                     <div [class.translate-x-3]="studioConfig.harmonizer" [class.bg-pink-500]="studioConfig.harmonizer" class="w-3 h-3 bg-zinc-600 rounded-full absolute top-0.5 left-0.5 transition-all"></div>
                                 </div>
@@ -151,7 +152,7 @@ interface Effect {
                         </div>
                         
                         <div class="p-5 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-zinc-900/40 border border-white/5 space-y-3">
-                            <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1 block">Ambience</span>
+                            <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1 block">{{ languageService.get('vocal_fx.ambience') }}</span>
                             <div class="flex items-center gap-3">
                                 <input type="range" min="0" max="1" step="0.01" [(ngModel)]="studioConfig.reverb"
                                     class="flex-1 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
@@ -164,13 +165,13 @@ interface Effect {
                     <div class="space-y-3 md:space-y-4">
                         <div class="p-5 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-emerald-500/5 border border-emerald-500/10 space-y-4 md:space-y-5">
                             <div class="flex items-center justify-between">
-                                <span class="text-[8px] md:text-[9px] font-black text-emerald-400 uppercase tracking-widest">Noise Gate</span>
+                                <span class="text-[8px] md:text-[9px] font-black text-emerald-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.noise_gate') }}</span>
                                 <div (click)="studioConfig.gate = !studioConfig.gate; hapticService.light()" class="w-7 h-4 bg-zinc-800 rounded-full relative cursor-pointer">
                                     <div [class.translate-x-3]="studioConfig.gate" [class.bg-emerald-500]="studioConfig.gate" class="w-3 h-3 bg-zinc-600 rounded-full absolute top-0.5 left-0.5 transition-all"></div>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-[8px] md:text-[9px] font-black text-cyan-400 uppercase tracking-widest">De-Esser</span>
+                                <span class="text-[8px] md:text-[9px] font-black text-cyan-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.deesser') }}</span>
                                 <div (click)="studioConfig.deesser = !studioConfig.deesser; hapticService.light()" class="w-7 h-4 bg-zinc-800 rounded-full relative cursor-pointer">
                                     <div [class.translate-x-3]="studioConfig.deesser" [class.bg-cyan-500]="studioConfig.deesser" class="w-3 h-3 bg-zinc-600 rounded-full absolute top-0.5 left-0.5 transition-all"></div>
                                 </div>
@@ -180,8 +181,8 @@ interface Effect {
                         <button (click)="studioConfig.clarity = !studioConfig.clarity"
                             [class]="studioConfig.clarity ? 'border-indigo-500/30 bg-indigo-500/10' : 'bg-zinc-900/40 border-white/5'"
                             class="w-full p-5 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] text-left transition-all group border">
-                            <h4 class="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest mb-1">Elite Compressor</h4>
-                            <p class="text-[7px] md:text-[8px] text-zinc-500 font-bold leading-tight">Vocal level optimization</p>
+                            <h4 class="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest mb-1">{{ languageService.get('vocal_fx.compressor.title') }}</h4>
+                            <p class="text-[7px] md:text-[8px] text-zinc-500 font-bold leading-tight">{{ languageService.get('vocal_fx.compressor.desc') }}</p>
                         </button>
                     </div>
                 </div>
@@ -192,20 +193,20 @@ interface Effect {
                         <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-white/5 flex items-center justify-center text-zinc-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                         </div>
-                        <span class="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">Master EQ</span>
+                        <span class="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">{{ languageService.get('vocal_fx.master_eq') }}</span>
                     </div>
 
                     <div class="grid grid-cols-1 xs:grid-cols-2 gap-6 md:gap-10">
                         <div class="space-y-3">
                             <div class="flex justify-between text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                                <span>Bass Pwr</span>
+                                <span>{{ languageService.get('vocal_fx.bass_pwr') }}</span>
                                 <span class="text-white">{{ studioConfig.bass }}dB</span>
                             </div>
                             <input type="range" min="-10" max="20" [(ngModel)]="studioConfig.bass" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                                <span>Air Shine</span>
+                                <span>{{ languageService.get('vocal_fx.air_shine') }}</span>
                                 <span class="text-white">{{ studioConfig.treble }}dB</span>
                             </div>
                             <input type="range" min="-10" max="20" [(ngModel)]="studioConfig.treble" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
@@ -216,7 +217,7 @@ interface Effect {
                 <!-- Processing Action -->
                 <button (click)="playStudio()" class="w-full py-5 md:py-6 rounded-2xl md:rounded-[2.5rem] bg-indigo-500 text-black font-black uppercase text-[10px] md:text-xs tracking-[0.3em] md:tracking-[0.4em] shadow-[0_0_30px_rgba(99,102,241,0.3)] active:scale-95 transition-all hover:bg-indigo-400 flex items-center justify-center gap-2 md:gap-3">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    Mastering & Playback
+                    {{ languageService.get('vocal_fx.btn.playback') }}
                 </button>
             </div>
 
@@ -225,7 +226,7 @@ interface Effect {
                 <button (click)="downloadAudio()"
                     class="w-full py-5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-white hover:bg-white/10 uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-3">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Export Mastering
+                    {{ languageService.get('vocal_fx.btn.export') }}
                 </button>
             </div>
 
@@ -246,6 +247,7 @@ export class VocalFxComponent implements OnInit, OnDestroy {
     private toastService = inject(ToastService);
     private seoService = inject(SeoService);
     public hapticService = inject(HapticService);
+    public languageService = inject(LanguageService);
 
     viewMode = signal<'changer' | 'studio'>('changer');
     isRecording = signal(false);
@@ -270,21 +272,21 @@ export class VocalFxComponent implements OnInit, OnDestroy {
     analyser: AnalyserNode | null = null;
 
     effects: Effect[] = [
-        { id: 'normal', name: 'Natural', emoji: '🎙️', color: 'bg-white', desc: 'Clear studio voice' },
-        { id: 'vader', name: 'Commander', emoji: '🌌', color: 'bg-red-900', desc: 'Dark & mechanical' },
-        { id: 'robot', name: 'X-Robot', emoji: '🤖', color: 'bg-indigo-500', desc: 'Ring modular fx' },
-        { id: 'chipmunk', name: 'Squirrel', emoji: '🐿️', color: 'bg-orange-500', desc: 'High pitch fast' },
-        { id: 'deep', name: 'Beast', emoji: '👹', color: 'bg-red-500', desc: 'Low & terrifying' },
-        { id: 'alien', name: 'Zodiac', emoji: '👽', color: 'bg-emerald-500', desc: 'LFO oscillation' },
-        { id: 'radio', name: 'Retro 80s', emoji: '📻', color: 'bg-zinc-500', desc: 'Lo-fi vintage filter' },
-        { id: 'cave', name: 'Infinity', emoji: '🕳️', color: 'bg-cyan-500', desc: 'Massive deep echo' },
-        { id: 'megaphone', name: 'Alert', emoji: '📣', color: 'bg-blue-500', desc: 'Voice distortion' }
+        { id: 'normal', name: this.languageService.get('vocal_fx.effects.normal.name'), emoji: '🎙️', color: 'bg-white', desc: this.languageService.get('vocal_fx.effects.normal.desc') },
+        { id: 'vader', name: this.languageService.get('vocal_fx.effects.commander.name'), emoji: '🌌', color: 'bg-red-900', desc: this.languageService.get('vocal_fx.effects.commander.desc') },
+        { id: 'robot', name: this.languageService.get('vocal_fx.effects.x_robot.name'), emoji: '🤖', color: 'bg-indigo-500', desc: this.languageService.get('vocal_fx.effects.x_robot.desc') },
+        { id: 'chipmunk', name: this.languageService.get('vocal_fx.effects.squirrel.name'), emoji: '🐿️', color: 'bg-orange-500', desc: this.languageService.get('vocal_fx.effects.squirrel.desc') },
+        { id: 'deep', name: this.languageService.get('vocal_fx.effects.beast.name'), emoji: '👹', color: 'bg-red-500', desc: this.languageService.get('vocal_fx.effects.beast.desc') },
+        { id: 'alien', name: this.languageService.get('vocal_fx.effects.zodiac.name'), emoji: '👽', color: 'bg-emerald-500', desc: this.languageService.get('vocal_fx.effects.zodiac.desc') },
+        { id: 'radio', name: this.languageService.get('vocal_fx.effects.retro.name'), emoji: '📻', color: 'bg-zinc-500', desc: this.languageService.get('vocal_fx.effects.retro.desc') },
+        { id: 'cave', name: this.languageService.get('vocal_fx.effects.infinity.name'), emoji: '🕳️', color: 'bg-cyan-500', desc: this.languageService.get('vocal_fx.effects.infinity.desc') },
+        { id: 'megaphone', name: this.languageService.get('vocal_fx.effects.alert.name'), emoji: '📣', color: 'bg-blue-500', desc: this.languageService.get('vocal_fx.effects.alert.desc') }
     ];
 
     ngOnInit() {
         this.seoService.setMetaTags({
-            title: 'Vocal Master Pro | AI Vocal Processor & Studio Effects',
-            description: 'Advanced vocal mastering in your browser. Real-time autotune, studio rack presets, and celebrity voice changer.',
+            title: this.languageService.get('vocal_fx.seo.title'),
+            description: this.languageService.get('vocal_fx.seo.desc'),
             keywords: 'vocal processing, autotune, noise gate, studio vocal fx, donmusica tools',
             image: '/assets/icons/icon-512x512.png'
         });
@@ -383,7 +385,7 @@ export class VocalFxComponent implements OnInit, OnDestroy {
                 this.mediaRecorder.start();
                 this.isRecording.set(true);
             } catch (err) {
-                this.toastService.error('Micrófono requerido para el Studio.');
+                this.toastService.error(this.languageService.get('vocal_fx.toast.mic_required'));
             }
         }
     }

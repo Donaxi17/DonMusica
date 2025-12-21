@@ -5,6 +5,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { ToastService } from '../../services/toast.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-radio',
@@ -23,6 +24,7 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
   genre: string = 'reggaeton'; // Default genre
 
   private toastService = inject(ToastService);
+  public languageService = inject(LanguageService);
 
   constructor(private radioService: RadioService) { }
 
@@ -46,7 +48,7 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
       this.stations = this.radioService.getFavorites();
       this.isLoading = false;
       if (this.stations.length === 0) {
-        this.toastService.info('No tienes emisoras favoritas aún');
+        this.toastService.info(this.languageService.get('radio.toast.no_favorites'));
       }
       return;
     }
@@ -95,9 +97,9 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const isFav = this.radioService.isFavorite(station);
     if (isFav) {
-      this.toastService.success('Añadida a favoritas');
+      this.toastService.success(this.languageService.get('radio.toast.added_favorite'));
     } else {
-      this.toastService.info('Eliminada de favoritas');
+      this.toastService.info(this.languageService.get('radio.toast.removed_favorite'));
     }
   }
 

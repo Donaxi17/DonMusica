@@ -6,6 +6,7 @@ import { OfflineService } from '../../services/offline.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { ToastService } from '../../services/toast.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-saved-lyrics',
@@ -19,6 +20,7 @@ export class SavedLyricsComponent implements OnInit {
 
   private proService = inject(DonMusicaProService);
   private toastService = inject(ToastService);
+  public languageService = inject(LanguageService);
 
   savedLyrics = signal<SavedLyric[]>([]);
   selectedLyric = signal<SavedLyric | null>(null);
@@ -103,7 +105,7 @@ export class SavedLyricsComponent implements OnInit {
     if (!file) return;
 
     if (!file.name.endsWith('.txt') && !file.name.endsWith('.lrc')) {
-      this.toastService.warning('Por favor selecciona un archivo de texto (.txt) o letra (.lrc)');
+      this.toastService.warning(this.languageService.get('saved_lyrics.toast.invalid_file'));
       return;
     }
 
@@ -116,9 +118,9 @@ export class SavedLyricsComponent implements OnInit {
 
       if (success) {
         this.loadLyrics();
-        this.toastService.success('Letra importada correctamente');
+        this.toastService.success(this.languageService.get('saved_lyrics.toast.imported'));
       } else {
-        this.toastService.error('¡Límite alcanzado! Elimina letras antiguas o actualiza a PRO para guardar más.');
+        this.toastService.error(this.languageService.get('saved_lyrics.toast.limit_reached'));
       }
     };
     reader.readAsText(file);

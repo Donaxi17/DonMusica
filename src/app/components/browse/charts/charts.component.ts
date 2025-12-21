@@ -5,6 +5,7 @@ import { MusicApiService } from '../../../services/music-api.service';
 import { PlayerService } from '../../../services/player.service';
 import { Song } from '../../../services/playlist.service';
 import { SeoService } from '../../../services/seo.service';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-charts',
@@ -14,6 +15,7 @@ import { SeoService } from '../../../services/seo.service';
 })
 export class ChartsComponent implements OnInit {
     private seoService = inject(SeoService);
+    public languageService = inject(LanguageService);
 
     countries = [
         { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
@@ -22,8 +24,15 @@ export class ChartsComponent implements OnInit {
     ];
     selectedCountry = 'CO';
 
+    get translatedCountries() {
+        return this.countries.map(c => ({
+            ...c,
+            name: c.code === 'US' ? this.languageService.get('charts.world') : c.name
+        }));
+    }
+
     get selectedCountryName(): string {
-        return this.countries.find(c => c.code === this.selectedCountry)?.name || '';
+        return this.translatedCountries.find(c => c.code === this.selectedCountry)?.name || '';
     }
 
     chartSongs = signal<Song[]>([]);
@@ -37,8 +46,8 @@ export class ChartsComponent implements OnInit {
 
     ngOnInit() {
         this.seoService.setSeoData(
-            'Top Charts Musicales 2025 | Rankings Globales y Latinos | DonMusica',
-            'Explora los rankings musicales más importantes del 2025 en DonMusica. Top 50 de Colombia, México y el mundo. Las canciones más virales y escuchadas del momento en donmusica.online.'
+            this.languageService.get('charts.seo.title'),
+            this.languageService.get('charts.seo.desc')
         );
         this.loadCharts(this.selectedCountry);
 

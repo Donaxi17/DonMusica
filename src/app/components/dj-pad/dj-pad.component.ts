@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 import { HapticService } from '../../services/haptic.service';
+import { LanguageService } from '../../services/language.service';
 
 interface Pad {
   id: number;
@@ -25,6 +26,7 @@ export class DjPadComponent implements OnInit, OnDestroy {
   private seoService = inject(SeoService);
   private hapticService = inject(HapticService);
   private router = inject(Router);
+  public languageService = inject(LanguageService);
 
   audioCtx: AudioContext | null = null;
   masterVolume = signal(0.8);
@@ -101,8 +103,8 @@ export class DjPadComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.seoService.setSeoData(
-      'DJ Zone Pro - MPC Pad Virtual | DonMusica',
-      'Crea ritmos, experimenta con sonidos y personaliza tu propio MPC virtual. Sube tus propios samples y crea música urbana, trap o reggaeton directamente en tu navegador.'
+      this.languageService.get('dj_pad.seo.title'),
+      this.languageService.get('dj_pad.seo.desc')
     );
 
     this.createGrid(4);

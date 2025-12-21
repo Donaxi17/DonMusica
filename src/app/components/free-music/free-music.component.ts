@@ -18,6 +18,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
 import { HapticService } from '../../services/haptic.service';
 import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-free-music',
@@ -40,6 +41,7 @@ export class FreeMusicComponent implements OnInit {
   private cacheService = inject(CacheService);
   private voiceService = inject(VoiceRecognitionService);
   private hapticService = inject(HapticService);
+  public languageService = inject(LanguageService);
 
   // Géneros modernos
   latinGenres = [
@@ -82,8 +84,8 @@ export class FreeMusicComponent implements OnInit {
 
   ngOnInit() {
     this.seoService.setSeoData(
-      'Música Sin Copyright Gratis para YouTube y Twitch (2025) | DonMusica',
-      'Descarga la mejor música sin copyright (Royalty Free) para tus videos. Pop, Rock, Electrónica, Hip Hop. 100% Legal, seguro para monetizar y libre de strikes.'
+      this.languageService.get('free_music.seo.title'),
+      this.languageService.get('free_music.seo.desc')
     );
     this.loadMusicByGenre(this.selectedGenre());
 
@@ -127,15 +129,15 @@ export class FreeMusicComponent implements OnInit {
     if (cachedSongs && !this.networkService.isOnline()) {
       this.songs.set(cachedSongs);
       this.isLoading.set(false);
-      this.toastService.info('📦 Mostrando contenido en caché');
+      this.toastService.info(this.languageService.get('free_music.toast.cached'));
       return;
     }
 
     this.isLoading.set(true);
-    const genreName = this.latinGenres.find(g => g.id === genre)?.name || 'Música';
+    const genreName = this.languageService.get('free_music.genre.' + genre);
     this.seoService.setSeoData(
-      `${genreName} Sin Copyright Gratis (Royalty Free) | DonMusica`,
-      `Descarga música ${genreName} sin copyright para tus videos de YouTube, Twitch o Instagram. Audio de alta calidad, gratis y seguro para monetizar.`
+      this.languageService.get('free_music.seo.genre_title', genreName),
+      this.languageService.get('free_music.seo.genre_desc', genreName)
     );
 
     this.musicApi.getJamendoByGenre(genre, 50).subscribe({
@@ -148,7 +150,7 @@ export class FreeMusicComponent implements OnInit {
         console.error('Error cargando música:', err);
         if (cachedSongs) {
           this.songs.set(cachedSongs);
-          this.toastService.warning('Mostrando contenido en caché');
+          this.toastService.warning(this.languageService.get('free_music.toast.cached').replace('📦 ', ''));
         } else {
           this.songs.set([]);
         }
@@ -162,8 +164,8 @@ export class FreeMusicComponent implements OnInit {
     if (!this.searchQuery()) return;
     this.isLoading.set(true);
     this.seoService.setSeoData(
-      `Buscar "${this.searchQuery()}" - Música Sin Copyright | DonMusica`,
-      `Resultados de búsqueda para "${this.searchQuery()}". Música sin copyright.`
+      this.languageService.get('free_music.seo.search_title', this.searchQuery()),
+      this.languageService.get('free_music.seo.search_desc', this.searchQuery())
     );
 
     this.musicApi.searchJamendo(this.searchQuery(), 50).subscribe({
@@ -240,7 +242,7 @@ export class FreeMusicComponent implements OnInit {
     this.hapticService.light();
     event.stopPropagation();
     if (this.isOffline(song.id)) {
-      this.toastService.info('Esta canción ya está descargada');
+      this.toastService.info(this.languageService.get('free_music.toast.already_offline'));
       return;
     }
 

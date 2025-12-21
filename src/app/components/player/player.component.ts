@@ -11,6 +11,7 @@ import { MusicApiService } from '../../services/music-api.service';
 import { ToastService } from '../../services/toast.service';
 import { HapticService } from '../../services/haptic.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-player',
@@ -50,7 +51,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private offlineService: OfflineService,
     private hapticService: HapticService,
-    private proService: DonMusicaProService
+    private proService: DonMusicaProService,
+    public languageService: LanguageService
   ) { }
 
   ngOnInit(): void {
@@ -245,7 +247,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (url) {
           this.navigateToDownload(song, url, 'default');
         } else {
-          this.toastService.error('No se pudo encontrar una fuente de descarga para esta canción');
+          this.toastService.error(this.languageService.get('player.toast.download_not_found'));
         }
       });
       return;
@@ -259,7 +261,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (url) {
           this.navigateToDownload(song, url, 'offline');
         } else {
-          this.toastService.error('No se pudo encontrar una fuente para guardar offline');
+          this.toastService.error(this.languageService.get('player.toast.offline_not_found'));
         }
       });
       return;

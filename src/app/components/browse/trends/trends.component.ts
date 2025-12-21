@@ -8,6 +8,7 @@ import { Song } from '../../../services/playlist.service';
 import { SeoService } from '../../../services/seo.service';
 
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-trends',
@@ -17,6 +18,7 @@ import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 })
 export class TrendsComponent implements OnInit {
     private seoService = inject(SeoService);
+    public languageService = inject(LanguageService);
 
     trendingSongs = signal<Song[]>([]);
     loading = signal(true);
@@ -34,6 +36,13 @@ export class TrendsComponent implements OnInit {
         { code: 'US' as const, name: 'Mundial 🌎', flag: '🌎' }
     ];
 
+    get translatedRegions() {
+        return this.regions.map(r => ({
+            ...r,
+            name: r.code === 'US' ? this.languageService.get('trends.world') : r.name
+        }));
+    }
+
     constructor(
         private musicApi: MusicApiService,
         private playerService: PlayerService
@@ -42,8 +51,8 @@ export class TrendsComponent implements OnInit {
     ngOnInit() {
         // SEO optimization
         this.seoService.setSeoData(
-            'Tendencias Globales | DonMusica',
-            'Lo más escuchado del momento.'
+            this.languageService.get('trends.seo.title'),
+            this.languageService.get('trends.seo.desc')
         );
 
         this.loadInitialData();

@@ -8,6 +8,7 @@ import { ToastService } from '../../../services/toast.service';
 import { SkeletonComponent } from '../skeleton/skeleton.component';
 import { Router } from '@angular/router';
 import { MusicApiService } from '../../../services/music-api.service';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-recently-played',
@@ -34,8 +35,8 @@ import { MusicApiService } from '../../../services/music-api.service';
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-black text-white tracking-tight">Historial</h2>
-                            <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Recientes</p>
+                            <h2 class="text-base font-black text-white tracking-tight">{{ languageService.get('history.title') }}</h2>
+                            <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">{{ languageService.get('history.recents') }}</p>
                         </div>
                     </div>
                     
@@ -51,7 +52,7 @@ import { MusicApiService } from '../../../services/music-api.service';
                 <div *ngIf="(history$ | async)?.length" class="flex gap-2">
                     <button (click)="clear()" 
                         class="flex-1 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest transition-all border border-red-500/10 active:scale-95">
-                        Limpiar Historial
+                        {{ languageService.get('history.clear') }}
                     </button>
                 </div>
             </div>
@@ -114,8 +115,8 @@ import { MusicApiService } from '../../../services/music-api.service';
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h4 class="text-lg font-black text-zinc-200 mb-2">Historial vacío</h4>
-                    <p class="text-xs text-zinc-500 leading-relaxed font-medium">Tus reproducción aparecerán aquí.</p>
+                    <h4 class="text-lg font-black text-zinc-200 mb-2">{{ languageService.get('history.empty_title') }}</h4>
+                    <p class="text-xs text-zinc-500 leading-relaxed font-medium">{{ languageService.get('history.empty_subtitle') }}</p>
                 </div>
             </div>
 
@@ -139,6 +140,7 @@ export class RecentlyPlayedComponent {
     private toastService = inject(ToastService);
     private musicApi = inject(MusicApiService);
     private router = inject(Router);
+    languageService = inject(LanguageService);
 
     constructor() {
         this.history$ = this.historyService.history$;
@@ -170,17 +172,17 @@ export class RecentlyPlayedComponent {
     remove(id: string, event: Event) {
         event.stopPropagation();
         this.historyService.removeFromHistory(id);
-        this.toastService.success('Eliminado del historial');
+        this.toastService.success(this.languageService.get('history.toast.removed'));
     }
 
     clear() {
         this.historyService.clearHistory();
-        this.toastService.success('Historial limpiado correctamente');
+        this.toastService.success(this.languageService.get('history.toast.cleared'));
     }
 
     getTimeAgo(timestamp: number): string {
         const seconds = Math.floor((Date.now() - timestamp) / 1000);
-        if (seconds < 60) return 'Ahora';
+        if (seconds < 60) return this.languageService.get('history.time.now');
         const minutes = Math.floor(seconds / 60);
         if (minutes < 60) return `${minutes}m`;
         const hours = Math.floor(minutes / 60);
@@ -219,12 +221,12 @@ export class RecentlyPlayedComponent {
         } as any;
 
         if (!song.url) {
-            this.toastService.info('Buscando enlace de descarga...');
+            this.toastService.info(this.languageService.get('history.toast.searching_download'));
             this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
                 if (url) {
                     this.navigateToDownload(song, url, 'default');
                 } else {
-                    this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+                    this.toastService.error(this.languageService.get('history.toast.download_not_found'));
                 }
             });
         } else {

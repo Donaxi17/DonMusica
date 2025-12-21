@@ -18,6 +18,7 @@ import { OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { VoiceRecognitionService } from '../../../services/voice-recognition.service';
 import { VoiceVisualizerComponent } from '../../shared/voice-waveform/voice-waveform.component';
 import { SvgIconComponent } from '../../shared/svg-icon/svg-icon.component';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-lyrics',
@@ -39,6 +40,7 @@ export class LyricsComponent implements OnInit, OnDestroy {
     private hapticService = inject(HapticService);
     private voiceService = inject(VoiceRecognitionService);
     private cdr = inject(ChangeDetectorRef);
+    public languageService = inject(LanguageService);
 
     searchQuery = signal('');
     isSearching = signal(false);
@@ -52,8 +54,8 @@ export class LyricsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.seoService.setSeoData(
-            'Buscador de Letras y Música | DonMusica',
-            'Encuentra y guarda las letras de tus canciones favoritas en DonMusica. Buscador musical global for lyrics, canciones, artistas y álbumes. ¡Crea tu colección de letras hoy en donmusica.online!'
+            this.languageService.get('lyrics.seo.title'),
+            this.languageService.get('lyrics.seo.desc')
         );
 
         this.route.queryParams.subscribe(params => {
@@ -112,7 +114,7 @@ export class LyricsComponent implements OnInit, OnDestroy {
             },
             error: () => {
                 this.isSearching.set(false);
-                this.toastService.error('Error al buscar canciones');
+                this.toastService.error(this.languageService.get('lyrics.toast.search_error'));
             }
         });
     }
@@ -167,13 +169,13 @@ export class LyricsComponent implements OnInit, OnDestroy {
 
         if (this.lyricsService.isSaved(title, artist)) {
             this.hapticService.light();
-            this.toastService.info('Esta letra ya está guardada');
+            this.toastService.info(this.languageService.get('lyrics.toast.already_saved'));
             return;
         }
 
         this.hapticService.success();
         this.lyricsService.saveLyric(title, artist, content);
-        this.toastService.success('Letra guardada en tu colección');
+        this.toastService.success(this.languageService.get('lyrics.toast.saved_success'));
     }
 
     isLyricsSaved(): boolean {
@@ -196,12 +198,12 @@ export class LyricsComponent implements OnInit, OnDestroy {
     openDownload(song: Song, event: Event) {
         event.stopPropagation();
         if (!song.url) {
-            this.toastService.info('Buscando enlace de descarga...');
+            this.toastService.info(this.languageService.get('home.toast.searching_download'));
             this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
                 if (url) {
                     this.navigateToDownload(song, url, 'default');
                 } else {
-                    this.toastService.error('No se pudo encontrar un enlace para descargar');
+                    this.toastService.error(this.languageService.get('home.toast.download_not_found'));
                 }
             });
             return;
@@ -212,16 +214,16 @@ export class LyricsComponent implements OnInit, OnDestroy {
     async downloadForOffline(song: Song, event: Event) {
         event.stopPropagation();
         if (this.isOffline(song.id)) {
-            this.toastService.info('Esta canción ya está descargada');
+            this.toastService.info(this.languageService.get('artist.toast.already_downloaded'));
             return;
         }
         if (!song.url) {
-            this.toastService.info('Buscando fuente offline...');
+            this.toastService.info(this.languageService.get('home.toast.searching_download'));
             this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
                 if (url) {
                     this.navigateToDownload(song, url, 'offline');
                 } else {
-                    this.toastService.error('No se pudo encontrar fuente para modo offline');
+                    this.toastService.error(this.languageService.get('artist.toast.offline_source_not_found'));
                 }
             });
             return;

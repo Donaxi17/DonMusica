@@ -14,7 +14,7 @@
         <!-- Title -->
         <h2
             class="text-3xl md:text-5xl font-black mb-3 md:mb-5 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent tracking-tight">
-            Mis Playlists
+            {{ languageService.get('playlists.title') }}
         </h2>
 
         <!-- Stats -->
@@ -25,20 +25,22 @@
                     <path
                         d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
                 </svg>
-                <span class="text-zinc-200 font-medium">{{ favorites.length }} favoritas</span>
+                <span class="text-zinc-200 font-medium">{{ favorites.length }} {{
+                    languageService.get('playlists.favorites') }}</span>
             </div>
             <div
                 class="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 rounded-full bg-zinc-800/80 border border-zinc-700/50">
                 <svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
                 </svg>
-                <span class="text-zinc-200 font-medium">{{ userPlaylists.length }} playlists</span>
+                <span class="text-zinc-200 font-medium">{{ userPlaylists.length }} {{
+                    languageService.get('playlists.playlists') }}</span>
             </div>
         </div>
 
         <!-- Description -->
         <p class="text-zinc-400 text-sm md:text-base max-w-lg mx-auto px-6 leading-relaxed">
-            Organiza y disfruta tu música favorita. Crea playlists personalizadas y guarda tus canciones preferidas.
+            {{ languageService.get('playlists.description') }}
         </p>
     </div>
 
@@ -73,9 +75,9 @@
                     <div class="text-left">
                         <h3
                             class="text-lg md:text-4xl font-black text-white mb-0.5 md:mb-2 tracking-tight leading-tight">
-                            Mis Favoritas</h3>
+                            {{ languageService.get('playlists.my_favorites') }}</h3>
                         <p class="text-red-200 text-xs md:text-base font-medium flex items-center gap-1.5 md:gap-2">
-                            <span>{{ favorites.length }} canciones</span>
+                            <span>{{ favorites.length }} {{ languageService.get('playlists.songs') }}</span>
                         </p>
                     </div>
                 </div>
@@ -100,15 +102,15 @@
                     <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
                     </svg>
-                    Mis Playlists
+                    {{ languageService.get('playlists.my_playlists') }}
                 </h3>
                 <button (click)="openCreateModal()"
                     class="px-3 py-1.5 md:px-4 md:py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors flex items-center gap-1.5 md:gap-2 text-sm md:text-base shadow-lg shadow-emerald-500/20 active:scale-95">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
                     </svg>
-                    <span class="hidden sm:inline">Nueva Playlist</span>
-                    <span class="sm:hidden">Nueva</span>
+                    <span class="hidden sm:inline">{{ languageService.get('playlists.new_playlist') }}</span>
+                    <span class="sm:hidden">{{ languageService.get('playlists.new') }}</span>
                 </button>
             </div>
 
@@ -161,16 +163,16 @@
                                 {{playlist.name}}
                             </h4>
                             <p class="text-xs text-zinc-500 mb-2 truncate">
-                                {{playlist.description || 'Sin descripción'}}
+                                {{playlist.description || languageService.get('playlists.no_description')}}
                             </p>
                         </div>
                         <div class="flex items-center justify-between mt-auto pt-2 border-t border-zinc-800">
                             <span class="text-[10px] uppercase font-bold text-zinc-600 tracking-wider">
-                                {{playlist.songs.length}} Tracks
+                                {{playlist.songs.length}} {{ languageService.get('playlists.tracks') }}
                             </span>
                             <button (click)="$event.stopPropagation(); deletePlaylist(playlist.id)"
                                 class="w-6 h-6 flex items-center justify-center text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                                title="Eliminar playlist">
+                                [title]="languageService.get('playlists.delete')">
                                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M6 19c0 1.103.897 2 2 2h8c1.103 0 2-.897 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
@@ -193,12 +195,13 @@
                         <path d="M4 8H2v12c0 1.103.897 2 2 2h12v-2H4V8z" />
                     </svg>
                 </div>
-                <h3 class="text-lg md:text-2xl font-bold text-white mb-2">Crea tu primera playlist</h3>
-                <p class="text-sm text-zinc-500 max-w-sm mx-auto leading-relaxed mb-6">Organiza tu música favorita en
-                    listas personalizadas para cada momento.</p>
+                <h3 class="text-lg md:text-2xl font-bold text-white mb-2">{{
+                    languageService.get('playlists.create_first') }}</h3>
+                <p class="text-sm text-zinc-500 max-w-sm mx-auto leading-relaxed mb-6">{{
+                    languageService.get('playlists.create_description') }}</p>
                 <button (click)="openCreateModal()"
                     class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95">
-                    Crear Playlist Nueva
+                    {{ languageService.get('playlists.create_new') }}
                 </button>
             </div>
         </section>
@@ -242,20 +245,24 @@
                 </div>
             </div>
 
-            <h3 class="text-xl font-bold text-center text-white mb-1">Nueva Playlist</h3>
-            <p class="text-center text-zinc-400 text-xs mb-4">Personaliza tu colección musical</p>
+            <h3 class="text-xl font-bold text-center text-white mb-1">{{ languageService.get('playlists.new_playlist')
+                }}</h3>
+            <p class="text-center text-zinc-400 text-xs mb-4">{{ languageService.get('playlists.customize') }}</p>
 
             <div class="space-y-3 mb-5">
                 <div class="group">
                     <label
-                        class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 ml-1 group-focus-within:text-emerald-400 transition-colors">Nombre</label>
+                        class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 ml-1 group-focus-within:text-emerald-400 transition-colors">{{
+                        languageService.get('playlists.name') }}</label>
                     <input [(ngModel)]="newPlaylistName" type="text" placeholder="Ej: Mis favoritas 2025" autofocus
                         class="w-full px-3 py-2.5 bg-zinc-950/50 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 focus:outline-none transition-all">
                 </div>
                 <div class="group">
                     <label
-                        class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 ml-1 group-focus-within:text-emerald-400 transition-colors">Descripción
-                        <span class="text-zinc-600 font-normal normal-case">(Opcional)</span></label>
+                        class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 ml-1 group-focus-within:text-emerald-400 transition-colors">{{
+                        languageService.get('playlists.description_label') }}
+                        <span class="text-zinc-600 font-normal normal-case">({{
+                            languageService.get('playlists.optional') }})</span></label>
                     <textarea [(ngModel)]="newPlaylistDescription" placeholder="¿De qué trata?" rows="2"
                         class="w-full px-3 py-2.5 bg-zinc-950/50 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 focus:outline-none transition-all resize-none"></textarea>
                 </div>
@@ -264,14 +271,14 @@
             <div class="flex gap-3">
                 <button (click)="closeCreateModal()"
                     class="flex-1 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95">
-                    Cancelar
+                    {{ languageService.get('playlists.cancel') }}
                 </button>
                 <button (click)="createPlaylist()"
                     class="flex-1 px-3 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white text-sm font-bold rounded-lg shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                     </svg>
-                    Crear
+                    {{ languageService.get('playlists.create') }}
                 </button>
             </div>
         </div>
