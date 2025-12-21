@@ -39,7 +39,7 @@
             <!-- Desktop Nav -->
             <nav id="navigation" class="hidden md:flex items-center gap-4">
                 <button (click)="navigateTo('/')" class="relative px-3 py-2 transition-all duration-300 group"
-                    [class.text-white]="isActive('/')" [class.text-zinc-500]="!isActive('/')">
+                    [class.text-white]="isActive('/')" [class.text-zinc-500]="!isActive('/')" aria-label="Ir a Inicio">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor"
                             viewBox="0 0 24 24">
@@ -55,7 +55,8 @@
                 </button>
 
                 <button (click)="navigateTo('/artists')" class="relative px-3 py-2 transition-all duration-300 group"
-                    [class.text-white]="isArtistActive()" [class.text-zinc-500]="!isArtistActive()">
+                    [class.text-white]="isArtistActive()" [class.text-zinc-500]="!isArtistActive()"
+                    aria-label="Ir a Artistas">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor"
                             viewBox="0 0 24 24">
@@ -71,7 +72,8 @@
                 </button>
 
                 <button (click)="navigateTo('/browse')" class="relative px-3 py-2 transition-all duration-300 group"
-                    [class.text-white]="isBrowseActive()" [class.text-zinc-500]="!isBrowseActive()">
+                    [class.text-white]="isBrowseActive()" [class.text-zinc-500]="!isBrowseActive()"
+                    aria-label="Ir a Explorar">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor"
                             viewBox="0 0 24 24">
@@ -87,7 +89,8 @@
                 </button>
 
                 <button (click)="navigateTo('/videos')" class="relative px-3 py-2 transition-all duration-300 group"
-                    [class.text-white]="isActive('/videos')" [class.text-zinc-500]="!isActive('/videos')">
+                    [class.text-white]="isActive('/videos')" [class.text-zinc-500]="!isActive('/videos')"
+                    aria-label="Ir a Videos">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor"
                             viewBox="0 0 24 24">
@@ -104,7 +107,7 @@
 
                 <!-- Language Selector (Desktop) -->
                 <div class="relative ml-2">
-                    <button (click)="toggleLanguageMenu($event)"
+                    <button (click)="toggleLanguageMenu($event)" aria-label="Cambiar idioma"
                         class="px-3 py-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -146,11 +149,11 @@
 
                 <!-- More Menu Desktop -->
                 <div class="relative ml-2">
-                    <button (click)="toggleMoreMenu($event)"
+                    <button (click)="toggleMoreMenu($event)" aria-label="Más opciones"
                         class="relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 group"
                         [ngClass]="{
                             'text-white': showMoreMenu || isMoreActive(),
-                            'text-zinc-500 hover:bg-white/5': !showMoreMenu && !isMoreActive()
+                            'text-zinc-400 hover:bg-white/5': !showMoreMenu && !isMoreActive()
                         }">
 
                         <!-- Desktop Active Indicator Bar -->
@@ -288,9 +291,9 @@
     <nav *ngIf="!showHistory && !showMobileMoreMenu"
         class="md:hidden fixed bottom-0 left-0 right-0 bg-black backdrop-blur-3xl border-t border-white/5 z-[2100] pb-[env(safe-area-inset-bottom,20px)] h-[calc(4.4rem+env(safe-area-inset-bottom,20px))] flex justify-between items-center overflow-hidden">
 
-        <button (click)="navigateTo('/')"
+        <button (click)="navigateTo('/')" aria-label="Ir a Inicio"
             class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
-            [class.text-white]="isActive('/')" [class.text-zinc-500]="!isActive('/')">
+            [class.text-white]="isActive('/')" [class.text-zinc-400]="!isActive('/')">
 
             <!-- Active Indicator: Full Button Fill + Top Glow -->
             <div *ngIf="isActive('/')"
@@ -308,9 +311,9 @@
             <span class="text-[10px] font-bold tracking-tight" [class.text-emerald-400]="isActive('/')">Inicio</span>
         </button>
 
-        <button (click)="navigateTo('/artists')"
+        <button (click)="navigateTo('/artists')" aria-label="Ir a Artistas"
             class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
-            [class.text-white]="isArtistActive()" [class.text-zinc-500]="!isArtistActive()">
+            [class.text-white]="isArtistActive()" [class.text-zinc-400]="!isArtistActive()">
 
             <div *ngIf="isArtistActive()"
                 class="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-transparent animate-fade-in pointer-events-none">
@@ -328,9 +331,9 @@
                 [class.text-purple-400]="isArtistActive()">Artistas</span>
         </button>
 
-        <button (click)="navigateTo('/browse')"
+        <button (click)="navigateTo('/browse')" aria-label="Ir a Explorar"
             class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
-            [class.text-white]="isBrowseActive()" [class.text-zinc-500]="!isBrowseActive()">
+            [class.text-white]="isBrowseActive()" [class.text-zinc-400]="!isBrowseActive()">
 
             <div *ngIf="isBrowseActive()"
                 class="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent animate-fade-in pointer-events-none">
@@ -347,9 +350,9 @@
             <span class="text-[10px] font-bold tracking-tight" [class.text-blue-400]="isBrowseActive()">Explorar</span>
         </button>
 
-        <button (click)="navigateTo('/videos')"
+        <button (click)="navigateTo('/videos')" aria-label="Ir a Videos"
             class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
-            [class.text-white]="isActive('/videos')" [class.text-zinc-500]="!isActive('/videos')">
+            [class.text-white]="isActive('/videos')" [class.text-zinc-400]="!isActive('/videos')">
 
             <div *ngIf="isActive('/videos')"
                 class="absolute inset-0 bg-gradient-to-b from-red-500/10 to-transparent animate-fade-in pointer-events-none">
@@ -366,7 +369,7 @@
             <span class="text-[10px] font-bold tracking-tight" [class.text-red-400]="isActive('/videos')">Videos</span>
         </button>
 
-        <button (click)="toggleMobileMoreMenu($event)"
+        <button (click)="toggleMobileMoreMenu($event)" aria-label="Más opciones"
             class="flex-1 flex flex-col items-center justify-center h-full gap-1 transition-all duration-300 group relative"
             [class.text-white]="showMobileMoreMenu || isMoreActive()"
             [class.text-zinc-500]="!showMobileMoreMenu && !isMoreActive()">
@@ -463,13 +466,13 @@
 
         <!-- CONTROLS -->
         <div class="flex items-center gap-1 md:gap-2 shrink-0" (click)="$event.stopPropagation()">
-            <button (click)="previousTrack()"
+            <button (click)="previousTrack()" aria-label="Canción anterior"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M16 7v10l-7-5zm-7 10V7h2v10z" />
                 </svg>
             </button>
-            <button (click)="togglePlayPause()"
+            <button (click)="togglePlayPause()" aria-label="Reproducir o pausar"
                 class="w-10 h-10 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-lg">
                 <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24" *ngIf="!isPlaying">
                     <path d="M7 6v12l10-6z" />
@@ -478,13 +481,13 @@
                     <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
                 </svg>
             </button>
-            <button (click)="nextTrack()"
+            <button (click)="nextTrack()" aria-label="Siguiente canción"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M7 7v10l7-5zm9 10V7h-2v10z" />
                 </svg>
             </button>
-            <button (click)="closePlayer()"
+            <button (click)="closePlayer()" aria-label="Cerrar reproductor"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-500 hover:text-red-400 transition-colors ml-0.5"
                 title="Cerrar">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -532,7 +535,7 @@
 
             <div class="px-5 pb-8 space-y-2">
                 <div class="flex items-center justify-between mb-4 ml-1">
-                    <h3 class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Menú Principal</h3>
+                    <h2 class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Menú Principal</h2>
                     <button (click)="toggleHistory(); closeMobileMoreMenu()"
                         class="text-emerald-400 text-xs font-bold border border-emerald-500/20 px-3 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20">
                         Ver Historial
@@ -694,6 +697,7 @@
 
     <!-- Back to Top Button -->
     <button *ngIf="showBackToTop" (click)="scrollToTop()" [ngClass]="currentSong ? 'bottom-36' : 'bottom-20'"
+        aria-label="Volver arriba"
         class="fixed md:bottom-4 right-2 z-[3000] w-7 h-7 md:w-9 md:h-9 bg-emerald-500/20 backdrop-blur-xl border border-emerald-500/30 text-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:bg-emerald-500 hover:text-black hover:scale-110 active:scale-95 transition-all duration-300 animate-fade-in-up">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7" />

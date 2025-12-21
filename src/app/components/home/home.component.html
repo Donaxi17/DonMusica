@@ -18,9 +18,12 @@
             <!-- Gradient Overlay for Readability -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black z-10"></div>
 
-            <!-- Hero Image with Parallax Optimized -->
+            <!-- Hero Image with Parallax Optimized & Responsive Loading -->
             <img [src]="'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop'"
-                alt="Fondo de concierto de música urbana"
+                [srcset]="'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=60&w=640&auto=format&fit=crop 640w,
+                           https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=60&w=1280&auto=format&fit=crop 1280w,
+                           https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=70&w=1920&auto=format&fit=crop 1920w'"
+                sizes="100vw" fetchpriority="high" loading="eager" alt="Fondo de concierto de música urbana"
                 class="absolute inset-0 w-full h-full object-cover object-center animate-slow-zoom blur-[2px]">
         </div>
 

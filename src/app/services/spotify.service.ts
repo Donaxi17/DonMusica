@@ -180,8 +180,14 @@ export class SpotifyService {
                 const images = artist.images;
                 let image = images[0]?.url;
 
-                if (this.settingsService.dataSaver() && images && images.length > 1) {
-                    image = images[1]?.url || images[0]?.url;
+                // PERFORMANCE OPTIMIZATION: Prefer Medium Image (index 1, ~300px) over Large (index 0, ~640px)
+                // This significantly reduces payload (e.g. 100KB -> 30KB) and improves LCP/Grid performance.
+                if (images && images.length > 1) {
+                    image = images[1].url;
+                }
+
+                if (this.settingsService.dataSaver() && images && images.length > 2) {
+                    image = images[2]?.url || images[1]?.url;
                 }
 
                 const result = {
