@@ -41,8 +41,8 @@ interface Effect {
             <div class="text-center mb-8">
                 <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">{{ languageService.get('vocal_fx.title') }} <span class="text-pink-500 italic">Master</span></h2>
                 <div class="flex items-center justify-center gap-3">
-                    <span class="px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-[9px] font-black text-pink-400 uppercase tracking-widest">DSP High-End</span>
-                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-zinc-400 uppercase tracking-widest">Privacy First</span>
+                    <span class="px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-[9px] font-black text-pink-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.badge.dsp') }}</span>
+                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-zinc-400 uppercase tracking-widest">{{ languageService.get('vocal_fx.badge.privacy') }}</span>
                 </div>
             </div>
 

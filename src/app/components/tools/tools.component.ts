@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 import { Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-tools',
@@ -27,10 +28,10 @@ import { Meta, Title } from '@angular/platform-browser';
           </div>
           
           <h1 class="text-3xl md:text-6xl font-black mb-3 md:mb-4 tracking-tighter uppercase leading-none">
-            Herramientas <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">Pro</span>
+            {{ languageService.get('tools.title_part1') }} <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">{{ languageService.get('tools.title_part2') }}</span>
           </h1>
           <p class="text-zinc-500 text-xs md:text-lg max-w-2xl mx-auto leading-relaxed px-4 md:px-0">
-            Potencia tu sonido con utilidades de estudio profesional.
+            {{ languageService.get('tools.subtitle') }}
           </p>
         </div>
       </div>
@@ -50,10 +51,10 @@ import { Meta, Title } from '@angular/platform-browser';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.856.12-1.685.344-2.469" />
               </svg>
             </div>
-            <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-indigo-300 transition-colors uppercase tracking-tight">DJ Zone</h3>
-            <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Mezcladora virtual profesional con efectos en tiempo real.</p>
+            <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-indigo-300 transition-colors uppercase tracking-tight">{{ languageService.get('tools.dj_zone.title') }}</h3>
+            <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.dj_zone.desc') }}</p>
             <div class="flex items-center gap-2 text-indigo-400 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-              Explorar Estudio <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              {{ languageService.get('tools.dj_zone.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </div>
           </div>
         </button>
@@ -71,10 +72,10 @@ import { Meta, Title } from '@angular/platform-browser';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303A2.25 2.25 0 017.368 17.72l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 11.813V9z" />
               </svg>
             </div>
-            <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-cyan-300 transition-colors uppercase tracking-tight">Bass Test</h3>
-            <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Limpia altavoces y prueba bajos con frecuencias subsónicas.</p>
+            <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-cyan-300 transition-colors uppercase tracking-tight">{{ languageService.get('tools.bass_test.title') }}</h3>
+            <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.bass_test.desc') }}</p>
             <div class="flex items-center gap-2 text-cyan-400 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-              Calibrar Audio <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              {{ languageService.get('tools.bass_test.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </div>
           </div>
         </button>
@@ -93,10 +94,10 @@ import { Meta, Title } from '@angular/platform-browser';
                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5L21 3" />
                </svg>
              </div>
-             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-orange-300 transition-colors uppercase tracking-tight">Afinador</h3>
-             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Referencia de tonos precisos para cualquier instrumento.</p>
+             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-orange-300 transition-colors uppercase tracking-tight">{{ languageService.get('tools.tuner.title') }}</h3>
+             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.tuner.desc') }}</p>
              <div class="flex items-center gap-2 text-orange-400 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-               Afinar Ahora <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+               {{ languageService.get('tools.tuner.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
              </div>
            </div>
         </button>
@@ -114,10 +115,10 @@ import { Meta, Title } from '@angular/platform-browser';
                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
                </svg>
              </div>
-             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-emerald-300 transition-colors uppercase tracking-tight">Zen Zone</h3>
-             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Atmósfera de relax con paisajes sonoros de alta fidelidad.</p>
+             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-emerald-300 transition-colors uppercase tracking-tight">{{ languageService.get('tools.zen_zone.title') }}</h3>
+             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.zen_zone.desc') }}</p>
              <div class="flex items-center gap-2 text-emerald-400 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-               Relajarse <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+               {{ languageService.get('tools.zen_zone.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
              </div>
            </div>
         </button>
@@ -135,10 +136,10 @@ import { Meta, Title } from '@angular/platform-browser';
                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
                </svg>
              </div>
-             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-white/90 transition-colors uppercase tracking-tight">Piano</h3>
-             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Compón melodías rápidas con este sintetizador polifónico.</p>
+             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-white/90 transition-colors uppercase tracking-tight">{{ languageService.get('tools.piano.title') }}</h3>
+             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.piano.desc') }}</p>
              <div class="flex items-center gap-2 text-white/60 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-               Tocar Piano <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+               {{ languageService.get('tools.piano.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
              </div>
            </div>
         </button>
@@ -156,10 +157,10 @@ import { Meta, Title } from '@angular/platform-browser';
                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                </svg>
              </div>
-             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-pink-300 transition-colors uppercase tracking-tight">Vocal Master</h3>
-             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">Aplica efectos de estudio y autotune a tu voz en tiempo real.</p>
+             <h3 class="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-pink-300 transition-colors uppercase tracking-tight">{{ languageService.get('tools.vocal_master.title') }}</h3>
+             <p class="text-zinc-500 text-[10px] md:text-sm leading-relaxed mb-4">{{ languageService.get('tools.vocal_master.desc') }}</p>
              <div class="flex items-center gap-2 text-pink-400 text-[9px] font-black uppercase tracking-wider transition-all translate-x-[-5px] group-hover:translate-x-0">
-               Grabar Voz <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+               {{ languageService.get('tools.vocal_master.cta') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
              </div>
            </div>
         </button>
@@ -169,6 +170,7 @@ import { Meta, Title } from '@angular/platform-browser';
   `
 })
 export class ToolsComponent implements OnInit {
+  public languageService = inject(LanguageService);
   private router = inject(Router);
   private meta = inject(Meta);
   private title = inject(Title);
@@ -178,10 +180,10 @@ export class ToolsComponent implements OnInit {
   }
 
   updateSeo() {
-    this.title.setTitle('Herramientas Pro Studio - DonMusica');
-    this.meta.updateTag({ name: 'description', content: 'Estudio de utilidades sonoras avanzadas: DJ Zone, Bass Test, Afinador, Zen Mode y Piano. Optimiza tu experiencia musical.' });
-    this.meta.updateTag({ property: 'og:title', content: 'Herramientas Pro de DonMusica' });
-    this.meta.updateTag({ property: 'og:description', content: 'Utilidades de audio profesionales gratuitas en tu navegador.' });
+    this.title.setTitle(this.languageService.get('tools.seo.title'));
+    this.meta.updateTag({ name: 'description', content: this.languageService.get('tools.seo.desc') });
+    this.meta.updateTag({ property: 'og:title', content: this.languageService.get('tools.seo.title') });
+    this.meta.updateTag({ property: 'og:description', content: this.languageService.get('tools.seo.desc') });
   }
 
   navigateTo(path: string) {

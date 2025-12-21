@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
+import { LanguageService } from '../../../services/language.service';
 
 interface PianoKey {
     note: string;
@@ -28,7 +29,7 @@ interface PianoKey {
             </button>
             <div class="text-right">
                 <h1 class="text-xs font-black text-white tracking-widest uppercase">Audio Studio <span class="text-emerald-500">PRO</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Master Polyphonic Piano</p>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{{ languageService.get('piano.tool_name') }}</p>
             </div>
         </header>
 
@@ -38,8 +39,8 @@ interface PianoKey {
             <div class="text-center mb-8">
                 <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">Piano <span class="text-emerald-500 italic">Pro</span></h2>
                 <div class="flex items-center justify-center gap-3">
-                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-400 uppercase tracking-widest">Polifónico</span>
-                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Baja Latencia</span>
+                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-400 uppercase tracking-widest">{{ languageService.get('piano.polyphonic') }}</span>
+                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-zinc-400 uppercase tracking-widest">{{ languageService.get('piano.low_latency') }}</span>
                 </div>
             </div>
 
@@ -50,7 +51,7 @@ interface PianoKey {
                         [class.bg-emerald-500]="currentInstrument() === type.id"
                         [class.text-black]="currentInstrument() === type.id"
                         class="flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap">
-                        {{ type.name }}
+                        {{ getInstrumentLabel(type.id) }}
                     </button>
                 }
             </div>
@@ -61,7 +62,7 @@ interface PianoKey {
                 <!-- Landscape Hint (Mobile Only) -->
                 <div class="flex md:hidden items-center justify-center gap-2 mb-6 opacity-60">
                     <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11a1 1 0 100-2 1 1 0 000 2zM12 7a1 1 0 110-2 1 1 0 010 2zM12 15a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                    <span class="text-[8px] font-black uppercase tracking-widest text-zinc-500">Gira la pantalla para tocar mejor</span>
+                    <span class="text-[8px] font-black uppercase tracking-widest text-zinc-500">{{ languageService.get('piano.landscape_hint') }}</span>
                 </div>
 
                 <!-- Octave Controls -->
@@ -70,7 +71,7 @@ interface PianoKey {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <div class="text-center">
-                        <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest block leading-none">Octava</span>
+                        <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest block leading-none">{{ languageService.get('piano.octave') }}</span>
                         <span class="text-lg font-black text-white leading-none">{{ octave() }}</span>
                     </div>
                     <button (click)="changeOctave(1)" class="w-9 h-9 rounded-full bg-zinc-800 border border-white/5 flex items-center justify-center hover:bg-zinc-700 transition-colors shadow-lg active:scale-90">
@@ -127,8 +128,8 @@ interface PianoKey {
                     class="flex-1 min-w-[160px] md:flex-initial px-6 py-4 md:px-8 md:py-5 rounded-[1.5rem] md:rounded-[2rem] border flex items-center gap-4 transition-all active:scale-95 group">
                     <div [class]="sustain() ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.5)]' : 'bg-zinc-700'" class="w-3 h-3 rounded-full transition-all duration-500"></div>
                     <div class="text-left">
-                        <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-0.5">Pedal Sustain</span>
-                        <p class="text-white font-black text-xs uppercase leading-none">{{ sustain() ? 'Mantenido' : 'Normal' }}</p>
+                        <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-0.5">{{ languageService.get('piano.sustain_pedal') }}</span>
+                        <p class="text-white font-black text-xs uppercase leading-none">{{ sustain() ? languageService.get('piano.sustain.on') : languageService.get('piano.sustain.off') }}</p>
                     </div>
                 </button>
 
@@ -138,7 +139,7 @@ interface PianoKey {
                     </div>
                     <div class="text-left">
                         <span class="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-0.5">Audio Studio</span>
-                        <p class="text-white font-black text-[10px] md:text-xs uppercase leading-none">{{ currentInstrument() }}</p>
+                        <p class="text-white font-black text-[10px] md:text-xs uppercase leading-none">{{ getInstrumentName() }}</p>
                     </div>
                 </div>
             </div>
@@ -163,6 +164,7 @@ interface PianoKey {
     `
 })
 export class PianoComponent implements OnInit, OnDestroy {
+    public languageService = inject(LanguageService);
     private router = inject(Router);
     private seoService = inject(SeoService);
     private hapticService = inject(HapticService);
@@ -175,9 +177,24 @@ export class PianoComponent implements OnInit, OnDestroy {
     instrumentTypes = [
         { id: 'grand-piano', name: 'Grand Piano' },
         { id: 'electric-piano', name: 'Rhodes' },
-        { id: 'strings', name: 'Sintetizador' },
-        { id: 'organ', name: 'Órgano' }
+        { id: 'strings', name: 'Synth' },
+        { id: 'organ', name: 'Organ' }
     ];
+
+    getInstrumentName(): string {
+        const id = this.currentInstrument();
+        return this.getInstrumentLabel(id);
+    }
+
+    getInstrumentLabel(id: string): string {
+        switch (id) {
+            case 'grand-piano': return this.languageService.get('piano.instr.grand_piano');
+            case 'electric-piano': return this.languageService.get('piano.instr.rhodes');
+            case 'strings': return this.languageService.get('piano.instr.synth');
+            case 'organ': return this.languageService.get('piano.instr.organ');
+            default: return id;
+        }
+    }
 
     private keyboardMap: { [key: string]: string } = {
         'a': 'C', 'w': 'C#', 's': 'D', 'e': 'D#', 'd': 'E', 'f': 'F',
@@ -188,8 +205,8 @@ export class PianoComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.seoService.setMetaTags({
-            title: 'Piano Studio Pro | Toca y Crea Música en DonMusica',
-            description: 'Piano polifónico virtual profesional con múltiples timbres y baja latencia. Toca con el teclado o en tu móvil.',
+            title: this.languageService.get('piano.seo.title'),
+            description: this.languageService.get('piano.seo.desc'),
             keywords: 'piano pro, virtual piano, rhodes, organo, sintetizador online, donmusica tools',
             image: '/assets/icons/icon-512x512.png'
         });

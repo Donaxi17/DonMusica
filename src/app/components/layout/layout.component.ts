@@ -28,7 +28,6 @@ export class LayoutComponent implements OnInit {
   showMobileMoreMenu = false;
   showBackToTop = false;
   scrollProgress = 0;
-  currentLanguage = 'ES';
   showLanguageMenu = false;
   showMoreMenu = false;
   imageLoadError = false;
@@ -237,7 +236,8 @@ export class LayoutComponent implements OnInit {
 
   changeLanguage(lang: string) {
     this.hapticService.medium();
-    this.languageService.setLanguage(lang as 'es' | 'en');
+    const normalizedLang = lang.toLowerCase() as 'es' | 'en';
+    this.languageService.setLanguage(normalizedLang);
     this.cdr.markForCheck();
   }
 

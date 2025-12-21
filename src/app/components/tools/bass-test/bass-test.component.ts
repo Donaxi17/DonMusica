@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-bass-test',
@@ -20,7 +21,7 @@ import { HapticService } from '../../../services/haptic.service';
             </button>
             <div class="text-right">
                 <h1 class="text-xs font-black text-white tracking-widest uppercase">Audio Studio <span class="text-cyan-500">PRO</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Bass Calibration Tool</p>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{{ languageService.get('bass_test.tool_name') }}</p>
             </div>
         </header>
 
@@ -39,7 +40,7 @@ import { HapticService } from '../../../services/haptic.service';
 
             <h2 class="text-3xl md:text-5xl font-black text-white mb-3 md:mb-4 tracking-tighter uppercase leading-none">Bass <span class="text-cyan-500 italic">Test</span></h2>
             <p class="text-zinc-500 text-xs md:text-base mb-10 max-w-sm mx-auto leading-relaxed px-4 md:px-0">
-                Prueba la profundidad de tus bajos, limpia tus altavoces y calibra tu equipo de sonido con frecuencias subsónicas.
+                {{ languageService.get('bass_test.description') }}
             </p>
 
             <!-- Test Controller -->
@@ -48,7 +49,7 @@ import { HapticService } from '../../../services/haptic.service';
                 
                 <!-- Frequency Display -->
                 <div class="mb-8 md:mb-10">
-                    <span class="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">Audio Pulse</span>
+                    <span class="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">{{ languageService.get('bass_test.audio_pulse') }}</span>
                     <div class="text-5xl md:text-7xl font-black text-white tracking-widest mb-1 flex items-baseline justify-center">
                         {{ frequency() }}<span class="text-cyan-500 text-xl md:text-3xl ml-2 italic">Hz</span>
                     </div>
@@ -63,7 +64,7 @@ import { HapticService } from '../../../services/haptic.service';
                     <div class="relative z-10 flex items-center justify-center gap-3">
                         <svg *ngIf="!isBassPlaying()" class="w-6 h-6 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         <svg *ngIf="isBassPlaying()" class="w-6 h-6 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        <span class="text-lg md:text-2xl font-black uppercase tracking-tighter">{{ isBassPlaying() ? 'Detener' : 'Iniciar Test' }}</span>
+                        <span class="text-lg md:text-2xl font-black uppercase tracking-tighter">{{ isBassPlaying() ? languageService.get('bass_test.btn.stop') : languageService.get('bass_test.btn.start') }}</span>
                     </div>
 
                     <!-- Speaker Ripple Animation -->
@@ -75,7 +76,7 @@ import { HapticService } from '../../../services/haptic.service';
                 <!-- Frequency Slider -->
                 <div class="mt-10 md:mt-12 space-y-5 md:space-y-6 text-left">
                     <div class="flex justify-between items-end">
-                        <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Ajuste Manual</span>
+                        <span class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{{ languageService.get('bass_test.manual_adjust') }}</span>
                         <span class="text-[10px] font-bold text-cyan-500 uppercase">{{ getFrequencyLabel() }}</span>
                     </div>
                     <input type="range" min="20" max="250" step="1" 
@@ -86,7 +87,7 @@ import { HapticService } from '../../../services/haptic.service';
 
                 <!-- Presets Grid -->
                 <div class="mt-10">
-                    <span class="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 block text-left">Quick Presets</span>
+                    <span class="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 block text-left">{{ languageService.get('bass_test.quick_presets') }}</span>
                     <div class="grid grid-cols-2 xs:grid-cols-4 gap-2 md:gap-3">
                         <button *ngFor="let preset of presets" 
                             (click)="setFrequency(preset.val)"
@@ -107,9 +108,9 @@ import { HapticService } from '../../../services/haptic.service';
                     </svg>
                 </div>
                 <div>
-                    <h4 class="text-white font-black text-[10px] md:text-xs uppercase mb-1">Precaución Auditiva</h4>
+                    <h4 class="text-white font-black text-[10px] md:text-xs uppercase mb-1">{{ languageService.get('bass_test.caution.title') }}</h4>
                     <p class="text-zinc-500 text-[10px] md:text-[11px] leading-relaxed">
-                        Niveles altos por periodos prolongados pueden dañar altavoces y oídos.
+                        {{ languageService.get('bass_test.caution.desc') }}
                     </p>
                 </div>
             </div>
@@ -124,6 +125,7 @@ import { HapticService } from '../../../services/haptic.service';
     `
 })
 export class BassTestComponent implements OnInit, OnDestroy {
+    public languageService = inject(LanguageService);
     private router = inject(Router);
     private seoService = inject(SeoService);
     private hapticService = inject(HapticService);
@@ -144,8 +146,8 @@ export class BassTestComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.seoService.setMetaTags({
-            title: 'Bass Test Pro | Calibra tu sonido en DonMusica',
-            description: 'Prueba la profundidad de tus bajos y limpia tus altavoces con nuestra herramienta de calibración de audio profesional.',
+            title: this.languageService.get('bass_test.seo.title'),
+            description: this.languageService.get('bass_test.seo.desc'),
             keywords: 'bass test, subwoofer test, limpiar altavoces, calibración audio, donmusica tools',
             image: '/assets/icons/icon-512x512.png'
         });
@@ -153,10 +155,10 @@ export class BassTestComponent implements OnInit, OnDestroy {
 
     getFrequencyLabel(): string {
         const freq = this.frequency();
-        if (freq < 40) return 'Subsónico (Efecto Físico)';
-        if (freq < 80) return 'Bajo Profundo (Corazón)';
-        if (freq < 150) return 'Bajo Medio (Punch)';
-        return 'Limpieza y Desplazamiento';
+        if (freq < 40) return this.languageService.get('bass_test.freq.subsonic');
+        if (freq < 80) return this.languageService.get('bass_test.freq.deep');
+        if (freq < 150) return this.languageService.get('bass_test.freq.mid');
+        return this.languageService.get('bass_test.freq.cleaning');
     }
 
     goBack() {

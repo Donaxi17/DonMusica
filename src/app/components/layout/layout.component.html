@@ -678,8 +678,8 @@
                         <button (click)="changeLanguage('ES'); closeMobileMoreMenu()"
                             class="flex-1 py-1 px-4 rounded-xl flex items-center justify-center gap-2 transition-all border border-transparent"
                             [ngClass]="{
-                                'bg-emerald-500/10 border-emerald-500/30 text-emerald-400': currentLanguage === 'ES',
-                                'text-zinc-500 hover:bg-zinc-700': currentLanguage !== 'ES'
+                                'bg-emerald-500/10 border-emerald-500/30 text-emerald-400': languageService.currentLanguage() === 'es',
+                                'text-zinc-500 hover:bg-zinc-700': languageService.currentLanguage() !== 'es'
                             }">
                             <span class="text-lg">🇪🇸</span>
                             <span class="text-xs font-bold uppercase tracking-wider">{{
@@ -689,8 +689,8 @@
                         <button (click)="changeLanguage('EN'); closeMobileMoreMenu()"
                             class="flex-1 py-1 px-4 rounded-xl flex items-center justify-center gap-2 transition-all border border-transparent"
                             [ngClass]="{
-                                'bg-emerald-500/10 border-emerald-500/30 text-emerald-400': currentLanguage === 'EN',
-                                'text-zinc-500 hover:bg-zinc-700': currentLanguage !== 'EN'
+                                'bg-emerald-500/10 border-emerald-500/30 text-emerald-400': languageService.currentLanguage() === 'en',
+                                'text-zinc-500 hover:bg-zinc-700': languageService.currentLanguage() !== 'en'
                             }">
                             <span class="text-lg">🇺🇸</span>
                             <span class="text-xs font-bold uppercase tracking-wider">{{

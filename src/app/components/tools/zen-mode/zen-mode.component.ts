@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
+import { LanguageService } from '../../../services/language.service';
 
 interface ZenSound {
     id: string;
@@ -35,7 +36,7 @@ interface ZenSound {
             </button>
             <div class="text-right">
                 <h1 class="text-xs font-black text-white tracking-widest uppercase">Audio Studio <span class="text-indigo-500">PRO</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Atmospheric Zen Zone</p>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{{ languageService.get('zen.tool_name') }}</p>
             </div>
         </header>
 
@@ -45,7 +46,7 @@ interface ZenSound {
             <div class="text-center mb-6 md:mb-8">
                 <h2 class="text-3xl md:text-5xl font-black text-white mb-3 md:mb-4 tracking-tighter uppercase leading-none">Zen <span class="text-indigo-500 italic">Zone</span></h2>
                 <p class="text-zinc-500 text-xs md:text-base max-w-sm mx-auto leading-relaxed px-4 md:px-0">
-                    Escucha el mundo como es realmente o ahorra datos con síntesis digital.
+                    {{ languageService.get('zen.description') }}
                 </p>
             </div>
 
@@ -55,13 +56,13 @@ interface ZenSound {
                     [class.bg-indigo-500]="audioMode() === 'ultra'" 
                     [class.text-white]="audioMode() === 'ultra'"
                     class="flex-1 py-3 px-4 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all">
-                    HD (Real)
+                    {{ languageService.get('zen.mode.hd') }}
                 </button>
                 <button (click)="setMode('eco')" 
                     [class.bg-indigo-500]="audioMode() === 'eco'" 
                     [class.text-white]="audioMode() === 'eco'"
                     class="flex-1 py-3 px-4 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all">
-                    ECO (No Datos)
+                    {{ languageService.get('zen.mode.eco') }}
                 </button>
             </div>
 
@@ -77,8 +78,8 @@ interface ZenSound {
                                     <span [innerHTML]="sound.icon"></span>
                                 </div>
                                 <div class="text-left">
-                                    <h3 class="font-black text-white text-base md:text-lg tracking-tight leading-none mb-1">{{ sound.name }}</h3>
-                                    <p class="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest">{{ sound.category }}</p>
+                                    <h3 class="font-black text-white text-base md:text-lg tracking-tight leading-none mb-1">{{ getSoundName(sound.id) }}</h3>
+                                    <p class="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest">{{ getSoundCategory(sound.id) }}</p>
                                 </div>
                             </div>
 
@@ -93,7 +94,7 @@ interface ZenSound {
                         <div [class.h-0]="!sound.playing" [class.opacity-0]="!sound.playing" [class.mt-0]="!sound.playing"
                             class="space-y-3 transition-all duration-500 overflow-hidden opacity-100">
                             <div class="flex justify-between items-center text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                                <span>Ambiente</span>
+                                <span>{{ languageService.get('zen.ambient') }}</span>
                                 <span class="text-indigo-400">{{ (sound.volume * 100).toFixed(0) }}%</span>
                             </div>
                             <input type="range" min="0" max="1" step="0.01" 
@@ -117,7 +118,7 @@ interface ZenSound {
                     <button (click)="stopAll()" 
                         class="text-[9px] md:text-[10px] font-black text-white hover:text-indigo-400 uppercase tracking-[0.3em] transition-colors flex items-center justify-center gap-2 mx-auto active:scale-95">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18h12V6H6v12z"/></svg>
-                        Silenciar Todo
+                        {{ languageService.get('zen.stop_all') }}
                     </button>
                 </div>
             </div>
@@ -132,6 +133,7 @@ interface ZenSound {
     `
 })
 export class ZenModeComponent implements OnInit, OnDestroy {
+    public languageService = inject(LanguageService);
     private router = inject(Router);
     private seoService = inject(SeoService);
     private hapticService = inject(HapticService);
@@ -203,11 +205,32 @@ export class ZenModeComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.seoService.setMetaTags({
-            title: 'Zen Zone | Sonidos para Dormir y Ahorrar Datos',
-            description: 'Elige entre sonidos reales HD o síntesis digital para ahorrar datos mientras descansas.',
+            title: this.languageService.get('zen.seo.title'),
+            description: this.languageService.get('zen.seo.desc'),
             keywords: 'zen zone, sonidos para dormir, offline sounds, naturaleza hd, ruido blanco',
             image: '/assets/icons/icon-512x512.png'
         });
+    }
+
+    getSoundName(id: string): string {
+        const map: any = {
+            'rain-u': this.languageService.get('zen.sounds.rain_real'),
+            'ocean-u': this.languageService.get('zen.sounds.ocean_real'),
+            'fire-u': this.languageService.get('zen.sounds.fire_real'),
+            'forest-u': this.languageService.get('zen.sounds.forest_real'),
+            'river-u': this.languageService.get('zen.sounds.river_real'),
+            'storm-u': this.languageService.get('zen.sounds.storm_real'),
+            'rain-e': this.languageService.get('zen.sounds.rain_eco'),
+            'ocean-e': this.languageService.get('zen.sounds.ocean_eco'),
+            'fire-e': this.languageService.get('zen.sounds.fire_eco'),
+            'forest-e': this.languageService.get('zen.sounds.forest_eco'),
+            'bowl-e': this.languageService.get('zen.sounds.bowl_eco')
+        };
+        return map[id] || id;
+    }
+
+    getSoundCategory(id: string): string {
+        return id.endsWith('-u') ? this.languageService.get('zen.cat.hd') : this.languageService.get('zen.cat.eco');
     }
 
     currentSounds() {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
+import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-tuner',
@@ -20,7 +21,7 @@ import { HapticService } from '../../../services/haptic.service';
             </button>
             <div class="text-right">
                 <h1 class="text-xs font-black text-white tracking-widest uppercase">Audio Studio <span class="text-orange-500">PRO</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Analog Reference Tuner</p>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{{ languageService.get('tuner.tool_name') }}</p>
             </div>
         </header>
 
@@ -30,7 +31,7 @@ import { HapticService } from '../../../services/haptic.service';
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">Afinador <span class="text-orange-500 italic">Reference</span></h2>
                 <p class="text-zinc-500 text-sm md:text-base max-w-sm mx-auto leading-relaxed">
-                    Tonos de referencia balanceados para afinar instrumentos de cuerda con precisión absoluta (A=440Hz).
+                    {{ languageService.get('tuner.description') }}
                 </p>
             </div>
 
@@ -41,7 +42,7 @@ import { HapticService } from '../../../services/haptic.service';
                     [class.bg-orange-500]="activeInstrument() === inst.id" [class.text-black]="activeInstrument() === inst.id"
                     [class.text-zinc-500]="activeInstrument() !== inst.id"
                     class="flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap">
-                    {{ inst.name }}
+                    {{ getInstrumentName(inst.id) }}
                 </button>
             </div>
 
@@ -90,9 +91,9 @@ import { HapticService } from '../../../services/haptic.service';
 
             <!-- Additional Help -->
             <div class="mt-12 text-center text-zinc-600">
-                <p class="text-[10px] font-black uppercase tracking-[0.4em] mb-4">Consejo de uso</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.4em] mb-4">{{ languageService.get('tuner.use_tip') }}</p>
                 <p class="text-xs leading-relaxed max-w-xs mx-auto italic">
-                    Usa auriculares o un sistema de sonido fiel para percibir mejor los armónicos. El sonido se desvanece gradualmente emulando la acústica de una cuerda real.
+                    {{ languageService.get('tuner.use_desc') }}
                 </p>
             </div>
         </main>
@@ -106,6 +107,7 @@ import { HapticService } from '../../../services/haptic.service';
     `
 })
 export class TunerComponent implements OnInit {
+    public languageService = inject(LanguageService);
     private router = inject(Router);
     private seoService = inject(SeoService);
     private hapticService = inject(HapticService);
@@ -147,11 +149,20 @@ export class TunerComponent implements OnInit {
 
     ngOnInit() {
         this.seoService.setMetaTags({
-            title: 'Afinador Pro | Guitarra, Bajo y Ukulele en DonMusica',
-            description: 'Afinador de referencia profesional con tonos precisos para afinar tu guitarra, bajo o ukulele rápidamente.',
+            title: this.languageService.get('tuner.seo.title'),
+            description: this.languageService.get('tuner.seo.desc'),
             keywords: 'guitar tuner, afinador guitarra, afinador bajo, afinador ukulele, tonos referencia, audio tools',
             image: '/assets/icons/icon-512x512.png'
         });
+    }
+
+    getInstrumentName(id: string): string {
+        switch (id) {
+            case 'guitar': return this.languageService.get('tuner.instr.guitar');
+            case 'bass': return this.languageService.get('tuner.instr.bass');
+            case 'ukulele': return this.languageService.get('tuner.instr.ukulele');
+            default: return id;
+        }
     }
 
     currentStrings() {
@@ -164,7 +175,14 @@ export class TunerComponent implements OnInit {
 
     getNoteDescription(name: string): string {
         const n = name.charAt(0);
-        const map: any = { 'E': 'MI', 'A': 'LA', 'D': 'RE', 'G': 'SOL', 'B': 'SI', 'C': 'DO' };
+        const map: any = {
+            'E': this.languageService.get('tuner.note.mi'),
+            'A': this.languageService.get('tuner.note.la'),
+            'D': this.languageService.get('tuner.note.re'),
+            'G': this.languageService.get('tuner.note.sol'),
+            'B': this.languageService.get('tuner.note.si'),
+            'C': this.languageService.get('tuner.note.do')
+        };
         return map[n] || '';
     }
 
