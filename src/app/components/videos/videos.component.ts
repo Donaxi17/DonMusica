@@ -10,6 +10,7 @@ import { lastValueFrom } from 'rxjs';
 import { VideoPlayerService, Video } from '../../services/video-player.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-videos',
@@ -20,6 +21,7 @@ import { NoConnectionComponent } from '../shared/no-connection/no-connection.com
 })
 export class VideosComponent {
   networkService = inject(NetworkService);
+  public languageService = inject(LanguageService);
 
   private http = inject(HttpClient);
   private seoService = inject(SeoService);
@@ -95,8 +97,8 @@ export class VideosComponent {
 
   constructor() {
     this.seoService.setSeoData(
-      'Videos Musicales - DonMusica',
-      'Disfruta de los videoclips oficiales de tus artistas favoritos. Calidad HD y sin interrupciones.'
+      this.languageService.get('seo.videos.title'),
+      this.languageService.get('seo.videos.desc')
     );
 
     // Cargar videos trending desde YouTube API
@@ -263,10 +265,10 @@ export class VideosComponent {
 
     if (!views) return '';
     if (views >= 1000000) {
-      return (views / 1000000).toFixed(1) + 'M vistas';
+      return (views / 1000000).toFixed(1) + 'M ' + this.languageService.get('common.views');
     } else if (views >= 1000) {
-      return (views / 1000).toFixed(1) + 'K vistas';
+      return (views / 1000).toFixed(1) + 'K ' + this.languageService.get('common.views');
     }
-    return views + ' vistas';
+    return views + ' ' + this.languageService.get('common.views');
   }
 }

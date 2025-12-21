@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ToastService } from '../../services/toast.service';
+import { LanguageService } from '../../services/language.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
@@ -23,10 +24,10 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
             <app-svg-icon name="envelope" width="40" height="40" class="text-blue-500"></app-svg-icon>
           </div>
           <h1 class="text-4xl md:text-6xl lg:text-7xl font-black mb-6 bg-gradient-to-r from-white via-blue-100 to-zinc-500 bg-clip-text text-transparent tracking-tight">
-            Contáctanos
+            {{ languageService.get('contact.title') }}
           </h1>
           <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            ¿Tienes preguntas, sugerencias o necesitas ayuda? Estamos aquí para escucharte y responderte lo antes posible.
+            {{ languageService.get('contact.subtitle') }}
           </p>
         </div>
 
@@ -36,14 +37,14 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
           <div class="bg-zinc-900/60 p-6 md:p-8 rounded-3xl border border-zinc-800/60 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
             
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Envíanos un Mensaje</h2>
-            <p class="text-zinc-400 mb-8 text-sm">Te responderemos directamente a tu correo.</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">{{ languageService.get('contact.form.title') }}</h2>
+            <p class="text-zinc-400 mb-8 text-sm">{{ languageService.get('contact.form.subtitle') }}</p>
             
             <form (submit)="submitForm(); $event.preventDefault()" class="space-y-5">
               <div class="grid md:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Nombre</label>
-                    <input [(ngModel)]="formData.name" name="name" type="text" required placeholder="Tu nombre"
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">{{ languageService.get('contact.form.name') }}</label>
+                    <input [(ngModel)]="formData.name" name="name" type="text" required [placeholder]="languageService.get('contact.form.name_placeholder')"
                     class="w-full px-4 py-3 bg-zinc-950/50 border border-zinc-800 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all text-white placeholder-zinc-700">
                 </div>
                 <div>
@@ -54,10 +55,10 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Asunto</label>
+                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">{{ languageService.get('contact.form.subject') }}</label>
                 <select [(ngModel)]="formData.subject" name="subject" required
                   class="w-full px-4 py-3 bg-zinc-950/50 border border-zinc-800 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all text-white">
-                  <option value="">Selecciona un asunto</option>
+                  <option value="">{{ languageService.get('contact.form.select_subject') }}</option>
                   <option value="general">Consulta General</option>
                   <option value="support">Soporte Técnico</option>
                   <option value="artist">Soy Artista</option>
@@ -67,14 +68,14 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Mensaje</label>
-                <textarea [(ngModel)]="formData.message" name="message" required rows="5" placeholder="¿En qué podemos ayudarte?"
+                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">{{ languageService.get('contact.form.message') }}</label>
+                <textarea [(ngModel)]="formData.message" name="message" required rows="5" [placeholder]="languageService.get('contact.form.message_placeholder')"
                   class="w-full px-4 py-3 bg-zinc-950/50 border border-zinc-800 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all text-white placeholder-zinc-700 resize-none"></textarea>
               </div>
 
               <button type="submit"
                 class="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-xl transition-all transform hover:translate-y-[-2px] hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2 group-active:scale-[0.98]">
-                <span>Enviar Email</span>
+                <span>{{ languageService.get('contact.form.send') }}</span>
                 <app-svg-icon name="send" width="20" height="20" class="text-blue-100"></app-svg-icon>
               </button>
             </form>
@@ -92,8 +93,8 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                   <app-svg-icon name="whatsapp" width="24" height="24" fill="white"></app-svg-icon>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-white mb-1 group-hover:text-green-400 transition-colors">WhatsApp Directo</h3>
-                  <p class="text-zinc-400 text-xs">Respuesta inmediata</p>
+                  <h3 class="text-lg font-semibold text-white mb-1 group-hover:text-green-400 transition-colors">{{ languageService.get('contact.whatsapp.title') }}</h3>
+                  <p class="text-zinc-400 text-xs">{{ languageService.get('contact.whatsapp.subtitle') }}</p>
                   <span class="text-green-500 font-mono text-xs mt-1 inline-block">+57 301 796 6272</span>
                 </div>
                 <div class="ml-auto">
@@ -109,8 +110,8 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                     <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mb-3">
                         <app-svg-icon name="map" class="text-blue-500"></app-svg-icon>
                     </div>
-                    <h3 class="font-bold text-white text-sm">Ubicación</h3>
-                    <p class="text-zinc-500 text-xs mt-1">Colombia</p>
+                    <h3 class="font-bold text-white text-sm">{{ languageService.get('contact.location.title') }}</h3>
+                    <p class="text-zinc-500 text-xs mt-1">{{ languageService.get('contact.location.value') }}</p>
                 </div>
 
                 <!-- Schedule -->
@@ -118,14 +119,14 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                     <div class="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center mb-3">
                         <app-svg-icon name="time" class="text-purple-500"></app-svg-icon>
                     </div>
-                    <h3 class="font-bold text-white text-sm">Horario</h3>
-                    <p class="text-zinc-500 text-xs mt-1">Lun-Vie: 9AM - 6PM</p>
+                    <h3 class="font-bold text-white text-sm">{{ languageService.get('contact.schedule.title') }}</h3>
+                    <p class="text-zinc-500 text-xs mt-1">{{ languageService.get('contact.schedule.value') }}</p>
                 </div>
             </div>
 
             <!-- Social Media -->
             <div class="bg-zinc-900/60 p-6 rounded-3xl border border-zinc-800 text-center">
-              <h3 class="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-5">Síguenos</h3>
+              <h3 class="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-5">{{ languageService.get('contact.follow_us') }}</h3>
               <div class="flex justify-center gap-3 md:gap-4">
                 <a href="https://www.facebook.com/profile.php?id=61584603806092" target="_blank" class="w-10 h-10 md:w-12 md:h-12 bg-zinc-950 rounded-full flex items-center justify-center text-zinc-400 hover:text-blue-500 hover:bg-white hover:shadow-lg hover:shadow-blue-500/20 transition-all transform hover:-translate-y-1">
                   <app-svg-icon name="facebook" width="20" height="20" class="md:w-6 md:h-6"></app-svg-icon>
@@ -148,9 +149,9 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
                 <app-svg-icon name="info-circle" width="20" height="20" class="md:w-6 md:h-6"></app-svg-icon>
               </div>
               <div class="flex-1">
-                <p class="text-yellow-200/60 text-[10px] md:text-xs uppercase tracking-wider font-bold mb-0.5">Antes de preguntar</p>
+                <p class="text-yellow-200/60 text-[10px] md:text-xs uppercase tracking-wider font-bold mb-0.5">{{ languageService.get('contact.faq.pre') }}</p>
                 <div class="text-white font-bold text-xs md:text-sm group-hover:underline flex items-center gap-1">
-                    Lee las Preguntas Frecuentes
+                    {{ languageService.get('contact.faq.title') }}
                     <app-svg-icon name="chevron-right" width="14" height="14" class="md:w-4 md:h-4 text-yellow-500/50 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all"></app-svg-icon>
                 </div>
               </div>
@@ -164,6 +165,7 @@ import { SvgIconComponent } from '../shared/svg-icon/svg-icon.component';
 export class ContactComponent implements OnInit {
   private seoService = inject(SeoService);
   private toastService = inject(ToastService);
+  public languageService = inject(LanguageService);
 
   // Configuración para envío gratuito
   // Reemplaza esto con tu email real para recibir correos vía mailto
@@ -186,7 +188,7 @@ export class ContactComponent implements OnInit {
 
   submitForm() {
     if (!this.formData.name || !this.formData.email || !this.formData.subject || !this.formData.message) {
-      this.toastService.warning('Por favor completa todos los campos');
+      this.toastService.warning(this.languageService.get('contact.toast.fill_all'));
       return;
     }
 

@@ -11,9 +11,10 @@
 
         <div class="relative z-10 max-w-3xl mx-auto text-center">
             <h1 class="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">
-                Visi<span class="text-red-500">ón</span>
+                {{ languageService.get('videos.hero.title_part1') }}<span class="text-red-500">{{
+                    languageService.get('videos.hero.title_part2') }}</span>
             </h1>
-            <p class="text-zinc-400 text-[11px] md:text-lg mb-10">Tus videos musicales favoritos en alta definición.</p>
+            <p class="text-zinc-400 text-[11px] md:text-lg mb-10">{{ languageService.get('videos.hero.subtitle') }}</p>
 
             <!-- Search Bar (Premium Sticky feel) -->
             <div class="group sticky top-4 z-30">
@@ -27,8 +28,9 @@
                     </div>
                     <input #searchInput type="text"
                         class="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 ring-0 text-white placeholder-zinc-500 text-sm md:text-base px-2"
-                        placeholder="Buscar videos..." [value]="searchQuery()" (input)="updateQuery($event)"
-                        (keydown)="onKeydown($event)" aria-label="Buscar videos musicales" spellcheck="false"
+                        [placeholder]="languageService.get('videos.search.placeholder')" [value]="searchQuery()"
+                        (input)="updateQuery($event)" (keydown)="onKeydown($event)"
+                        [attr.aria-label]="languageService.get('videos.search.placeholder')" spellcheck="false"
                         autocomplete="off">
 
                     <button (click)="search(); $event.stopPropagation()" [disabled]="isLoading()" aria-label="Buscar"
@@ -108,7 +110,8 @@
 
             <!-- Video Card -->
             <div (click)="playVideo(video)" (keydown.enter)="playVideo(video)" (keydown.space)="playVideo(video)"
-                role="button" tabindex="0" [attr.aria-label]="'Reproducir video ' + video.title"
+                role="button" tabindex="0"
+                [attr.aria-label]="languageService.get('videos.card.play') + ' ' + video.title"
                 class="group/card relative rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] animate-fade-in-up flex flex-col focus:outline-none focus:ring-4 focus:ring-red-500/50 bg-zinc-900"
                 [ngClass]="currentVideoIndex() === i ? 'border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.2)] bg-zinc-900/80' : 'border-zinc-800 hover:border-red-500/30 hover:shadow-red-900/20'"
                 [style.animation-delay]="i * 50 + 'ms'">
@@ -136,7 +139,8 @@
                     @if (currentVideoIndex() === i) {
                     <div
                         class="absolute bottom-3 right-3 bg-emerald-500 text-zinc-950 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg animate-pulse z-10">
-                        <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span> Reproduciendo
+                        <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span> {{
+                        languageService.get('videos.playing') }}
                     </div>
                     } @else {
                     <div
@@ -173,7 +177,8 @@
                         </span>
                         <span class="text-xs font-bold uppercase tracking-wider transition-colors"
                             [ngClass]="currentVideoIndex() === i ? 'text-emerald-500' : 'text-zinc-600 group-hover/card:text-red-500'">
-                            {{ currentVideoIndex() === i ? 'Sonando' : 'Ver video' }}
+                            {{ currentVideoIndex() === i ? languageService.get('videos.card.playing') :
+                            languageService.get('videos.card.watch') }}
                         </span>
                     </div>
                 </div>
@@ -209,9 +214,8 @@
                 class="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mb-6 text-zinc-700 border border-zinc-800">
                 <app-svg-icon name="video" class="text-zinc-700" width="40" height="40"></app-svg-icon>
             </div>
-            <h3 class="text-white font-bold text-xl mb-2">Empieza a buscar</h3>
-            <p class="text-zinc-500 max-w-xs mx-auto text-sm">Busca tus videos musicales favoritos para empezar a
-                disfrutar.</p>
+            <h3 class="text-white font-bold text-xl mb-2">{{ languageService.get('videos.empty.title') }}</h3>
+            <p class="text-zinc-500 max-w-xs mx-auto text-sm">{{ languageService.get('videos.empty.subtitle') }}</p>
         </div>
         }
         }

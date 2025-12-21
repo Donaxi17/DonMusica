@@ -4,19 +4,20 @@
         <div
             class="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-purple-900/40 to-black z-10 animate-gradient">
         </div>
-        <img [src]="'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070'" [srcset]="'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=60&w=640 640w,
+        <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070" srcset="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=60&w=640 640w,
                     https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=70&w=1280 1280w,
-                    https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070 2070w'" sizes="100vw"
-            fetchpriority="high" loading="eager" alt="Fondo de artistas musicales"
+                    https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070 2070w" sizes="100vw"
+            fetchpriority="high" loading="eager" [alt]="languageService.get('artists.hero.bg_alt')"
             class="absolute inset-0 w-full h-full object-cover bg-center opacity-30">
 
         <div class="absolute inset-0 flex flex-col justify-center text-center px-4 md:px-12 z-20 max-w-7xl mx-auto">
             <h1 class="text-4xl md:text-7xl font-black text-white mb-3 md:mb-4 tracking-tight">
-                Descubre <span
-                    class="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Artistas</span>
+                {{ languageService.get('artists.hero.discover') }} <span
+                    class="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">{{
+                    languageService.get('artists.hero.artists') }}</span>
             </h1>
             <p class="text-zinc-300 text-xs md:text-xl max-w-2xl mx-auto leading-relaxed font-light">
-                Estamos preparando el mejor catálogo musical para ti
+                {{ languageService.get('artists.hero.subtitle') }}
             </p>
         </div>
 
@@ -47,7 +48,7 @@
 
                 <form (submit)="onEnter(); $event.preventDefault()" class="w-full flex items-center">
                     <input type="text" name="searchQuery" [(ngModel)]="searchQuery" autocomplete="off"
-                        placeholder="Buscar por artista o canción..."
+                        [placeholder]="languageService.get('artists.search.placeholder')"
                         class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-2 py-2 md:py-4 focus:ring-0 text-sm md:text-xl outline-none font-medium">
 
                     <!-- Clear Search Button (Notable Red) -->
@@ -73,7 +74,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-zinc-400 text-sm font-semibold flex items-center gap-2">
                         <app-svg-icon name="history" width="16" height="16" class="text-zinc-500"></app-svg-icon>
-                        Búsquedas Recientes
+                        {{ languageService.get('artists.recent_searches') }}
                     </h3>
                 </div>
 
@@ -94,7 +95,7 @@
                         <!-- Delete Button -->
                         <button (click)="removeSearch(search, $event)"
                             class="px-2.5 py-2.5 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center cursor-pointer"
-                            title="Eliminar búsqueda">
+                            [title]="languageService.get('artists.search.remove')">
                             <app-svg-icon name="x" width="14" height="14"></app-svg-icon>
                         </button>
                     </div>
@@ -107,7 +108,7 @@
                 <app-voice-visualizer></app-voice-visualizer>
                 <p
                     class="text-center text-red-500 text-xs md:text-sm font-bold animate-pulse mt-1 tracking-widest uppercase">
-                    Escuchando voz...</p>
+                    {{ languageService.get('artists.listening') }}</p>
             </div>
         </div>
 
@@ -167,13 +168,14 @@
             <div class="text-center py-16 md:py-24 animate-fade-in">
                 <div
                     class="w-20 h-20 md:w-28 md:h-28 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-2xl">
-                    <app-svg-icon name="search" class="text-zinc-700" width="40" height="40"></app-svg-icon>
                 </div>
-                <h3 class="text-xl md:text-3xl font-black text-white mb-3">No hay coincidencias exactas</h3>
+                <h3 class="text-xl md:text-3xl font-black text-white mb-3">{{ languageService.get('artists.no_results')
+                    }}</h3>
                 <p class="text-zinc-500 mb-10 mx-auto px-4">
-                    No encontramos nada para "<span class="text-emerald-400 font-bold italic">{{searchQuery()}}</span>",
+                    {{ languageService.get('artists.no_results_part1') }} "<span
+                        class="text-emerald-400 font-bold italic">{{searchQuery()}}</span>",
                     <br class="hidden md:block">
-                    pero podrías intentar con estos estilos:
+                    {{ languageService.get('artists.try_styles') }}
                 </p>
 
                 <div class="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
@@ -187,8 +189,8 @@
                         class="px-6 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold hover:bg-purple-500/20 transition-all active:scale-95">💎
                         Trap</button>
                     <button (click)="clearSearch()"
-                        class="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95">Ver
-                        todos</button>
+                        class="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95">
+                        {{ languageService.get('artists.view_all') }}</button>
                 </div>
             </div>
             } @else {
@@ -208,10 +210,10 @@
                             <app-svg-icon name="shuffle" width="32" height="32" class="text-white"></app-svg-icon>
                         </div>
                         <h3 class="text-white font-black text-xl md:text-2xl tracking-tighter uppercase italic">
-                            Aleatorio
+                            {{ languageService.get('artists.shuffle') }}
                         </h3>
                         <p class="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">
-                            Mezcla inteligente
+                            {{ languageService.get('artists.smart_mix') }}
                         </p>
                     </div>
 
@@ -275,7 +277,7 @@
                                     <span
                                         class="px-2.5 py-1 rounded-full bg-emerald-500 text-zinc-950 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
                                         <app-svg-icon name="music" width="10" height="10"></app-svg-icon>
-                                        Canción
+                                        {{ languageService.get('artists.badge.song') }}
                                     </span>
                                 </div>
 

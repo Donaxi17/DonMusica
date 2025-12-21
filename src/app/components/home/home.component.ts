@@ -16,6 +16,7 @@ import { PlayerService } from '../../services/player.service';
 import { DatabaseService } from '../../services/database.service';
 import { HapticService } from '../../services/haptic.service';
 import { SpotifyService } from '../../services/spotify.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-home',
@@ -37,6 +38,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private databaseService = inject(DatabaseService);
   private hapticService = inject(HapticService);
   private spotifyService = inject(SpotifyService);
+  public languageService = inject(LanguageService);
 
   totalArtists = signal<number>(0);
   totalSongs = signal<number>(0);
@@ -312,7 +314,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   async installPwa() {
     this.hapticService.light();
     if (!this.deferredPrompt) {
-      this.toastService.info('Para instalar la App: Presiona "Añadir a pantalla de inicio" en las opciones de tu navegador o "Instalar Aplicación" en la barra de búsqueda.');
+      this.toastService.info(this.languageService.get('home.toast.install_instructions'));
       return;
     }
 
@@ -350,13 +352,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   submitRequest(): void {
     if (!this.requestArtist || !this.requestSong) {
-      this.toastService.warning('Por favor completa el nombre del artista y la canción/álbum');
+      this.toastService.warning(this.languageService.get('home.toast.fill_required'));
       return;
     }
 
-    const message = `⚡ *Nueva Petición Musical* ⚡%0A%0A` +
-      `🎙️ *Artista:* ${this.requestArtist}%0A` +
-      `🎧 *Canción/Álbum:* ${this.requestSong}`;
+    const message = `${this.languageService.get('home.whatsapp.message_header')}%0A%0A` +
+      `${this.languageService.get('home.whatsapp.artist')} ${this.requestArtist}%0A` +
+      `${this.languageService.get('home.whatsapp.song')} ${this.requestSong}`;
 
     // Replace with your WhatsApp number, e.g., 573000000000
     // Using a general format, user can change it.
@@ -364,7 +366,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
     this.hapticService.success();
-    this.toastService.success('¡Petición enviada! Estaremos trabajando en ella pronto.');
+    this.toastService.success(this.languageService.get('home.toast.request_sent'));
 
     window.open(whatsappUrl, '_blank');
 
@@ -405,7 +407,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   getTimeAgo(date: any): string {
-    if (!date) return 'Nuevo';
+    if (!date) return this.languageService.get('time.new');
 
     let millis = 0;
     if (typeof date === 'number') millis = date;
@@ -417,24 +419,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
       millis = isNaN(d.getTime()) ? 0 : d.getTime();
     }
 
-    if (millis === 0) return 'Nuevo';
+    if (millis === 0) return this.languageService.get('time.new');
 
     const now = new Date().getTime();
     const diff = now - millis;
     const seconds = Math.floor(diff / 1000);
 
-    if (seconds < 60) return 'Justo ahora';
+    if (seconds < 60) return this.languageService.get('time.just_now');
 
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Hace ${minutes} min`;
+    if (minutes < 60) return this.languageService.get('time.min_ago', minutes);
 
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `Hace ${hours} h`;
+    if (hours < 24) return this.languageService.get('time.hour_ago', hours);
 
     const days = Math.floor(hours / 24);
-    if (days < 30) return `Hace ${days} d`;
+    if (days < 30) return this.languageService.get('time.day_ago', days);
 
-    return 'Hace tiempo';
+    return this.languageService.get('time.long_ago');
   }
 
   private animateCounter(target: number, signalRef: any) {
@@ -504,12 +506,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   downloadSong(song: Song) {
     if (!song.url) {
-      this.toastService.info('Buscando enlace de descarga...');
+      this.toastService.info(this.languageService.get('home.toast.searching_download'));
       this.musicApi.getBestAudioStream(song.title, song.artist).subscribe((url: string | null) => {
         if (url) {
           this.navigateToDownload(song, url, 'default');
         } else {
-          this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+          this.toastService.error(this.languageService.get('home.toast.download_not_found'));
         }
       });
     } else {

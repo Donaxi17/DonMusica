@@ -23,6 +23,7 @@ import { HapticService } from '../../services/haptic.service';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { SmartShuffleComponent } from '../shared/smart-shuffle/smart-shuffle.component';
 import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-artists',
@@ -45,6 +46,7 @@ export class ArtistsComponent implements OnInit {
   private toastService = inject(ToastService);
   private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
+  public languageService = inject(LanguageService);
 
   searchQuery = signal<string>('');
   recentSearches = signal<string[]>([]);
@@ -207,7 +209,10 @@ export class ArtistsComponent implements OnInit {
 
 
   ngOnInit() {
-    this.seoService.setSeoData('Artistas', 'Explora artistas musicales.');
+    this.seoService.setSeoData(
+      this.languageService.get('seo.artists.title'),
+      this.languageService.get('seo.artists.desc')
+    );
 
     this.voiceService.text$.subscribe(text => {
       if (text) {
@@ -495,7 +500,7 @@ export class ArtistsComponent implements OnInit {
   }
 
   async clearAllArtistImagesCache() {
-    if (!confirm('¿Quieres actualizar todas las imágenes de artistas desde Spotify?\n\nEsto limpiará el caché y recargará la página.')) {
+    if (!confirm(this.languageService.get('artists.admin.refresh_prompt'))) {
       return;
     }
 
@@ -507,18 +512,18 @@ export class ArtistsComponent implements OnInit {
       }
     });
 
-    this.toastService.success('Caché de imágenes limpiado. Recargando...');
+    this.toastService.success(this.languageService.get('artists.admin.cache_cleared'));
     setTimeout(() => window.location.reload(), 1500);
   }
 
   downloadSong(song: Song) {
     if (!song.url) {
-      this.toastService.info('Buscando enlace de descarga...');
+      this.toastService.info(this.languageService.get('home.toast.searching_download'));
       this.musicApi.getBestAudioStream(song.title, (song as any).artistName || song.artist).subscribe((url: string | null) => {
         if (url) {
           this.navigateToDownload(song, url, 'default');
         } else {
-          this.toastService.error('No se pudo encontrar un enlace de descarga válido.');
+          this.toastService.error(this.languageService.get('home.toast.download_not_found'));
         }
       });
     } else {

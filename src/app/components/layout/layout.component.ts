@@ -11,6 +11,7 @@ import { VideoPlayerComponent } from '../shared/video-player/video-player.compon
 import { SettingsService } from '../../services/settings.service';
 import { HapticService } from '../../services/haptic.service';
 import { ARTISTS_DATA } from '../../models/artists.data';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-layout',
@@ -59,6 +60,7 @@ export class LayoutComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   public settingsService = inject(SettingsService);
   private hapticService = inject(HapticService);
+  public languageService = inject(LanguageService);
 
   constructor() {
     this.router.events.subscribe(event => {
@@ -235,7 +237,7 @@ export class LayoutComponent implements OnInit {
 
   changeLanguage(lang: string) {
     this.hapticService.medium();
-    this.currentLanguage = lang;
+    this.languageService.setLanguage(lang as 'es' | 'en');
     this.cdr.markForCheck();
   }
 

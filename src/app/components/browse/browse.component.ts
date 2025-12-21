@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
     selector: 'app-browse',
@@ -12,6 +13,7 @@ import { NoConnectionComponent } from '../shared/no-connection/no-connection.com
 })
 export class BrowseComponent {
     networkService = inject(NetworkService);
+    public languageService = inject(LanguageService);
 
 
     scrollToLink(event: MouseEvent, nav: HTMLElement) {

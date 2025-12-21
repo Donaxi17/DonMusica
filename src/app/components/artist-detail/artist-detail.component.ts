@@ -17,6 +17,7 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { MusicApiService } from '../../services/music-api.service';
 import { HapticService } from '../../services/haptic.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-artist-detail',
@@ -40,6 +41,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private shareService = inject(ShareService);
   private hapticService = inject(HapticService);
   private proService = inject(DonMusicaProService);
+  public languageService = inject(LanguageService);
 
 
   artistId = signal<string>('');
@@ -153,17 +155,17 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
 
     // Stop if already downloaded
     if (this.offlineService.isOffline(target.id || '')) {
-      this.toastService.info('Esta canción ya está descargada.');
+      this.toastService.info(this.languageService.get('artist.toast.already_downloaded'));
       return;
     }
 
     if (!target.url) {
-      this.toastService.info('Buscando fuente offline...');
+      this.toastService.info(this.languageService.get('home.toast.searching_download'));
       this.musicApi.getBestAudioStream(target.title || '', target.artist || this.artist()?.name || '').subscribe((url: string | null) => {
         if (url) {
           this.navigateToDownload(target, url, 'offline');
         } else {
-          this.toastService.error('No se pudo encontrar una fuente para modo offline');
+          this.toastService.error(this.languageService.get('artist.toast.offline_source_not_found'));
         }
       });
       return;
@@ -341,7 +343,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   playSong(song: Song, index: number) {
     this.hapticService.medium();
     if (!song.url) {
-      this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
+      this.toastService.error(this.languageService.get('artist.toast.no_valid_link'));
       return;
     }
 
@@ -372,7 +374,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       const firstSong = songs[0];
       if (!firstSong.url) {
         console.error('Primera canción no tiene URL válida:', firstSong);
-        this.toastService.error('Esta canción no tiene un enlace de reproducción válido.');
+        this.toastService.error(this.languageService.get('artist.toast.no_valid_link'));
         return;
       }
       // console.log('PlayAll: Reproduciendo primera canción:', firstSong.title, firstSong.url);
@@ -406,12 +408,12 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     this.activeSongMenu.set(null);
 
     if (!target.url) {
-      this.toastService.info('Buscando enlace de descarga...');
+      this.toastService.info(this.languageService.get('home.toast.searching_download'));
       this.musicApi.getBestAudioStream(target.title || '', target.artist || this.artist()?.name || '').subscribe((url: string | null) => {
         if (url) {
           this.navigateToDownload(target, url, 'default');
         } else {
-          this.toastService.error('No se pudo encontrar un enlace para descargar');
+          this.toastService.error(this.languageService.get('home.toast.download_not_found'));
         }
       });
       return;
@@ -425,7 +427,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     if (target) {
       this.shareService.shareSong(target as any);
     } else {
-      this.toastService.warning('No hay canción para compartir');
+      this.toastService.warning(this.languageService.get('artist.toast.no_song_share'));
     }
 
     this.showMenu.set(false);
@@ -476,9 +478,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     const success = this.playlistService.addSongToPlaylist(playlistId, songToAdd as any);
 
     if (success) {
-      this.toastService.success(`Agregada a "${playlistName}"`);
+      this.toastService.success(this.languageService.get('artist.toast.added_to', playlistName));
     } else {
-      this.toastService.info(`Ya existe en "${playlistName}"`);
+      this.toastService.info(this.languageService.get('artist.toast.already_in', playlistName));
     }
 
     this.closePlaylistModal();
