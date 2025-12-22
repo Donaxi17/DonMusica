@@ -251,7 +251,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
           this.spotifyService.getArtistStats(found.name).then(stats => {
             if (stats) {
               this.listeners.set(stats.followers.toLocaleString());
-              if ((!found.image || found.image.includes('default')) && stats.image) {
+              if (this.isPlaceholder(found.image) && stats.image) {
                 found.image = stats.image;
                 this.artist.set({ ...found });
               }
@@ -266,9 +266,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
           });
 
           // Fallback image (iTunes)
-          if (!found.image || found.image.includes('default')) {
+          if (this.isPlaceholder(found.image)) {
             this.itunesService.getArtistImageBestEffort(found.name).subscribe(img => {
-              if (img && (!this.artist()?.image || this.artist()?.image?.includes('default'))) {
+              if (img && this.isPlaceholder(this.artist()?.image)) {
                 found.image = img;
                 this.artist.set({ ...found });
               }
@@ -300,7 +300,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
         ...s,
         artistId: this.artistId(),
         // Immediate fallback to artist image if song image is placeholder or missing
-        img: (!s.img || s.img.includes('default')) ? artistImg : s.img
+        img: this.isPlaceholder(s.img) ? artistImg : s.img
       }));
 
       this.songs.set(songsWithId);
@@ -318,7 +318,7 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
 
     for (const song of songs) {
       const isArtistFallback = song.img === this.artist()?.image;
-      if (!song.img || song.img.includes('default') || isArtistFallback || !song.duration || song.duration === '0:00') {
+      if (this.isPlaceholder(song.img) || isArtistFallback || !song.duration || song.duration === '0:00') {
         try {
           const metadata = await this.spotifyService.getTrackMetadata(song.title, song.artist);
           // ... rest of logic
@@ -657,5 +657,15 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
     if (this.showMenu()) {
       this.showMenu.set(false);
     }
+  }
+
+  isPlaceholder(url: string | undefined): boolean {
+    if (!url) return true;
+    const lower = url.toLowerCase();
+    return lower.includes('default') ||
+      lower.includes('placeholder') ||
+      lower.includes('base64') ||
+      lower.includes('placehold.co') ||
+      lower.includes('storageimagedisplay.com');
   }
 }

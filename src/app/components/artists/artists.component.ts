@@ -48,6 +48,15 @@ export class ArtistsComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
   public languageService = inject(LanguageService);
 
+  public onArtistClick(artist: Artist, event: Event) {
+    if (this.searchQuery() && this.getMatchingSong(artist)) {
+      this.playMatchingSong(artist, event);
+    } else {
+      this.hapticService.light();
+      this.router.navigate(['/artist', artist.id]);
+    }
+  }
+
   searchQuery = signal<string>('');
   recentSearches = signal<string[]>([]);
   isListening = false;
@@ -203,6 +212,67 @@ export class ArtistsComponent implements OnInit {
     await this.fetchSongArtwork(song, artist);
     this.processArtworkQueue();
   }
+
+  /**
+   * Maneja errores de carga de imágenes de artistas
+   * Intenta obtener una nueva imagen de Spotify y actualizar la base de datos
+   */
+  async handleArtistImageError(artist: Artist) {
+    if (!artist.id || !artist.name) return;
+
+    // Evitar bucles infinitos si la nueva imagen también falla (poco probable con Spotify)
+    if (artist.image?.includes('spotify') || artist.image?.includes('mzstatic')) {
+      this.updateArtistImageLocally(artist.id, 'https://placehold.co/600x600/18181b/10b981?text=Artist');
+      return;
+    }
+
+    console.warn(`Reparando imagen rota para el artista: ${artist.name}`);
+
+    try {
+      const spotifyStats = await this.spotifyService.getArtistStats(artist.name);
+      if (spotifyStats?.image) {
+        this.updateArtistImageLocally(artist.id, spotifyStats.image);
+        // Persistir la corrección
+        this.dbService.updateArtist(artist.id, { image: spotifyStats.image }).catch(() => { });
+      } else {
+        // Fallback final si ni Spotify tiene imagen
+        this.updateArtistImageLocally(artist.id, 'https://placehold.co/600x600/18181b/10b981?text=Artist');
+      }
+    } catch (e) {
+      this.updateArtistImageLocally(artist.id, 'https://placehold.co/600x600/18181b/10b981?text=Artist');
+    }
+  }
+
+  /**
+   * Maneja errores de carga de imágenes de canciones
+   */
+  async handleSongImageError(song: Song, artist: Artist) {
+    if (!song.id || !artist.id) return;
+
+    // Si la imagen de la canción falla, probamos con la del artista
+    if (artist.image && !this.isPlaceholder(artist.image)) {
+      this.updateSongImageLocally(artist.id, song.id, artist.image);
+    } else {
+      // Si no, forzamos un fetch de Spotify
+      await this.fetchSongArtwork(song, artist);
+    }
+  }
+
+  private updateSongImageLocally(artistId: string, songId: string, imageUrl: string) {
+    this.artists.update(list => {
+      return list.map(a => {
+        if (a.id === artistId) {
+          const updatedSongs = a.songs?.map(s =>
+            s.id === songId ? { ...s, img: imageUrl } : s
+          );
+          return { ...a, songs: updatedSongs };
+        }
+        return a;
+      });
+    });
+    this.cdr.markForCheck();
+  }
+
 
 
 
@@ -368,6 +438,7 @@ export class ArtistsComponent implements OnInit {
     }
   }
 
+
   getMatchingSong(artist: any): Song | undefined {
     return artist._matchingSong;
   }
@@ -421,7 +492,8 @@ export class ArtistsComponent implements OnInit {
     return lower.includes('default-artist') ||
       lower.includes('base64') ||
       lower.includes('placeholder') ||
-      lower.includes('data:image/gif');
+      lower.includes('data:image/gif') ||
+      lower.includes('storageimagedisplay.com');
   }
 
   loadArtists() {

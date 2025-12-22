@@ -195,7 +195,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       lower.includes('default-artist') ||
       lower.includes('base64') ||
       lower.includes('placeholder') ||
-      lower.includes('placehold.co');
+      lower.includes('placehold.co') ||
+      lower.includes('storageimagedisplay.com');
   }
 
   loadTrends(region: string = 'CO') {
