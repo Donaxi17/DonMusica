@@ -91,10 +91,7 @@ export class SavedLyricsComponent implements OnInit {
     return this.lyricsService.getLimitInfo();
   });
 
-  toggleProMode() {
-    this.proService.togglePro();
-    this.loadLyrics(); // Trigger update
-  }
+
 
   upgradeToPro() {
     this.proService.showUpgradeModal();

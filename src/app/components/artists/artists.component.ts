@@ -82,82 +82,226 @@ export class ArtistsComponent implements OnInit {
   ]);
 
 
-  // Normalize text: remove accents, apostrophes, and special characters
+  // Normalize text: remove accents, punctuation, and extra spaces
   private normalize(text: string): string {
+    if (!text) return '';
     return text
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/['']/g, '') // Remove apostrophes
+      .replace(/[^a-z0-9\s]/g, ' ')    // Replace non-alphanumeric with space
+      .replace(/\s+/g, ' ')            // Collapse multiple spaces
       .trim();
   }
 
-  filteredArtists = computed(() => {
-    const query = this.normalize(this.searchQuery());
-    const genre = this.selectedGenre();
+  // Phonetic normalization for Spanish common mistakes
+  private normalizePhonetic(text: string): string {
+    if (!text) return '';
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/v/g, 'b')      // v → b
+      .replace(/z/g, 's')      // z → s
+      .replace(/c(?=[ei])/g, 's') // ce, ci → se, si
+      .replace(/ll/g, 'y')     // ll → y
+      .replace(/h/g, '')       // silent h
+      .replace(/qu/g, 'k')     // qu → k
+      .replace(/j/g, 'h')      // j sounds like h in English
+      .replace(/ge/g, 'he')    // ge → he
+      .replace(/gi/g, 'hi')    // gi → hi
+      .replace(/ñ/g, 'n')      // ñ → n
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-    let filtered = this.artists();
-    if (genre !== 'all') {
-      filtered = filtered.filter(artist => artist.genre && artist.genre.toLowerCase().includes(genre));
+  // Get initials from a name (e.g., "Bad Bunny" → "bb")
+  private getInitials(text: string): string {
+    return text.split(/\s+/)
+      .map(word => word.charAt(0))
+      .join('')
+      .toLowerCase();
+  }
+
+  filteredArtists = computed(() => {
+    const rawQuery = this.searchQuery();
+    const query = this.normalize(rawQuery);
+    const phoneticQuery = this.normalizePhonetic(rawQuery);
+    const genre = this.selectedGenre();
+    const allArtists = this.artists();
+
+    if (!query) {
+      return (genre === 'all'
+        ? allArtists
+        : allArtists.filter(artist => artist.genre && artist.genre.toLowerCase().includes(genre.toLowerCase()))
+      ).map(artist => ({ ...artist, _matchingSong: undefined }));
     }
 
-    if (query) {
-      return filtered.filter(artist => {
+    const queryWords = query.split(/\s+/).filter(w => w.length > 0);
+    const phoneticWords = phoneticQuery.split(/\s+/).filter(w => w.length > 0);
+    const isMultiWord = queryWords.length > 1;
+    const isShortQuery = query.length <= 3;
+
+    return allArtists
+      .map(artist => {
         const normalizedName = this.normalize(artist.name);
-
-        // 1. Coincidencia exacta o contenida (Rápido)
-        if (normalizedName.includes(query) || query.includes(normalizedName)) return true;
-
-        // 2. Coincidencia difusa inteligente (Palabra por palabra)
+        const phoneticName = this.normalizePhonetic(artist.name);
         const nameWords = normalizedName.split(/\s+/);
-        const queryWords = query.split(/\s+/);
+        const artistInitials = this.getInitials(normalizedName);
+        const inSelectedGenre = genre === 'all' || (artist.genre && artist.genre.toLowerCase().includes(genre.toLowerCase()));
 
-        const hasFuzzyMatch = nameWords.some(nameWord => {
-          return queryWords.some(queryWord => {
-            if (queryWord.length < 3) return nameWord === queryWord;
-            const distance = this.getLevenshteinDistance(nameWord, queryWord);
-            const allowedErrors = queryWord.length > 6 ? 2 : 1;
-            return distance <= allowedErrors;
-          });
-        });
+        let score = 0;
+        let bestMatchingSong: Song | undefined = undefined;
 
-        if (hasFuzzyMatch) return true;
+        // --- NAME MATCHING LOGIC ---
+        // Priority 1: Exact or Prefix Phrases
+        if (normalizedName === query) score = 100;
+        else if (normalizedName.startsWith(query)) score = 95;
+        else if (new RegExp(`\\b${query}\\b`).test(normalizedName)) score = 90;
+        else if (normalizedName.includes(query)) score = 80;
+        // Priority 1.5: Phonetic match
+        else if (phoneticName === phoneticQuery) score = 88;
+        else if (phoneticName.includes(phoneticQuery)) score = 75;
+        // Priority 1.6: Initials match (e.g., "bb" → "Bad Bunny")
+        else if (isShortQuery && artistInitials.startsWith(query)) score = 70;
+        else if (isShortQuery && artistInitials.includes(query)) score = 60;
+        else {
+          // Priority 2: Word-by-word Intelligent matching
+          let matchedPoints = 0;
+          let matchedWordCount = 0;
 
-        // 3. Revisar canciones
-        const songMatches = artist.songs && artist.songs.some(s => {
-          const normalizedTitle = this.normalize(s.title);
-          if (normalizedTitle.includes(query)) return true;
-
-          // Fuzzy match para títulos de canciones también
-          const titleWords = normalizedTitle.split(/\s+/);
-          return titleWords.some(titleWord => {
-            return queryWords.some(queryWord => {
-              if (queryWord.length < 4) return false;
-              return this.getLevenshteinDistance(titleWord, queryWord) <= 1;
+          queryWords.forEach((qw, qi) => {
+            let bestWordMatch = 0;
+            nameWords.forEach(nw => {
+              // Exact word match
+              if (nw === qw) bestWordMatch = Math.max(bestWordMatch, 1.0);
+              // Word starts with query word
+              else if (nw.startsWith(qw)) bestWordMatch = Math.max(bestWordMatch, 0.85);
+              // Query word starts with name word (for abbreviations)
+              else if (qw.length >= 2 && nw.startsWith(qw.substring(0, 2))) bestWordMatch = Math.max(bestWordMatch, 0.6);
+              // Levenshtein for typos - more lenient for shorter words
+              else {
+                const maxDist = qw.length <= 3 ? 1 : (qw.length <= 5 ? 2 : 3);
+                const dist = this.getLevenshteinDistance(nw, qw);
+                if (dist <= maxDist) {
+                  const similarity = 1 - (dist / Math.max(qw.length, nw.length));
+                  bestWordMatch = Math.max(bestWordMatch, similarity * 0.7);
+                }
+              }
             });
+
+            // Also check phonetic matching
+            if (bestWordMatch < 0.7) {
+              const phoneticQw = phoneticWords[qi] || '';
+              const phoneticNameWords = phoneticName.split(/\s+/);
+              phoneticNameWords.forEach(pnw => {
+                if (pnw === phoneticQw) bestWordMatch = Math.max(bestWordMatch, 0.8);
+                else if (pnw.startsWith(phoneticQw)) bestWordMatch = Math.max(bestWordMatch, 0.7);
+              });
+            }
+
+            if (bestWordMatch > 0) {
+              matchedPoints += bestWordMatch;
+              matchedWordCount++;
+            }
           });
-        });
 
-        return songMatches;
-      }).map(artist => {
-        // Encontrar la canción que mejor coincide
-        const matchingSong = artist.songs?.find(s => {
-          const normTitle = this.normalize(s.title);
-          if (normTitle.includes(query)) return true;
-          const titleWords = normTitle.split(/\s+/);
-          const queryWords = query.split(/\s+/);
-          return titleWords.some(tw => queryWords.some(qw => qw.length >= 4 && this.getLevenshteinDistance(tw, qw) <= 1));
-        });
+          // Less strict: require at least 40% of query words to have some match (was 50%)
+          const matchRatio = matchedWordCount / queryWords.length;
+          if (matchRatio >= 0.4 || matchedPoints >= 0.7) {
+            score = (matchedPoints / queryWords.length) * 75;
+          }
+        }
 
+        // --- SONG MATCHING LOGIC ---
+        if (artist.songs && artist.songs.length > 0) {
+          let bestSongScore = 0;
+          let matchedSong: Song | undefined = undefined;
+
+          for (const s of artist.songs) {
+            const normTitle = this.normalize(s.title);
+            const phoneticTitle = this.normalizePhonetic(s.title);
+            let sScore = 0;
+
+            if (normTitle === query) sScore = 85;
+            else if (normTitle.startsWith(query)) sScore = 80;
+            else if (normTitle.includes(query)) sScore = 75;
+            else if (phoneticTitle.includes(phoneticQuery)) sScore = 70;
+            else if (isMultiWord) {
+              const titleWords = normTitle.split(/\s+/);
+              let sMatchedPoints = 0;
+              let sMatchedWords = 0;
+
+              queryWords.forEach((qw, qi) => {
+                let bestW = 0;
+                titleWords.forEach(tw => {
+                  if (tw === qw) bestW = Math.max(bestW, 1.0);
+                  else if (tw.startsWith(qw)) bestW = Math.max(bestW, 0.85);
+                  else {
+                    const maxDist = qw.length <= 4 ? 1 : 2;
+                    if (this.getLevenshteinDistance(tw, qw) <= maxDist) bestW = Math.max(bestW, 0.6);
+                  }
+                });
+                if (bestW > 0) {
+                  sMatchedPoints += bestW;
+                  sMatchedWords++;
+                }
+              });
+
+              if (sMatchedWords / queryWords.length >= 0.4) {
+                sScore = (sMatchedPoints / queryWords.length) * 70;
+              }
+            } else if (query.length >= 3) {
+              // Single word partial match for song titles
+              const titleWords = normTitle.split(/\s+/);
+              for (const tw of titleWords) {
+                if (tw.startsWith(query)) {
+                  sScore = 55;
+                  break;
+                }
+                const dist = this.getLevenshteinDistance(tw, query);
+                if (dist <= 2) {
+                  sScore = Math.max(sScore, 45);
+                }
+              }
+            }
+
+            if (sScore > bestSongScore) {
+              bestSongScore = sScore;
+              matchedSong = s;
+            }
+          }
+
+          // If song match is better than name match, use it
+          if (bestSongScore > score) {
+            score = bestSongScore;
+            bestMatchingSong = matchedSong;
+          } else if (score > 40 && bestSongScore > 30) {
+            // Keep matching song for display even if name won
+            bestMatchingSong = matchedSong;
+          }
+        }
+
+        // --- BOOSTS ---
+        if (score > 0) {
+          // Genre relevance boost
+          if (inSelectedGenre && genre !== 'all') score += 10;
+          // Minor popularity boost based on song count
+          score += Math.min((artist.songs?.length || 0) * 0.15, 5);
+        }
+
+        return { ...artist, _score: score, _matchingSong: bestMatchingSong };
+      })
+      .filter(a => (a as any)._score >= 15) // Lowered threshold from 30 to 15 for less strictness
+      .sort((a, b) => (b as any)._score - (a as any)._score)
+      .map(artist => {
+        const matchingSong = (artist as any)._matchingSong;
         if (matchingSong && (!matchingSong.img || matchingSong.img.includes('default'))) {
           this.queueArtworkFetch(matchingSong, artist);
         }
-
-        return { ...artist, _matchingSong: matchingSong };
+        return artist;
       });
-    }
-
-    return filtered.map(artist => ({ ...artist, _matchingSong: undefined }));
   });
 
   // Algoritmo de Levenshtein para medir similitud de palabras
@@ -346,32 +490,61 @@ export class ArtistsComponent implements OnInit {
   // --- Highlighting ---
   // --- Highlighting ---
   highlightText(text: string, query: string): SafeHtml {
-    if (!query || query.length < 2) return text;
+    if (!query || query.trim().length < 2) return text;
 
-    // Escape special regex characters
-    const cleanQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cleanQuery = query.trim();
+    const queryParts = cleanQuery.split(/\s+/).filter(p => p.length >= 2);
+    if (queryParts.length === 0) return text;
 
-    // Create a pattern where vowels match accent-insensitive versions
-    // filtering by base character
-    const pattern = cleanQuery
-      .split('')
-      .map(char => {
-        const lower = char.toLowerCase();
-        if (lower === 'a') return '[aáàäâ]';
-        if (lower === 'e') return '[eéèëê]';
-        if (lower === 'i') return '[iíìïî]';
-        if (lower === 'o') return '[oóòöô]';
-        if (lower === 'u') return '[uúùüû]';
-        return char;
-      })
-      .join('');
+    // Escape regex and handle accents for the full query first (Best match)
+    const getPattern = (str: string) => {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        .split('')
+        .map(char => {
+          const lower = char.toLowerCase();
+          switch (lower) {
+            case 'a': return '[aáàäâ]';
+            case 'e': return '[eéèëê]';
+            case 'i': return '[iíìïî]';
+            case 'o': return '[oóòöô]';
+            case 'u': return '[uúùüû]';
+            case 'n': return '[nñ]';
+            default: return char;
+          }
+        })
+        .join('');
+    };
 
-    const regex = new RegExp(`(${pattern})`, 'gi');
+    // Try highlighting the full query first
+    const fullPattern = getPattern(cleanQuery);
+    const fullRegex = new RegExp(`(${fullPattern})`, 'gi');
 
-    // Safety check to avoid destroying HTML if something matches a tag (unlikely here but good practice)
-    const newText = text.replace(regex, '<span class="text-emerald-400 font-extrabold">$1</span>');
+    if (fullRegex.test(text)) {
+      const highlighted = text.replace(fullRegex, '<span class="text-emerald-400 font-extrabold">$1</span>');
+      return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+    }
 
-    return this.sanitizer.bypassSecurityTrustHtml(newText);
+    // Fallback: highlight individual words
+    let highlightedText = text;
+    // Sort by length to avoid partial matches
+    const sortedParts = [...queryParts].sort((a, b) => b.length - a.length);
+
+    sortedParts.forEach(part => {
+      const partPattern = getPattern(part);
+      const partRegex = new RegExp(`(\\b${partPattern}\\b|${partPattern})`, 'gi');
+
+      // Attempt to avoid highlighting inside tags by using a negative lookahead if possible,
+      // but simple replace is usually fine for these short strings.
+      // We use a temporary marker to avoid double highlighting
+      highlightedText = highlightedText.replace(partRegex, '##$1%%');
+    });
+
+    // Replace markers with actual HTML
+    const finalHtml = highlightedText
+      .replace(/##/g, '<span class="text-emerald-400 font-extrabold">')
+      .replace(/%%/g, '</span>');
+
+    return this.sanitizer.bypassSecurityTrustHtml(finalHtml);
   }
 
   toggleVoiceSearch() {
@@ -389,6 +562,8 @@ export class ArtistsComponent implements OnInit {
   onGenreChange(genreId: string, event?: Event): void {
     this.hapticService.light();
     this.selectedGenre.set(genreId);
+    // Clear search when selecting a genre
+    this.searchQuery.set('');
 
     if (event) {
       const target = (event.target as HTMLElement).closest('button');
@@ -403,6 +578,13 @@ export class ArtistsComponent implements OnInit {
     this.searchQuery.set('');
   }
 
+  onSearchInput() {
+    // Auto-switch to "all" genre when user starts typing
+    if (this.searchQuery() && this.selectedGenre() !== 'all') {
+      this.selectedGenre.set('all');
+    }
+  }
+
   onEnter() {
     this.hapticService.light();
     this.saveSearch(this.searchQuery());
@@ -415,8 +597,7 @@ export class ArtistsComponent implements OnInit {
     event.preventDefault();
     this.hapticService.medium();
 
-    const query = this.normalize(this.searchQuery());
-    const matchingSong = artist.songs?.find(s => this.normalize(s.title).includes(query));
+    const matchingSong = this.getMatchingSong(artist);
 
     if (matchingSong) {
       // Ensure the song has the correct artistID
@@ -537,26 +718,24 @@ export class ArtistsComponent implements OnInit {
     const missing = allArtists.filter(a => this.isPlaceholder(a.image));
     if (missing.length === 0) return;
 
-    // Process in parallel for speed
-    await Promise.all(missing.map(async (artist) => {
+    // Process SEQUENTIALLY with delays to avoid 429/403 (Safe approach)
+    for (const artist of missing) {
       try {
+        await new Promise(resolve => setTimeout(resolve, 800)); // Delay between requests
+
         const spotifyStats = await this.spotifyService.getArtistStats(artist.name);
         if (spotifyStats?.image) {
           this.updateArtistImageLocally(artist.id!, spotifyStats.image);
-          // Persist to Firestore so NO ONE has to fetch it again
           this.dbService.updateArtist(artist.id!, { image: spotifyStats.image }).catch(() => { });
         } else {
           const itunesImage = await this.itunesService.getArtistImageBestEffort(artist.name).toPromise();
           if (itunesImage && !this.isPlaceholder(itunesImage)) {
             this.updateArtistImageLocally(artist.id!, itunesImage);
-            // Persist to Firestore
             this.dbService.updateArtist(artist.id!, { image: itunesImage }).catch(() => { });
           }
         }
-      } catch (e) {
-        // Silently fail
-      }
-    }));
+      } catch (e) { }
+    }
   }
 
   private updateArtistImageLocally(artistId: string, imageUrl: string) {

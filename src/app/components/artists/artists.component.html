@@ -48,7 +48,7 @@
 
                 <form (submit)="onEnter(); $event.preventDefault()" class="w-full flex items-center">
                     <input type="text" name="searchQuery" [(ngModel)]="searchQuery" autocomplete="off"
-                        [placeholder]="languageService.get('artists.search.placeholder')"
+                        (input)="onSearchInput()" [placeholder]="languageService.get('artists.search.placeholder')"
                         class="w-full bg-transparent border-none text-white placeholder-zinc-500 px-2 py-2 md:py-4 focus:ring-0 text-sm md:text-xl outline-none font-medium">
 
                     <!-- Clear Search Button (Notable Red) -->
@@ -172,7 +172,7 @@
                 </div>
                 <h3 class="text-xl md:text-3xl font-black text-white mb-3">{{ languageService.get('artists.no_results')
                     }}</h3>
-                <p class="text-zinc-500 mb-10 mx-auto px-4">
+                <p class="text-zinc-500 mb-6 mx-auto px-4">
                     {{ languageService.get('artists.no_results_part1') }} "<span
                         class="text-emerald-400 font-bold italic">{{searchQuery()}}</span>",
                     <br class="hidden md:block">

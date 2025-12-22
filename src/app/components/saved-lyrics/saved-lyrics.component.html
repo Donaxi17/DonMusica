@@ -48,8 +48,7 @@
                     <span class="text-zinc-400">{{ languageService.get('saved_lyrics.storage') }} ({{ limitInfo().isPro
                         ? languageService.get('saved_lyrics.pro') : languageService.get('saved_lyrics.free') }})</span>
                     <span class="{{limitInfo().isPro ? 'text-pink-400 font-bold' : 'text-zinc-400'}}">
-                        {{limitInfo().isPro ? languageService.get('saved_lyrics.unlimited') : limitInfo().current + ' /
-                        ' + limitInfo().max}}
+                        {{limitInfo().isPro ? languageService.get('saved_lyrics.unlimited') : limitInfo().current + ' / ' + limitInfo().max}}
                     </span>
                 </div>
 
@@ -82,10 +81,7 @@
             </div>
 
             <!-- Dev Toggle (Hidden in prod ideally) -->
-            <button (click)="toggleProMode()" class="text-[10px] text-zinc-600 hover:text-white underline mb-6">
-                {{ languageService.get('saved_lyrics.dev_toggle', limitInfo().isPro ?
-                languageService.get('saved_lyrics.free') : languageService.get('saved_lyrics.pro')) }}
-            </button>
+
 
             <!-- Navigation Tabs Removed as per request -->
 
@@ -209,7 +205,7 @@
                 class="text-zinc-200 text-sm md:text-base leading-relaxed md:leading-loose whitespace-pre-wrap font-sans mb-8">{{selectedLyric()?.content}}</pre>
 
             <div class="flex justify-center">
-                <app-ads-container [index]="2" [smallOnly]="true"></app-ads-container>
+                <app-ads-container [index]="2"></app-ads-container>
             </div>
         </div>
     </div>

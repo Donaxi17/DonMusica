@@ -155,26 +155,31 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         checkLoadingFinished();
         requestAnimationFrame(() => this.initScrollAnimations());
 
-        initialMap.forEach(async (song) => {
-          if (this.isGenericImage(song.img)) {
-            try {
-              const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
-              if (artwork) {
-                this.recentlyAdded.update(list => {
-                  const newList = [...list];
-                  const index = newList.findIndex(s => s.id === song.id);
-                  if (index !== -1) {
-                    newList[index] = { ...newList[index], img: artwork };
+        // Process artwork SEQUENTIALLY to avoid rate limits
+        const processRecentlyAddedImages = async () => {
+          for (const song of initialMap) {
+            if (this.isGenericImage(song.img)) {
+              try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
+                if (artwork) {
+                  this.recentlyAdded.update(list => {
+                    const newList = [...list];
+                    const index = newList.findIndex(s => s.id === song.id);
+                    if (index !== -1) {
+                      newList[index] = { ...newList[index], img: artwork };
+                    }
+                    return newList;
+                  });
+                  if (song.id) {
+                    this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
                   }
-                  return newList;
-                });
-                if (song.id) {
-                  this.databaseService.updateSong(song.id, { img: artwork }).catch(() => { });
                 }
-              }
-            } catch (err) { }
+              } catch (err) { }
+            }
           }
-        });
+        };
+        processRecentlyAddedImages();
       },
       error: () => {
         this.loadingStats.set(false);
@@ -207,22 +212,27 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.trendingSongs.set(previewSongs);
         this.loadingTrends.set(false);
 
-        previewSongs.forEach(song => {
-          if (this.isGenericImage(song.img)) {
-            this.spotifyService.getTrackArtwork(song.title, song.artist).then(artwork => {
-              if (artwork) {
-                this.trendingSongs.update(list => {
-                  const newList = [...list];
-                  const index = newList.findIndex(item => item.id === song.id);
-                  if (index !== -1) {
-                    newList[index] = { ...newList[index], img: artwork };
-                  }
-                  return newList;
-                });
-              }
-            }).catch(() => { });
+        const processTrendingImages = async () => {
+          for (const song of previewSongs) {
+            if (this.isGenericImage(song.img)) {
+              try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const artwork = await this.spotifyService.getTrackArtwork(song.title, song.artist);
+                if (artwork) {
+                  this.trendingSongs.update(list => {
+                    const newList = [...list];
+                    const index = newList.findIndex(item => item.id === song.id);
+                    if (index !== -1) {
+                      newList[index] = { ...newList[index], img: artwork };
+                    }
+                    return newList;
+                  });
+                }
+              } catch (err) { }
+            }
           }
-        });
+        };
+        processTrendingImages();
         requestAnimationFrame(() => this.initScrollAnimations());
       },
       error: (err) => {

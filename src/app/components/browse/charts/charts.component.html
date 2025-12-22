@@ -142,6 +142,27 @@
                     </div>
                 </ng-container>
             </div>
+
+            <!-- Empty State for Charts -->
+            <div *ngIf="!loading() && chartSongs().length === 0"
+                class="flex flex-col items-center justify-center text-center py-12 md:py-24 animate-fade-in">
+                <div class="relative mb-6">
+                    <div class="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full"></div>
+                    <svg class="w-16 h-16 md:w-24 md:h-24 text-zinc-700 relative z-10 mx-auto" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                        <path d="m9 16 7-4-7-4z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-zinc-400 mb-2">No se encontraron éxitos</h3>
+                <p class="text-zinc-500 max-w-md">No pudimos cargar el ranking para esta región en este momento. Intenta
+                    cambiar de país o vuelve más tarde.</p>
+                <button (click)="loadCharts(selectedRegion())"
+                    class="mt-6 px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full font-bold transition-all">
+                    Reintentar
+                </button>
+            </div>
         </div>
 
         <!-- Sidebar -->
