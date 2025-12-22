@@ -22,6 +22,14 @@ export class VideoPlayerComponent {
   currentVideoIndex = this.videoService.currentVideoIndex;
   videos = this.videoService.currentVideoList;
 
+  // Helpers
+  get currentVideo() {
+    const idx = this.currentVideoIndex();
+    const list = this.videos();
+    return (idx >= 0 && idx < list.length) ? list[idx] : null;
+  }
+
+
   // UI State
   isAmbientMode = signal<boolean>(true); // Dynamic glow
   isTheaterFocus = signal<boolean>(false); // Hide buttons for immersion
@@ -366,5 +374,25 @@ export class VideoPlayerComponent {
 
   toggleTheaterFocus() {
     this.isTheaterFocus.set(!this.isTheaterFocus());
+  }
+
+  /**
+   * Listen for orientation changes to ensure the video player
+   * accommodates correctly to the new viewport dimensions.
+   */
+  @HostListener('window:orientationchange', ['$event'])
+  onOrientationChange() {
+    // Force a small delay to allow the browser to update dimensions
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 200);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    // If we're not in landscape anymore, ensure body overflow is restored
+    if (window.innerHeight > window.innerWidth && window.innerHeight > 600) {
+      document.body.style.overflow = '';
+    }
   }
 }

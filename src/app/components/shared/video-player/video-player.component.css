@@ -54,25 +54,84 @@
     cursor: grabbing !important;
 }
 
-/* Ambient Glow Container - Much larger and more noticeable */
+/* Ambient Glow Container - catches colors from thumbnail */
 .ambient-glow {
     position: absolute;
-    inset: -100px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.6) 0%, rgba(16, 185, 129, 0) 70%);
+    inset: -80px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(16, 185, 129, 0.4);
+    /* Green Fallback */
     filter: blur(80px);
     z-index: -1;
     border-radius: 40px;
-    animation: ambientPulse 6s infinite ease-in-out;
+    animation: ambientPulse 8s infinite ease-in-out;
     pointer-events: none;
-    opacity: 0.8;
+    opacity: 0.7;
+    transition: all 1s ease-in-out;
+}
+
+/* Base green layer if image fails */
+.ambient-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.7) 0%, transparent 80%);
+    z-index: -1;
+}
+
+/* Very Small Screen Adjustments (< 380px) */
+@media (max-width: 380px) {
+    .landscape-controls {
+        top: -52px !important;
+        padding: 0 15px !important;
+        /* Más margen a la derecha para la X */
+        gap: 6px !important;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .landscape-controls button {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    .landscape-controls h3 {
+        font-size: 11px !important;
+        max-width: 120px !important;
+    }
+
+    .landscape-controls p {
+        font-size: 9px !important;
+    }
+
+    .landscape-controls svg,
+    .landscape-controls app-svg-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+}
+
+/* Specific Theater Mode Aura Adjustment */
+.ambient-glow {
+    transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 1s ease;
+}
+
+/* Enlarge video in PC */
+@media (min-width: 1024px) {
+    .landscape-container {
+        max-width: 85vw !important;
+    }
 }
 
 /* Landscape Mode Fix for Mobile */
-/* Targets phones in landscape by height */
-@media (max-height: 480px) {
+/* Solo para móviles/tablets con poca altura en horizontal */
+@media (max-height: 600px) and (orientation: landscape) {
     .landscape-fullscreen {
         padding: 0 !important;
         background: black !important;
+        backdrop-filter: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -84,23 +143,25 @@
         max-width: none !important;
         margin: 0 !important;
         padding: 0 !important;
-        gap: 0 !important;
-        border: none !important;
     }
 
     .landscape-video-wrapper {
         width: 100vw !important;
         height: 100vh !important;
         max-width: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .landscape-frame {
         height: 100vh !important;
         width: 100vw !important;
-        max-height: 100vh !important;
+        max-height: none !important;
         border-radius: 0 !important;
         border: none !important;
-        background: black !important;
+        box-shadow: none !important;
+        margin: 0 !important;
     }
 
     .landscape-frame iframe {
@@ -111,15 +172,16 @@
         left: 0 !important;
     }
 
-    /* Move controls to corners in landscape */
+    /* Controles en las esquinas */
     .landscape-controls {
         position: fixed !important;
         top: 15px !important;
         right: 15px !important;
-        z-index: 1000 !important;
+        left: 15px !important;
+        width: auto !important;
+        z-index: 100 !important;
     }
 
-    /* Hide UI noise in small landscape */
     .landscape-hide-nav {
         display: none !important;
     }
