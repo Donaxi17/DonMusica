@@ -189,7 +189,7 @@
                     <button (click)="onGenreChange('trap', $event); clearSearch()"
                         class="px-6 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold hover:bg-purple-500/20 transition-all active:scale-95">💎
                         Trap</button>
-                    <button (click)="clearSearch()"
+                    <button (click)="onGenreChange('all', $event); clearSearch()"
                         class="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95">
                         {{ languageService.get('artists.view_all') }}</button>
                 </div>

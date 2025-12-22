@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BlogService, BlogPost } from '../../services/blog.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
@@ -353,6 +353,17 @@ export class BlogComponent implements OnInit {
 
     selectedEvergreenArticle = signal<EvergreenArticle | null>(null);
     showEvergreenModal = signal(false);
+    private isInitialized = false;
+
+    constructor() {
+        // Watch for language changes and automatically reload posts (but skip first run)
+        effect(() => {
+            const lang = this.languageService.currentLanguage();
+            if (lang && this.isInitialized) {
+                this.loadPosts();
+            }
+        }, { allowSignalWrites: true });
+    }
 
     ngOnInit() {
         this.seoService.setSeoData(
@@ -360,6 +371,13 @@ export class BlogComponent implements OnInit {
             this.languageService.get('blog.seo.desc')
         );
 
+        // Initial load
+        this.loadPosts();
+        this.isInitialized = true;
+    }
+
+    private loadPosts() {
+        this.loading.set(true);
         this.blogService.getPosts().subscribe(data => {
             this.posts.set(data);
             this.loading.set(false);

@@ -361,34 +361,46 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   isNewSong(date: any): boolean {
     if (!date) return false;
     let millis = 0;
-    if (date && typeof date.toMillis === 'function') millis = date.toMillis();
-    else if (date && date.seconds) millis = date.seconds * 1000;
-    else if (date instanceof Date) millis = date.getTime();
-    else if (typeof date === 'string' || typeof date === 'number') {
+    if (date && typeof date.toMillis === 'function') {
+      millis = date.toMillis();
+    } else if (date && date.seconds) {
+      millis = date.seconds * 1000;
+    } else if (date instanceof Date) {
+      millis = date.getTime();
+    } else if (typeof date === 'string' || typeof date === 'number') {
       const d = new Date(date);
       millis = isNaN(d.getTime()) ? 0 : d.getTime();
     }
+
     if (millis === 0) return false;
     const now = new Date().getTime();
     const diff = now - millis;
-    return diff < (48 * 60 * 60 * 1000);
+    return diff < (48 * 60 * 60 * 1000); // 48 hours
   }
 
   getTimeAgo(date: any): string {
     if (!date) return this.languageService.get('time.new');
     let millis = 0;
-    if (typeof date === 'number') millis = date;
-    else if (date && typeof date.toMillis === 'function') millis = date.toMillis();
-    else if (date && date.seconds) millis = date.seconds * 1000;
-    else if (date instanceof Date) millis = date.getTime();
-    else if (typeof date === 'string') {
+
+    if (typeof date === 'number') {
+      millis = date;
+    } else if (date && typeof date.toMillis === 'function') {
+      millis = date.toMillis();
+    } else if (date && date.seconds) {
+      millis = date.seconds * 1000;
+    } else if (date instanceof Date) {
+      millis = date.getTime();
+    } else if (typeof date === 'string') {
       const d = new Date(date);
       millis = isNaN(d.getTime()) ? 0 : d.getTime();
     }
+
     if (millis === 0) return this.languageService.get('time.new');
+
     const now = new Date().getTime();
     const diff = now - millis;
     const seconds = Math.floor(diff / 1000);
+
     if (seconds < 60) return this.languageService.get('time.just_now');
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return this.languageService.get('time.min_ago', minutes);
@@ -396,6 +408,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (hours < 24) return this.languageService.get('time.hour_ago', hours);
     const days = Math.floor(hours / 24);
     if (days < 30) return this.languageService.get('time.day_ago', days);
+
     return this.languageService.get('time.long_ago');
   }
 
