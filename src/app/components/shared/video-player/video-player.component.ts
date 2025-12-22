@@ -22,7 +22,9 @@ export class VideoPlayerComponent {
   currentVideoIndex = this.videoService.currentVideoIndex;
   videos = this.videoService.currentVideoList;
 
-  // Auto-advance system
+  // UI State
+  isAmbientMode = signal<boolean>(true); // Dynamic glow
+  isTheaterFocus = signal<boolean>(false); // Hide buttons for immersion
   private checkInterval: any = null;
   private hasAutoAdvanced = false;
   private hasShownWarning = false; // Para notificar 10s antes
@@ -91,35 +93,25 @@ export class VideoPlayerComponent {
     const now = Date.now();
     const elapsed = now - this.lastCheckTime;
 
-    // If video is playing, add elapsed time to actual playing time
     if (this.isCurrentlyPlaying) {
       this.actualPlayingTime += elapsed;
-
-      const minutes = Math.floor(this.actualPlayingTime / 60000);
-      const seconds = Math.floor((this.actualPlayingTime % 60000) / 1000);
-
-      // Only log every 30 seconds to reduce console noise
-      if (seconds % 30 === 0 || seconds < 10) {
-        // console.log(`⏱️ Video playing for: ${minutes}m ${seconds}s (State: ${this.playerState})`);
-      }
     }
 
     this.lastCheckTime = now;
 
-    // Warning 10 seconds before auto-advance (3m 50s)
-    if (this.actualPlayingTime > 230000 && !this.hasShownWarning) {
+    // --- SMART AUTO-ADVANCE ---
+    // If we have real video duration, use it (with 3s margin)
+    // Otherwise use a safer 10-minute fallback for music videos
+    const effectiveDuration = this.videoDuration > 0 ? this.videoDuration : 600;
+    const currentPos = this.currentTime > 0 ? this.currentTime : (this.actualPlayingTime / 1000);
+
+    // Warning 10s before end
+    if (currentPos > (effectiveDuration - 10) && !this.hasShownWarning) {
       this.hasShownWarning = true;
-      const nextVideo = this.videos()[this.currentVideoIndex() + 1];
-      if (nextVideo) {
-        // console.log(`⏰ Próximo video en 10 segundos: "${nextVideo.title}" - ${nextVideo.artist}`);
-      } else {
-        // console.log(`⏰ Último video de la lista, avanzará en 10 segundos`);
-      }
     }
 
-    // Auto-advance after 4 minutes of ACTUAL playing time
-    if (this.actualPlayingTime > 240000 && !this.hasAutoAdvanced) {
-      // console.log(`⏭️ Video timeout (4m 0s), advancing to next...`);
+    // Advance if current position is near the end
+    if (currentPos >= (effectiveDuration - 2) && !this.hasAutoAdvanced) {
       this.handleVideoEnd();
     }
   }
@@ -361,9 +353,18 @@ export class VideoPlayerComponent {
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    // Solo maximizar si NO se estaba arrastrando
     if (!this.hasMoved) {
       this.videoService.maximizeVideo();
+      // Reset position to center on maximize
+      this.videoPosition = { x: 0, y: 0 };
     }
+  }
+
+  toggleAmbientMode() {
+    this.isAmbientMode.set(!this.isAmbientMode());
+  }
+
+  toggleTheaterFocus() {
+    this.isTheaterFocus.set(!this.isTheaterFocus());
   }
 }

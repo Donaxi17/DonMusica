@@ -9,8 +9,44 @@
     }
 }
 
+/* Cinematic Zoom-In Animation */
+@keyframes cinematicScale {
+    0% {
+        transform: scale(0.9) translateY(20px);
+        opacity: 0;
+        filter: blur(10px);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+/* Ambient Mode Pulsating Glow */
+@keyframes ambientPulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+        filter: blur(60px);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+        filter: blur(90px);
+    }
+}
+
 .video-fade-in {
     animation: fadeIn 0.3s ease-in;
+}
+
+.animate-cinematic {
+    animation: cinematicScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Smooth drag transitions */
@@ -18,40 +54,72 @@
     cursor: grabbing !important;
 }
 
+/* Ambient Glow Container - Much larger and more noticeable */
+.ambient-glow {
+    position: absolute;
+    inset: -100px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.6) 0%, rgba(16, 185, 129, 0) 70%);
+    filter: blur(80px);
+    z-index: -1;
+    border-radius: 40px;
+    animation: ambientPulse 6s infinite ease-in-out;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
 /* Landscape Mode Fix for Mobile */
-@media (orientation: landscape) and (max-height: 500px) {
+/* Targets phones in landscape by height */
+@media (max-height: 480px) {
     .landscape-fullscreen {
         padding: 0 !important;
         background: black !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .landscape-container {
         width: 100vw !important;
         height: 100vh !important;
         max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
         gap: 0 !important;
+        border: none !important;
     }
 
     .landscape-video-wrapper {
         width: 100vw !important;
         height: 100vh !important;
+        max-width: none !important;
     }
 
     .landscape-frame {
         height: 100vh !important;
         width: 100vw !important;
+        max-height: 100vh !important;
         border-radius: 0 !important;
         border: none !important;
         background: black !important;
     }
 
-    /* Move controls to be less intrusive in landscape */
-    .landscape-controls {
-        top: 10px !important;
-        right: 10px !important;
+    .landscape-frame iframe {
+        width: 100vw !important;
+        height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
     }
 
-    /* Hide next/prev big buttons in landscape to focus on video */
+    /* Move controls to corners in landscape */
+    .landscape-controls {
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important;
+        z-index: 1000 !important;
+    }
+
+    /* Hide UI noise in small landscape */
     .landscape-hide-nav {
         display: none !important;
     }

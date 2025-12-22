@@ -1,128 +1,155 @@
 @if (currentVideoUrl()) {
 <div (click)="minimizeVideo()"
     class="fixed inset-0 z-[5000] w-screen h-screen p-2 md:p-4 transition-all duration-300 landscape-fullscreen"
-    [ngClass]="isMinimized() ? 'bg-transparent pointer-events-none block' : 'bg-black flex flex-col items-center justify-center pointer-events-auto'">
+    [ngClass]="isMinimized() ? 'bg-transparent pointer-events-none block' : 'bg-black/95 backdrop-blur-md flex flex-col items-center justify-center pointer-events-auto'">
 
     <!-- Main Content Wrapper -->
     <div [ngStyle]="getVideoStyle()" (mousedown)="isMinimized() ? null : onDragStart($event)"
         (touchstart)="isMinimized() ? null : onDragStart($event)" [ngClass]="isMinimized() ? 
                 'fixed -bottom-14 right-2 md:-bottom-16 md:right-2 z-[5001] w-[200px] md:w-[320px] rounded-lg overflow-hidden bg-black shadow-2xl' : 
-                'w-full max-w-5xl flex items-center justify-center gap-3 animate-scale-in landscape-container'"
+                'w-full max-w-5xl flex items-center justify-center gap-3 animate-cinematic landscape-container'"
         class="relative shadow-2xl pointer-events-auto" [class.transition-all]="!isDragging"
         [class.duration-500]="!isDragging" [class.ease-in-out]="!isDragging">
 
+        <!-- Ambient Glow (Behind Video) -->
+        @if (!isMinimized() && isAmbientMode()) {
+        <div class="ambient-glow"></div>
+        }
+
         <!-- Previous Button (PC) - Hidden in Mobile Landscape -->
-        <button *ngIf="!isMinimized()" (click)="prevVideo(); $event.stopPropagation()"
+        <button *ngIf="!isMinimized() && !isTheaterFocus()" (click)="prevVideo(); $event.stopPropagation()"
             [disabled]="currentVideoIndex() <= 0"
-            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0 landscape-hide-nav">
+            class="hidden md:flex w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white items-center justify-center disabled:opacity-10 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-2xl shrink-0 landscape-hide-nav">
             <app-svg-icon name="chevron-left"
                 class="w-6 h-6 group-hover:-translate-x-0.5 transition-transform"></app-svg-icon>
         </button>
 
         <!-- Video Container Wrapper -->
-        <div [ngClass]="isMinimized() ? 'w-full' : 'relative w-[90vw] md:w-[50vw] landscape-video-wrapper'">
+        <div [ngClass]="isMinimized() ? 'w-full' : 'relative w-[90vw] md:w-[60vw] landscape-video-wrapper transition-all duration-700'"
+            [style.maxWidth]="isTheaterFocus() ? '90vw' : '850px'">
 
-            <!-- Controls Container (Minimize & Close) -->
+            <!-- Controls Container (Minimize, Theater, Close) -->
             @if (!isMinimized()) {
-            <div class="absolute -top-10 right-0 flex gap-3 z-[105] landscape-controls">
-                <!-- Minimize Button -->
-                <button (click)="minimizeVideo(); $event.stopPropagation()"
-                    class="bg-gray-500/20 hover:bg-green-600/90 text-white w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/20 backdrop-blur-md">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                        </path>
-                    </svg>
-                </button>
+            <div
+                class="absolute -top-12 left-0 right-0 flex justify-between items-center z-[105] px-2 landscape-controls">
+                <!-- Info Section -->
+                <div class="flex flex-col max-w-[60%] animate-fade-in" *ngIf="!isTheaterFocus()">
+                    <h3 class="text-white text-sm font-bold truncate">{{ getCurrentVideoTitle() }}</h3>
+                    <p class="text-white/60 text-xs truncate">{{ getCurrentVideoArtist() }}</p>
+                </div>
+                <div *ngIf="isTheaterFocus()"></div>
 
-                <!-- Close Button -->
-                <button (click)="closeVideo(); $event.stopPropagation()"
-                    class="bg-gray-500/20 hover:bg-red-600/90 text-white w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/20 backdrop-blur-md">
-                    <app-svg-icon name="x" class="w-4 h-4"></app-svg-icon>
-                </button>
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <!-- Theater Mode Toggle -->
+                    <button (click)="toggleTheaterFocus(); $event.stopPropagation()"
+                        [title]="isTheaterFocus() ? 'Salir de modo teatro' : 'Modo teatro focus'"
+                        class="bg-white/10 hover:bg-indigo-500/80 text-white w-9 h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/10 backdrop-blur-md"
+                        [class.bg-indigo-600]="isTheaterFocus()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+
+                    <!-- Ambient Mode Toggle -->
+                    <button (click)="toggleAmbientMode(); $event.stopPropagation()"
+                        [title]="isAmbientMode() ? 'Desactivar Aura' : 'Activar Aura Ambiental'"
+                        class="bg-white/10 hover:bg-emerald-500/80 text-white w-9 h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/10 backdrop-blur-md"
+                        [class.bg-emerald-600]="isAmbientMode()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </button>
+
+                    <!-- Minimize Button -->
+                    <button (click)="minimizeVideo(); $event.stopPropagation()"
+                        class="bg-white/10 hover:bg-green-600/90 text-white w-9 h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/10 backdrop-blur-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <!-- Close Button -->
+                    <button (click)="closeVideo(); $event.stopPropagation()"
+                        class="bg-white/10 hover:bg-red-600/90 text-white w-9 h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/10 backdrop-blur-md">
+                        <app-svg-icon name="x" class="w-4 h-4"></app-svg-icon>
+                    </button>
+                </div>
             </div>
             }
 
             <!-- Video Frame -->
-            <div
-                [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none relative' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-xl overflow-hidden border border-white/10 ring-1 ring-white/5 landscape-frame'">
+            <div [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none relative' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-2xl overflow-hidden border border-white/20 ring-1 ring-white/10 landscape-frame shadow-[0_0_50px_rgba(0,0,0,0.5)]'"
+                [style.transition]="'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'">
 
                 <!-- Loading Spinner -->
                 @if (videoService.isLoading()) {
                 <div class="absolute inset-0 flex items-center justify-center bg-black z-10">
                     <div class="flex flex-col items-center gap-3">
-                        <app-svg-icon name="loader" class="w-12 h-12 text-emerald-500 animate-spin"></app-svg-icon>
-                        <p class="text-white text-sm">Cargando video...</p>
+                        <div
+                            class="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin">
+                        </div>
+                        <p class="text-white text-xs font-bold tracking-widest uppercase opacity-50">Cargando modo
+                            premium</p>
                     </div>
                 </div>
                 }
 
-                <!-- YouTube Iframe - Simple and Reliable -->
+                <!-- YouTube Iframe -->
                 <iframe [src]="currentVideoUrl()! | safe" class="w-full h-full relative z-0 video-fade-in"
                     [class.pointer-events-none]="isMinimized()" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowfullscreen webkitallowfullscreen mozallowfullscreen>
                 </iframe>
 
-                <!-- Minimized Video Controls (Only when minimized) -->
+                <!-- Minimized Video Controls -->
                 @if (isMinimized()) {
-                <!-- Clickable Overlay -->
                 <div (click)="maximizeFromOverlay($event)" (touchend)="maximizeFromOverlay($event)"
                     (mousedown)="onDragStart($event)" (touchstart)="onDragStart($event)"
-                    class="absolute inset-0 z-50 cursor-move">
-                </div>
-
-                <!-- Video Info (Title only) -->
+                    class="absolute inset-0 z-50 cursor-move"></div>
                 <div class="absolute top-1 left-1 z-[60] pointer-events-none max-w-[calc(100%-3rem)]">
                     <span
-                        class="bg-black/60 backdrop-blur-sm rounded px-1.5 py-0.5 text-white text-[9px] font-medium inline-block truncate max-w-full">
+                        class="bg-black/80 backdrop-blur-md rounded px-2 py-1 text-white text-[9px] font-bold inline-block truncate max-w-full border border-white/10">
                         {{ getCurrentVideoTitle() }}
                     </span>
                 </div>
-
-                <!-- Progress Bar -->
-                <div class="absolute bottom-0 left-0 right-0 h-1 bg-zinc-800 z-[60]">
-                    <div class="h-full bg-emerald-500 transition-all duration-300"
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-[60]">
+                    <div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] transition-all duration-300"
                         [style.width.%]="getProgressPercentage()"></div>
                 </div>
-
-                <!-- Previous Button -->
                 <button (click)="prevVideo(); $event.stopPropagation()" [disabled]="currentVideoIndex() <= 0"
-                    class="absolute bottom-2 left-2 z-[60] w-6 h-6 rounded-full bg-zinc-700/90 hover:bg-zinc-600 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg"
-                    title="Video anterior">
-                    <app-svg-icon name="chevron-left" class="w-3.5 h-3.5"></app-svg-icon>
-                </button>
-
-                <!-- Next Button -->
+                    class="absolute bottom-2 left-2 z-[60] w-7 h-7 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center disabled:opacity-30 border border-white/10 transition-all active:scale-90"><app-svg-icon
+                        name="chevron-left" class="w-4 h-4"></app-svg-icon></button>
                 <button (click)="nextVideo(); $event.stopPropagation()"
                     [disabled]="currentVideoIndex() >= videos().length - 1"
-                    class="absolute bottom-2 right-2 z-[60] w-6 h-6 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg"
-                    title="Siguiente video">
-                    <app-svg-icon name="chevron-right" class="w-3.5 h-3.5"></app-svg-icon>
-                </button>
+                    class="absolute bottom-2 right-2 z-[60] w-7 h-7 rounded-full bg-emerald-600/80 hover:bg-emerald-500 text-white flex items-center justify-center disabled:opacity-30 border border-emerald-500/20 transition-all active:scale-90"><app-svg-icon
+                        name="chevron-right" class="w-4 h-4"></app-svg-icon></button>
                 }
             </div>
 
-            <!-- Mobile Controls (Below Video) - Hidden when minimized or in landscape -->
+            <!-- Mobile Controls -->
             @if (!isMinimized()) {
-            <div class="flex md:hidden items-center justify-center gap-4 mt-4 landscape:hidden">
+            <div class="flex md:hidden items-center justify-center gap-6 mt-6 landscape:hidden">
                 <button (click)="prevVideo(); $event.stopPropagation()" [disabled]="currentVideoIndex() <= 0"
-                    class="w-10 h-10 rounded-full bg-zinc-800 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-transform shadow-lg border border-white/10">
-                    <app-svg-icon name="chevron-left" class="w-6 h-6"></app-svg-icon>
-                </button>
-
+                    class="w-12 h-12 rounded-full bg-white/5 text-white flex items-center justify-center disabled:opacity-10 active:scale-90 transition-all shadow-2xl border border-white/10"><app-svg-icon
+                        name="chevron-left" class="w-7 h-7"></app-svg-icon></button>
                 <button (click)="nextVideo(); $event.stopPropagation()"
                     [disabled]="currentVideoIndex() >= videos().length - 1"
-                    class="w-10 h-10 rounded-full bg-zinc-800 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-transform shadow-lg border border-white/10">
-                    <app-svg-icon name="chevron-right" class="w-6 h-6"></app-svg-icon>
-                </button>
+                    class="w-12 h-12 rounded-full bg-white/5 text-white flex items-center justify-center disabled:opacity-10 active:scale-90 transition-all shadow-2xl border border-white/10"><app-svg-icon
+                        name="chevron-right" class="w-7 h-7"></app-svg-icon></button>
             </div>
             }
         </div>
 
-        <!-- Next Button (PC) - Hidden in Mobile Landscape -->
-        <button *ngIf="!isMinimized()" (click)="nextVideo(); $event.stopPropagation()"
+        <!-- Next Button (PC) -->
+        <button *ngIf="!isMinimized() && !isTheaterFocus()" (click)="nextVideo(); $event.stopPropagation()"
             [disabled]="currentVideoIndex() >= videos().length - 1"
-            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0 landscape-hide-nav">
+            class="hidden md:flex w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white items-center justify-center disabled:opacity-10 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-2xl shrink-0 landscape-hide-nav">
             <app-svg-icon name="chevron-right"
                 class="w-6 h-6 group-hover:translate-x-0.5 transition-transform"></app-svg-icon>
         </button>
