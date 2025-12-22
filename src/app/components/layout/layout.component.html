@@ -293,7 +293,8 @@
     </main>
 
     <!-- Redes Sociales (Fixed Global) -->
-    <app-redes-sociales *ngIf="!showHistory"></app-redes-sociales>
+    <app-redes-sociales
+        *ngIf="!showHistory && !(videoService.currentVideoUrl() && !videoService.isMinimized())"></app-redes-sociales>
 
     <!-- FOOTER -->
     <app-footer *ngIf="!shouldHideFooter()"></app-footer>

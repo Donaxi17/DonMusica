@@ -13,6 +13,7 @@ import { HapticService } from '../../services/haptic.service';
 import { ARTISTS_DATA } from '../../models/artists.data';
 import { LanguageService } from '../../services/language.service';
 import { PwaInstallService } from '../../services/pwa-install.service';
+import { VideoPlayerService } from '../../services/video-player.service';
 
 @Component({
   selector: 'app-layout',
@@ -61,7 +62,8 @@ export class LayoutComponent implements OnInit {
   public settingsService = inject(SettingsService);
   private hapticService = inject(HapticService);
   public languageService = inject(LanguageService);
-  public pwaInstallService = inject(PwaInstallService); // Added
+  public pwaInstallService = inject(PwaInstallService);
+  public videoService = inject(VideoPlayerService);
 
   constructor() {
     this.router.events.subscribe(event => {

@@ -17,3 +17,42 @@
 .dragging {
     cursor: grabbing !important;
 }
+
+/* Landscape Mode Fix for Mobile */
+@media (orientation: landscape) and (max-height: 500px) {
+    .landscape-fullscreen {
+        padding: 0 !important;
+        background: black !important;
+    }
+
+    .landscape-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: none !important;
+        gap: 0 !important;
+    }
+
+    .landscape-video-wrapper {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+
+    .landscape-frame {
+        height: 100vh !important;
+        width: 100vw !important;
+        border-radius: 0 !important;
+        border: none !important;
+        background: black !important;
+    }
+
+    /* Move controls to be less intrusive in landscape */
+    .landscape-controls {
+        top: 10px !important;
+        right: 10px !important;
+    }
+
+    /* Hide next/prev big buttons in landscape to focus on video */
+    .landscape-hide-nav {
+        display: none !important;
+    }
+}

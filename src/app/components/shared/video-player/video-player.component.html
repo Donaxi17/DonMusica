@@ -1,30 +1,30 @@
 @if (currentVideoUrl()) {
-<div (click)="minimizeVideo()" class="fixed inset-0 z-[5000] w-screen h-screen p-2 md:p-4 transition-all duration-300"
+<div (click)="minimizeVideo()"
+    class="fixed inset-0 z-[5000] w-screen h-screen p-2 md:p-4 transition-all duration-300 landscape-fullscreen"
     [ngClass]="isMinimized() ? 'bg-transparent pointer-events-none block' : 'bg-black flex flex-col items-center justify-center pointer-events-auto'">
 
     <!-- Main Content Wrapper -->
     <div [ngStyle]="getVideoStyle()" (mousedown)="isMinimized() ? null : onDragStart($event)"
         (touchstart)="isMinimized() ? null : onDragStart($event)" [ngClass]="isMinimized() ? 
                 'fixed -bottom-14 right-2 md:-bottom-16 md:right-2 z-[5001] w-[200px] md:w-[320px] rounded-lg overflow-hidden bg-black shadow-2xl' : 
-                'w-full max-w-5xl flex items-center justify-center gap-3 animate-scale-in'"
+                'w-full max-w-5xl flex items-center justify-center gap-3 animate-scale-in landscape-container'"
         class="relative shadow-2xl pointer-events-auto" [class.transition-all]="!isDragging"
         [class.duration-500]="!isDragging" [class.ease-in-out]="!isDragging">
 
-        <!-- Previous Button (PC) - Always visible -->
+        <!-- Previous Button (PC) - Hidden in Mobile Landscape -->
         <button *ngIf="!isMinimized()" (click)="prevVideo(); $event.stopPropagation()"
             [disabled]="currentVideoIndex() <= 0"
-            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0">
+            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0 landscape-hide-nav">
             <app-svg-icon name="chevron-left"
                 class="w-6 h-6 group-hover:-translate-x-0.5 transition-transform"></app-svg-icon>
         </button>
 
         <!-- Video Container Wrapper -->
-        <!-- When minimized, width matches parent (280px/400px). When maximized, follows original logic -->
-        <div [ngClass]="isMinimized() ? 'w-full' : 'relative w-[90vw] md:w-[50vw]'">
+        <div [ngClass]="isMinimized() ? 'w-full' : 'relative w-[90vw] md:w-[50vw] landscape-video-wrapper'">
 
             <!-- Controls Container (Minimize & Close) -->
             @if (!isMinimized()) {
-            <div class="absolute -top-10 right-0 flex gap-3 z-[105]">
+            <div class="absolute -top-10 right-0 flex gap-3 z-[105] landscape-controls">
                 <!-- Minimize Button -->
                 <button (click)="minimizeVideo(); $event.stopPropagation()"
                     class="bg-gray-500/20 hover:bg-green-600/90 text-white w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 border border-white/20 backdrop-blur-md">
@@ -44,7 +44,7 @@
 
             <!-- Video Frame -->
             <div
-                [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none relative' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-xl overflow-hidden border border-white/10 ring-1 ring-white/5'">
+                [ngClass]="isMinimized() ? 'h-auto aspect-video rounded-none relative' : 'relative w-full h-[40vh] md:h-[60vh] aspect-video bg-black rounded-xl overflow-hidden border border-white/10 ring-1 ring-white/5 landscape-frame'">
 
                 <!-- Loading Spinner -->
                 @if (videoService.isLoading()) {
@@ -60,7 +60,7 @@
                 <iframe [src]="currentVideoUrl()! | safe" class="w-full h-full relative z-0 video-fade-in"
                     [class.pointer-events-none]="isMinimized()" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowfullscreen>
+                    allowfullscreen webkitallowfullscreen mozallowfullscreen>
                 </iframe>
 
                 <!-- Minimized Video Controls (Only when minimized) -->
@@ -102,9 +102,9 @@
                 }
             </div>
 
-            <!-- Mobile Controls (Below Video) - Hidden when minimized -->
+            <!-- Mobile Controls (Below Video) - Hidden when minimized or in landscape -->
             @if (!isMinimized()) {
-            <div class="flex md:hidden items-center justify-center gap-4 mt-4">
+            <div class="flex md:hidden items-center justify-center gap-4 mt-4 landscape:hidden">
                 <button (click)="prevVideo(); $event.stopPropagation()" [disabled]="currentVideoIndex() <= 0"
                     class="w-10 h-10 rounded-full bg-zinc-800 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-transform shadow-lg border border-white/10">
                     <app-svg-icon name="chevron-left" class="w-6 h-6"></app-svg-icon>
@@ -119,10 +119,10 @@
             }
         </div>
 
-        <!-- Next Button (PC) - Always visible -->
+        <!-- Next Button (PC) - Hidden in Mobile Landscape -->
         <button *ngIf="!isMinimized()" (click)="nextVideo(); $event.stopPropagation()"
             [disabled]="currentVideoIndex() >= videos().length - 1"
-            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0">
+            class="hidden md:flex w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 group border border-white/10 shadow-xl shrink-0 landscape-hide-nav">
             <app-svg-icon name="chevron-right"
                 class="w-6 h-6 group-hover:translate-x-0.5 transition-transform"></app-svg-icon>
         </button>
