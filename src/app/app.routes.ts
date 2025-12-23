@@ -67,5 +67,5 @@ export const routes: Routes = [
     { path: 'privacy', loadComponent: () => import('./components/legal/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
     { path: 'terms', loadComponent: () => import('./components/legal/terms.component').then(m => m.TermsComponent) },
     { path: 'admin-login', loadComponent: () => import('./components/admin-login/admin-login.component').then(m => m.AdminLoginComponent) },
-    { path: '**', redirectTo: '', pathMatch: 'full' }
+    { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

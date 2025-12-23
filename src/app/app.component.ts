@@ -7,11 +7,14 @@ import { inject as vercelInject } from '@vercel/analytics';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { ToastService } from './services/toast.service';
 import { filter } from 'rxjs';
+import { SeoService } from './services/seo.service';
+
+import { CookieConsentComponent } from './components/shared/cookie-consent/cookie-consent.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ToastContainerComponent, ProModalComponent],
+  imports: [RouterOutlet, ToastContainerComponent, ProModalComponent, CookieConsentComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -28,6 +31,7 @@ export class AppComponent implements OnInit {
 
   private swUpdate = inject(SwUpdate);
   private toastService = inject(ToastService);
+  private seoService = inject(SeoService);
 
   ngOnInit() {
     vercelInject();

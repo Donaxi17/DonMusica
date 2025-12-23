@@ -378,9 +378,16 @@ export class BlogComponent implements OnInit {
 
     private loadPosts() {
         this.loading.set(true);
-        this.blogService.getPosts().subscribe(data => {
-            this.posts.set(data);
-            this.loading.set(false);
+        this.blogService.getPosts().subscribe({
+            next: (data) => {
+                this.posts.set(data);
+                this.loading.set(false);
+            },
+            error: (err) => {
+                console.error('Error loading posts', err);
+                this.posts.set([]);
+                this.loading.set(false);
+            }
         });
     }
 

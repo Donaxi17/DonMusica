@@ -55,6 +55,13 @@ export class LanguageService {
 
             // Footer
             'footer.description': 'La plataforma de streaming definitiva. Descubre, escucha y comparte la mejor música sin límites.',
+            // Cookie Consent
+            'cookies.title': 'Valoramos tu privacidad',
+            'cookies.desc': 'Usamos cookies para mejorar tu experiencia y anuncios. La música funciona igual si rechazas.',
+            'cookies.link': 'Leer Política',
+            'cookies.accept': 'Aceptar Todo',
+            'cookies.decline': 'Solo Esenciales',
+
             'footer.discover': 'Descubrir',
             'footer.rankings': 'Rankings',
             'footer.community': 'Comunidad',
@@ -242,6 +249,16 @@ export class LanguageService {
             'home.whatsapp.message_header': '⚡ *Nueva Petición Musical* ⚡',
             'home.whatsapp.artist': '🎙️ *Artista:*',
             'home.whatsapp.song': '🎧 *Canción/Álbum:*',
+
+            // SEO Section
+            'home.seo.title': 'La Plataforma Definitiva para Descubrir Música',
+            'home.seo.intro1': 'Bienvenido a <strong>DonMusica</strong>, tu destino principal para el streaming de música de alta fidelidad y el descubrimiento de nuevos talentos. A diferencia de otras plataformas convencionales, nos enfocamos en curar una experiencia auditiva que combina lo mejor de los éxitos globales con las joyas ocultas de la música independiente y regional.',
+            'home.seo.smart_shuffle': 'Nuestra tecnología de <strong>Smart Shuffle</strong> y algoritmos de recomendación están diseñados para romper las burbujas musicales, presentándote artistas de géneros como Reggaetón, Vallenato, Trap, Pop y muchos más. En DonMusica, creemos que cada canción tiene su momento y cada artista merece ser escuchado.',
+            'home.seo.smart_shuffle_title': 'Tecnología Smart Shuffle',
+            'home.seo.quality_title': 'Calidad de Audio Superior',
+            'home.seo.quality_desc': 'Optimizamos nuestro streaming para ofrecer la mayor claridad posible. Nuestra plataforma es una Progressive Web App (PWA), lo que significa que obtienes una experiencia nativa, rápida y fluida directamente desde tu navegador, sin instalaciones pesadas.',
+            'home.seo.community_title': 'Comunidad y Artistas',
+            'home.seo.community_desc': 'DonMusica no es solo un reproductor; es una comunidad. Apoyamos activamente a los creadores de contenido ofreciendo herramientas promocionales y una visibilidad justa. Si eres un artista emergente, nuestra plataforma es el trampolín ideal para llevar tu música a una audiencia apasionada y global.',
 
             'common.new': 'NUEVO',
             'common.view_all': 'Ver todo',
@@ -916,6 +933,13 @@ export class LanguageService {
 
             // Footer
             'footer.description': 'The ultimate streaming platform. Discover, listen, and share the best music without limits.',
+            // Cookie Consent
+            'cookies.title': 'We value your privacy',
+            'cookies.desc': 'We use cookies to improve experience and ads. Music works fine if you decline.',
+            'cookies.link': 'Read Policy',
+            'cookies.accept': 'Accept All',
+            'cookies.decline': 'Essentials Only',
+
             'footer.discover': 'Discover',
             'footer.rankings': 'Rankings',
             'footer.community': 'Community',
@@ -1103,6 +1127,16 @@ export class LanguageService {
             'home.whatsapp.message_header': '⚡ *New Music Request* ⚡',
             'home.whatsapp.artist': '🎙️ *Artist:*',
             'home.whatsapp.song': '🎧 *Song/Album:*',
+
+            // SEO Section
+            'home.seo.title': 'The Ultimate Platform for Music Discovery',
+            'home.seo.intro1': 'Welcome to <strong>DonMusica</strong>, your premier destination for high-fidelity music streaming and new talent discovery. Unlike other conventional platforms, we focus on curating a listening experience that combines the best of global hits with the hidden gems of independent and regional music.',
+            'home.seo.smart_shuffle': 'Our <strong>Smart Shuffle</strong> technology and recommendation algorithms are designed to burst music bubbles, introducing you to artists from genres like Reggaeton, Vallenato, Trap, Pop and many more. At DonMusica, we believe every song has its moment and every artist deserves to be heard.',
+            'home.seo.smart_shuffle_title': 'Smart Shuffle Technology',
+            'home.seo.quality_title': 'Superior Audio Quality',
+            'home.seo.quality_desc': 'We optimize our streaming to offer the highest clarity possible. Our platform is a Progressive Web App (PWA), which means you get a native, fast, and fluid experience directly from your browser, without heavy installations.',
+            'home.seo.community_title': 'Community and Artists',
+            'home.seo.community_desc': 'DonMusica is not just a player; it is a community. We actively support content creators by offering promotional tools and fair visibility. If you are an emerging artist, our platform is the ideal springboard to take your music to a passionate and global audience.',
 
             'common.new': 'NEW',
             'common.view_all': 'View all',
