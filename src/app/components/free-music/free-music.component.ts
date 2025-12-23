@@ -64,9 +64,6 @@ export class FreeMusicComponent implements OnInit {
   // Descarga redirigida a página global
   isProcessingDownload = signal(false);
 
-  // Smartlink configuration
-  private readonly SMARTLINK_URL = 'https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c';
-
   // Custom Download Notification
   showDownloadNotification = signal(false);
   downloadingSong = signal<Song | null>(null);
@@ -196,10 +193,6 @@ export class FreeMusicComponent implements OnInit {
 
   closeDownloadModal() {
     // Ya no se usa modal inline
-  }
-
-  private openSmartlinkIfAllowed(): void {
-    window.open(this.SMARTLINK_URL, '_blank');
   }
 
   handleImageError(event: Event, songTitle: string) {
