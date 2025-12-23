@@ -81,9 +81,9 @@ export class TrendsComponent implements OnInit {
         this.musicApi.getTrending(region).subscribe({
             next: (songs) => {
                 if (songs && songs.length > 0) {
-                    this.allSongs = songs;
-                    this.trendingSongs.set(songs.slice(0, this.itemsPerPage));
-                    this.hasMore = songs.length > this.itemsPerPage;
+                    this.allSongs = songs.slice(0, 20);
+                    this.trendingSongs.set(this.allSongs.slice(0, this.itemsPerPage));
+                    this.hasMore = this.allSongs.length > this.itemsPerPage;
                     this.loading.set(false);
                 } else {
                     this.loading.set(false);

@@ -90,7 +90,7 @@ export class ChartsComponent implements OnInit {
         this.loading.set(true);
         this.musicApi.getTrending(countryCode, true).subscribe({
             next: (songs) => {
-                this.chartSongs.set(songs);
+                this.chartSongs.set(songs.slice(0, 20));
                 this.loading.set(false);
             },
             error: (err) => {

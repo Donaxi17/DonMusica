@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map, of, catchError, switchMap, forkJoin, from, mergeMap, toArray, delay, concatMap } from 'rxjs';
+import { Observable, map, of, catchError, switchMap, forkJoin, from, mergeMap, toArray, delay, concatMap, filter, scan, tap } from 'rxjs';
 import { Song } from './playlist.service';
 import { environment } from '../../environments/environment';
 
@@ -187,7 +187,6 @@ export class MusicApiService {
         );
     }
 
-    // --- NEW RELEASES ---
     getNewReleases(country: string = 'US', limit: number = 30): Observable<Song[]> {
         const cacheKey = `new_releases_${country}_${limit}`;
         const cachedData = this.getFromCache<Song[]>(cacheKey);
@@ -196,40 +195,32 @@ export class MusicApiService {
             return of(cachedData);
         }
 
-        // Prioritize iTunes RSS feeds for regional content (more reliable than Spotify for regions)
-        return this.getNewReleasesFromITunes(country, limit).pipe(
-            switchMap(songs => {
+        // Prioritize Spotify for better regional music (Reggaeton, Vallenato, etc.)
+        return this.getNewReleasesFromSpotify(country, limit).pipe(
+            tap(songs => {
                 if (songs.length >= 5) {
                     this.saveToCache(cacheKey, songs);
-                    return of(songs);
                 }
-                // Fallback to Spotify if iTunes doesn't have enough content
-                return this.getNewReleasesFromSpotify(country, limit);
             }),
-            map((songs: Song[]) => {
-                if (songs && songs.length > 0) {
-                    this.saveToCache(cacheKey, songs);
-                }
-                return songs;
-            })
+            catchError(() => this.getNewReleasesFromITunes(country, limit))
         );
     }
 
     private getNewReleasesFromSpotify(country: string, limit: number): Observable<Song[]> {
         return this.getSpotifyToken().pipe(
             switchMap(token => {
-                if (!token) return of([]);
+                if (!token) return this.getNewReleasesFromITunes(country, limit); // Fallback if no token
 
                 const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
                 return this.http.get<any>(`${this.SPOTIFY_API_URL}/browse/new-releases?country=${country}&limit=50`, { headers }).pipe(
                     switchMap(response => {
                         if (response.albums?.items?.length > 0) {
-                            const scanLimit = Math.min(limit, 18);
+                            const scanLimit = Math.min(limit, 20);
                             const albumItems = response.albums.items.slice(0, scanLimit);
 
                             return from(albumItems).pipe(
-                                concatMap((album: any) => {
+                                mergeMap((album: any) => {
                                     const artistName = album.artists[0]?.name || '';
                                     const albumName = album.name || '';
                                     const searchQuery = `${artistName} ${albumName}`.trim()
@@ -239,7 +230,7 @@ export class MusicApiService {
                                     const iTunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&entity=song&limit=1&country=${country}`;
 
                                     return of(null).pipe(
-                                        delay(Math.floor(Math.random() * 500) + 300),
+                                        delay(Math.floor(Math.random() * 50) + 50),
                                         switchMap(() => this.http.jsonp<any>(iTunesUrl, 'callback')),
                                         map(res => {
                                             if (res.results?.length > 0) {
@@ -261,18 +252,14 @@ export class MusicApiService {
                                         }),
                                         catchError(() => of(null))
                                     );
-                                }),
-                                toArray(),
-                                map((songs: Array<Song | null>) => {
-                                    const valid = songs.filter((s: Song | null): s is Song => s !== null && s.url !== '');
-                                    return valid.length >= 1 ? valid.slice(0, limit) : [];
-                                }),
-                                catchError(() => of([]))
-                            ) as Observable<Song[]>;
+                                }, 4), // Concurrency limit 4
+                                filter((s: Song | null): s is Song => s !== null && s.url !== ''),
+                                scan((acc: Song[], curr: Song) => [...acc, curr], [] as Song[])
+                            );
                         }
-                        return of([]);
+                        return this.getNewReleasesFromITunes(country, limit);
                     }),
-                    catchError(() => of([]))
+                    catchError(() => this.getNewReleasesFromITunes(country, limit))
                 );
             })
         );
@@ -290,9 +277,9 @@ export class MusicApiService {
                     return this.getNewReleasesSearchFallback(country, limit);
                 }
 
-                // Process albums sequentially to get song previews
+                // Process albums concurrently (limit 4) to speed up loading
                 return from(entries.slice(0, Math.min(limit, 20))).pipe(
-                    concatMap((album: any) => {
+                    mergeMap((album: any) => {
                         const artistName = album['im:artist']?.label || '';
                         const albumName = album['im:name']?.label || '';
                         const artworkUrl = album['im:image']?.[2]?.label || album['im:image']?.[0]?.label || '';
@@ -302,7 +289,7 @@ export class MusicApiService {
                         const searchUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&entity=song&limit=1&country=${countryCode.toUpperCase()}`;
 
                         return of(null).pipe(
-                            delay(250 + Math.random() * 250),
+                            delay(Math.floor(Math.random() * 50) + 50),
                             switchMap(() => this.http.jsonp<any>(searchUrl, 'callback')),
                             map(searchRes => {
                                 if (searchRes.results?.length > 0) {
@@ -324,15 +311,12 @@ export class MusicApiService {
                             }),
                             catchError(() => of(null))
                         );
-                    }),
-                    toArray(),
-                    map((songs: Array<Song | null>) => {
-                        const valid = songs.filter((s): s is Song => s !== null && s.url !== '');
-                        return valid.slice(0, limit);
-                    })
+                    }, 4),
+                    // Use scan to emit the array as it grows (streaming effect)
+                    filter((s: Song | null): s is Song => s !== null && s.url !== ''),
+                    scan((acc: Song[], curr: Song) => [...acc, curr], [] as Song[])
                 );
             }),
-            switchMap(songs => songs.length >= 5 ? of(songs) : this.getNewReleasesSearchFallback(country, limit)),
             catchError(() => this.getNewReleasesSearchFallback(country, limit))
         );
     }
@@ -341,8 +325,8 @@ export class MusicApiService {
         const countryCode = country.toUpperCase();
         // Regional search terms for fallback
         const regionalTerms: Record<string, string[]> = {
-            'CO': ['Reggaeton 2024', 'Feid', 'Karol G', 'Ryan Castro'],
-            'MX': ['Regional Mexicano', 'Peso Pluma', 'Junior H', 'Natanael Cano'],
+            'CO': ['Reggaeton 2024', 'Feid', 'Karol G', 'Ryan Castro', 'Vallenato', 'Silvestre Dangond', 'Salsa Romantica', 'Musica Popular Colombia'],
+            'MX': ['Regional Mexicano', 'Peso Pluma', 'Junior H', 'Natanael Cano', 'Banda MS'],
             'US': ['New Music Friday', 'Taylor Swift', 'Drake', 'The Weeknd']
         };
 
