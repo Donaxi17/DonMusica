@@ -283,11 +283,16 @@ export class MusicApiService {
                                     // If no preview, fallback to iTunes match (slower but reliable audio)
                                     // Use higher delay to avoid hitting rate limits too fast on the fallback
                                     return of(null).pipe(
-                                        delay(Math.floor(Math.random() * 50) + 50),
-                                        switchMap(() => this.getITunesPreviewForTrack(track, country))
+                                        delay(Math.floor(Math.random() * 300) + 100), // Increased delay for localhost safety
+                                        switchMap(() => this.getITunesPreviewForTrack(track, country)),
+                                        catchError(() => {
+                                            // If iTunes fails (403/Limit), return the Spotify song WITHOUT preview rather than hiding it
+                                            // This ensures the list is populated even if audio previews fail loading
+                                            return of(this.convertSpotifyToSong(track));
+                                        })
                                     );
                                 }, 4),
-                                filter((s: Song | null): s is Song => s !== null && s.url !== ''),
+                                filter((s: Song | null): s is Song => s !== null), // Allow songs even if URL is empty
                                 scan((acc: Song[], curr: Song) => {
                                     // Avoid duplicates
                                     if (acc.find(s => s.id === curr.id)) return acc;
@@ -327,7 +332,7 @@ export class MusicApiService {
                                     const iTunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&entity=song&limit=1&country=${country}`;
 
                                     return of(null).pipe(
-                                        delay(Math.floor(Math.random() * 50) + 50),
+                                        delay(Math.floor(Math.random() * 300) + 100), // Increased delay
                                         switchMap(() => this.http.jsonp<any>(iTunesUrl, 'callback')),
                                         map(res => {
                                             if (res.results?.length > 0) {
@@ -345,12 +350,26 @@ export class MusicApiService {
                                                     isStreamUrlFetched: true
                                                 } as Song;
                                             }
-                                            return null;
+                                            throw new Error('No iTunes match');
                                         }),
-                                        catchError(() => of(null))
+                                        catchError(() => {
+                                            // Fallback: Return Spotify album data WITHOUT preview url
+                                            return of({
+                                                id: album.id,
+                                                artistId: 0,
+                                                title: album.name,
+                                                artist: album.artists.map((a: any) => a.name).join(', '),
+                                                album: album.name,
+                                                img: album.images[0]?.url || 'https://placehold.co/300x300/18181b/10b981?text=Music',
+                                                url: '', // No preview, but song appears
+                                                duration: '--:--',
+                                                genre: 'Pop',
+                                                isStreamUrlFetched: false
+                                            } as Song);
+                                        })
                                     );
                                 }, 4), // Concurrency limit 4
-                                filter((s: Song | null): s is Song => s !== null && s.url !== ''),
+                                filter((s: Song | null): s is Song => s !== null),
                                 scan((acc: Song[], curr: Song) => [...acc, curr], [] as Song[])
                             );
                         }
@@ -386,7 +405,7 @@ export class MusicApiService {
                         const searchUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&entity=song&limit=1&country=${countryCode.toUpperCase()}`;
 
                         return of(null).pipe(
-                            delay(Math.floor(Math.random() * 50) + 50),
+                            delay(Math.floor(Math.random() * 300) + 100), // Increased delay
                             switchMap(() => this.http.jsonp<any>(searchUrl, 'callback')),
                             map(searchRes => {
                                 if (searchRes.results?.length > 0) {
@@ -404,14 +423,32 @@ export class MusicApiService {
                                         isStreamUrlFetched: true
                                     } as Song;
                                 }
-                                return null;
+                                throw new Error('No match');
                             }),
-                            catchError(() => of(null))
+                            catchError(() => {
+                                // Fallback: Return RSS data WITHOUT preview
+                                return of({
+                                    id: album.id?.attributes?.['im:id'] || Math.random().toString(),
+                                    artistId: 0,
+                                    title: albumName,
+                                    artist: artistName,
+                                    album: albumName,
+                                    img: artworkUrl.replace(/\/\d+x\d+bb/g, '/600x600bb'),
+                                    url: '',
+                                    duration: '--:--',
+                                    genre: 'Pop',
+                                    isStreamUrlFetched: false
+                                } as Song);
+                            })
                         );
                     }, 4),
                     // Use scan to emit the array as it grows (streaming effect)
-                    filter((s: Song | null): s is Song => s !== null && s.url !== ''),
-                    scan((acc: Song[], curr: Song) => [...acc, curr], [] as Song[])
+                    filter((s: Song | null): s is Song => s !== null),
+                    scan((acc: Song[], curr: Song) => {
+                        // Avoid duplicates
+                        if (acc.find(s => s.id === curr.id)) return acc;
+                        return [...acc, curr];
+                    }, [] as Song[])
                 );
             }),
             catchError(() => this.getNewReleasesSearchFallback(country, limit))
