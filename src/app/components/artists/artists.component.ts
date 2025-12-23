@@ -177,7 +177,14 @@ export class ArtistsComponent implements OnInit {
               // Exact word match
               if (nw === qw) bestWordMatch = Math.max(bestWordMatch, 1.0);
               // Word starts with query word
-              else if (nw.startsWith(qw)) bestWordMatch = Math.max(bestWordMatch, 0.85);
+              else if (nw.startsWith(qw)) {
+                // EXTREME PENALTY for single letter matches unless it's an exact short word
+                if (qw.length < 2) {
+                  bestWordMatch = Math.max(bestWordMatch, nw === qw ? 1.0 : 0.0);
+                } else {
+                  bestWordMatch = Math.max(bestWordMatch, 0.85);
+                }
+              }
               // Query word starts with name word (for abbreviations)
               else if (qw.length >= 2 && nw.startsWith(qw.substring(0, 2))) bestWordMatch = Math.max(bestWordMatch, 0.6);
               // Levenshtein for typos - more lenient for shorter words
@@ -207,10 +214,12 @@ export class ArtistsComponent implements OnInit {
             }
           });
 
-          // Less strict: require at least 40% of query words to have some match (was 50%)
+          // Stricter: require at least 66% match for multi-word, or very high point score
           const matchRatio = matchedWordCount / queryWords.length;
-          if (matchRatio >= 0.4 || matchedPoints >= 0.7) {
-            score = (matchedPoints / queryWords.length) * 75;
+          const requiredRatio = queryWords.length > 1 ? 0.8 : 0.5;
+
+          if (matchRatio >= requiredRatio || matchedPoints >= (queryWords.length * 0.85)) {
+            score = (matchedPoints / queryWords.length) * 85;
           }
         }
 
@@ -277,8 +286,9 @@ export class ArtistsComponent implements OnInit {
           if (bestSongScore > score) {
             score = bestSongScore;
             bestMatchingSong = matchedSong;
-          } else if (score > 40 && bestSongScore > 30) {
-            // Keep matching song for display even if name won
+          } else if (score > 40 && score < 90 && bestSongScore > 30) {
+            // Keep matching song for display ONLY if artist match is not perfect (score < 90)
+            // If we have a very strong artist match, show the artist card, not a specific song.
             bestMatchingSong = matchedSong;
           }
         }
@@ -293,7 +303,7 @@ export class ArtistsComponent implements OnInit {
 
         return { ...artist, _score: score, _matchingSong: bestMatchingSong };
       })
-      .filter(a => (a as any)._score >= 15) // Lowered threshold from 30 to 15 for less strictness
+      .filter(a => (a as any)._score >= 40) // Very Strict Threshold (was 25)
       .sort((a, b) => (b as any)._score - (a as any)._score)
       .map(artist => {
         const matchingSong = (artist as any)._matchingSong;
