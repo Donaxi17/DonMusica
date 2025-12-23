@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../../services/seo.service';
 import { HapticService } from '../../../services/haptic.service';
 import { LanguageService } from '../../../services/language.service';
+import { NetworkService } from '../../../services/network.service';
+import { NoConnectionComponent } from '../../shared/no-connection/no-connection.component';
 
 interface ZenSound {
     id: string;
@@ -23,7 +25,7 @@ interface ZenSound {
 @Component({
     selector: 'app-zen-mode',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, NoConnectionComponent],
     template: `
     <div class="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-indigo-500/30 overflow-x-hidden relative flex flex-col items-center">
         <!-- Back Navigation -->
@@ -68,6 +70,12 @@ interface ZenSound {
 
             <!-- MIXER SECTION -->
             <div class="w-full space-y-3 md:space-y-4 relative">
+                <!-- Offline Warning for HD Mode -->
+                <div *ngIf="audioMode() === 'ultra' && !networkService.isOnline()" class="animate-fade-in-up py-10">
+                    <app-no-connection></app-no-connection>
+                </div>
+
+                @if (audioMode() === 'eco' || networkService.isOnline()) {
                 @for (sound of currentSounds(); track sound.id) {
                     <div [class.border-indigo-500]="sound.playing"
                         class="group relative bg-zinc-900/40 backdrop-blur-3xl border border-white/5 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] transition-all duration-500 hover:border-white/10">
@@ -110,6 +118,7 @@ interface ZenSound {
                         }
                     </div>
                 }
+                }
             </div>
 
             <!-- Global Control -->
@@ -134,6 +143,7 @@ interface ZenSound {
 })
 export class ZenModeComponent implements OnInit, OnDestroy {
     public languageService = inject(LanguageService);
+    public networkService = inject(NetworkService);
     private router = inject(Router);
     private seoService = inject(SeoService);
     private hapticService = inject(HapticService);

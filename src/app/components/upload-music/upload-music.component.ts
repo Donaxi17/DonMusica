@@ -74,10 +74,6 @@ export class UploadMusicComponent implements OnDestroy {
     return this.proService.isPro();
   }
 
-  toggleProDebug() {
-    this.proService.togglePro();
-  }
-
   uploadedMusicFiles: MusicFile[] = [];
 
   folders: Folder[] = [];
