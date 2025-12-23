@@ -44,7 +44,10 @@
     "!/**/*.*",
     "!/**/*__*",
     "!/**/csp.withgoogle.com/**",
-    "!/**/pagead2.googlesyndication.com/**"
+    "!/**/pagead2.googlesyndication.com/**",
+    "!/**/effectivegatecpm.com/**",
+    "!/**/highperformanceformat.com/**",
+    "!/**/monetag.com/**"
   ],
   "dataGroups": [
     {

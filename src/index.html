@@ -70,9 +70,11 @@
           mutation.addedNodes.forEach((node) => {
             if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
               const src = node.src || '';
-              // BLOQUEAMOS solo lo altamente intrusivo (Pop-unders / Monetag)
-              // Dejamos pasar 'highperformanceformat' para tus BANNERS
-              if (src.includes('otieu.com') || src.includes('monetag') ||
+              // BLOQUEAMOS solo lo altamente intrusivo (Pop-unders / Monetag / Social Bar)
+              // 'effectivegate' suele ser el Social Bar -> LO BLOQUEAMOS
+              // 'highperformanceformat' son tus BANNERS -> LO DEJAMOS PASAR
+              // Smartlinks (window.open) NO se ven afectados por esto.
+              if (src.includes('otieu.com') || src.includes('monetag') || src.includes('effectivegate') ||
                 src.includes('proads') || src.includes('onclick') || src.includes('vignette')) {
                 node.remove();
               }
