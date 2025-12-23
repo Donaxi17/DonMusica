@@ -4,10 +4,10 @@ import { RouterModule } from '@angular/router';
 import { HapticService } from '../../services/haptic.service';
 import { SeoService } from '../../services/seo.service';
 import { MusicApiService } from '../../services/music-api.service';
+import { GameService, GameCategory } from '../../services/game.service';
 
 type GameMode = 'menu' | 'famous' | 'impostor';
 type GameState = 'setup' | 'passing' | 'playing' | 'revealing' | 'round-result' | 'game-over';
-type Category = 'singers' | 'soccer' | 'movies' | 'random';
 
 interface Player {
     id: number;
@@ -29,10 +29,11 @@ export class GamesComponent {
     private hapticService = inject(HapticService);
     private seoService = inject(SeoService);
     private musicApi = inject(MusicApiService);
+    private gameApi = inject(GameService);
 
     mode = signal<GameMode>('menu');
     state = signal<GameState>('setup');
-    selectedCategory = signal<Category>('random');
+    selectedCategory = signal<GameCategory>('random');
     targetScore = signal<number>(5);
 
     numPlayers = signal<number>(2);
@@ -43,31 +44,33 @@ export class GamesComponent {
 
     roundWinners = signal<number[]>([]); // IDs of players who scored this round
 
-    // Fallbacks si falla la API
-    pools: Record<Category, string[]> = {
-        singers: ['Bad Bunny', 'Karol G'],
-        soccer: ['Messi', 'Cristiano'],
-        movies: ['Spider-Man', 'Joker'],
-        random: ['Shakira', 'Neymar']
-    };
-
-    categoriesList: { id: Category, icon: string, label: string }[] = [
-        { id: 'singers', icon: '🎤', label: 'Música' },
-        { id: 'soccer', icon: '⚽', label: 'Fútbol' },
-        { id: 'movies', icon: '🎬', label: 'Cine' },
-        { id: 'random', icon: '🎲', label: 'Azar' }
+    categoriesList: { id: GameCategory, icon: string, label: string, desc: string }[] = [
+        { id: 'singers', icon: '🎤', label: 'Música', desc: 'Artistas que suenan en Colombia' },
+        { id: 'soccer', icon: '⚽', label: 'Fútbol', desc: 'Cracks de nuestra Selección' },
+        { id: 'food', icon: '🥘', label: 'Comida', desc: 'Platos típicos y delicias' },
+        { id: 'cities', icon: '🏙️', label: 'Ciudades', desc: 'Pueblos y capitales' },
+        { id: 'tv', icon: '📺', label: 'Farándula', desc: 'TV y Personajes' },
+        { id: 'random', icon: '🎲', label: 'Azar', desc: 'Mezcla de todo un poco' }
     ];
 
     ngOnInit() {
         this.seoService.setSeoData(
-            'Juegos Musicales & Sociales | DonMusica Pro Games',
-            'Diviértete con amigos en DonMusica Games con nuevas categorías, marcador de puntos y diseño ultra-responsive.'
+            'DonMusica Games | Diversión en grupo',
+            'Juegos sociales con temática colombiana. Famosos, Impostor y más categorías dinámicas.'
         );
     }
 
     setMode(newMode: GameMode) {
         this.hapticService.medium();
         this.mode.set(newMode);
+
+        // Ajuste automático de jugadores mínimos por modo
+        if (newMode === 'impostor' && this.numPlayers() < 3) {
+            this.selectNumPlayers(3);
+        } else if (newMode === 'famous' && this.numPlayers() < 2) {
+            this.selectNumPlayers(2);
+        }
+
         this.state.set('setup');
         this.resetGame(true);
     }
@@ -75,14 +78,15 @@ export class GamesComponent {
     resetGame(resetScores: boolean = false) {
         if (resetScores) {
             this.players.set([]);
+            this.selectNumPlayers(this.numPlayers());
         } else {
-            // Keep scores for new round
             const currentPlayers = this.players();
             currentPlayers.forEach(p => {
                 p.seen = false;
                 p.content = '';
+                p.role = '';
             });
-            this.players.set(currentPlayers);
+            this.players.set([...currentPlayers]);
         }
         this.currentPlayerIndex.set(0);
         this.showContent.set(false);
@@ -92,7 +96,6 @@ export class GamesComponent {
     selectNumPlayers(n: number) {
         this.hapticService.light();
         this.numPlayers.set(n);
-        // Reset players array to match new number
         const newPlayers: Player[] = [];
         for (let i = 0; i < n; i++) {
             newPlayers.push({
@@ -107,7 +110,7 @@ export class GamesComponent {
         this.players.set(newPlayers);
     }
 
-    selectCategory(cat: Category) {
+    selectCategory(cat: GameCategory) {
         this.hapticService.light();
         this.selectedCategory.set(cat);
     }
@@ -121,42 +124,55 @@ export class GamesComponent {
         this.hapticService.success();
         this.isLoading.set(true);
         const n = this.numPlayers();
-        const existingPlayers = this.players();
 
-        if (existingPlayers.length === 0) {
+        if (this.players().length !== n) {
             this.selectNumPlayers(n);
         }
 
-        const currentPlayers = this.players();
+        const currentPlayers = [...this.players()];
 
         if (this.mode() === 'famous') {
-            this.musicApi.getGameFamous(this.selectedCategory()).subscribe(pool => {
-                const finalPool = pool.length > 0 ? pool : this.pools[this.selectedCategory()];
-                const shuffled = [...finalPool].sort(() => Math.random() - 0.5);
-
-                for (let i = 0; i < n; i++) {
-                    currentPlayers[i].role = 'Famoso';
-                    currentPlayers[i].content = shuffled[i % shuffled.length];
-                    currentPlayers[i].seen = false;
-                }
-                this.players.set([...currentPlayers]);
-                this.isLoading.set(false);
-                this.state.set('passing');
+            this.gameApi.getFamousPool(this.selectedCategory()).subscribe({
+                next: (pool) => {
+                    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+                    for (let i = 0; i < n; i++) {
+                        currentPlayers[i].role = 'Famoso';
+                        currentPlayers[i].content = shuffled[i % shuffled.length] || 'Personaje';
+                        currentPlayers[i].seen = false;
+                    }
+                    this.finalizeStart(currentPlayers);
+                },
+                error: () => this.handleCallError()
             });
         } else if (this.mode() === 'impostor') {
-            this.musicApi.getGameWord().subscribe(word => {
-                const impostorIndex = Math.floor(Math.random() * n);
-
-                for (let i = 0; i < n; i++) {
-                    currentPlayers[i].role = i === impostorIndex ? 'IMPOSTOR' : 'Ciudadano';
-                    currentPlayers[i].content = i === impostorIndex ? 'Eres el IMPOSTOR' : word;
-                    currentPlayers[i].seen = false;
-                }
-                this.players.set([...currentPlayers]);
-                this.isLoading.set(false);
-                this.state.set('passing');
+            this.gameApi.getGameWord().subscribe({
+                next: (word) => {
+                    const impostorIndex = Math.floor(Math.random() * n);
+                    for (let i = 0; i < n; i++) {
+                        currentPlayers[i].role = i === impostorIndex ? 'IMPOSTOR' : 'Ciudadano';
+                        currentPlayers[i].content = i === impostorIndex ? '¡Eres el IMPOSTOR!' : word;
+                        currentPlayers[i].seen = false;
+                    }
+                    this.finalizeStart(currentPlayers);
+                },
+                error: () => this.handleCallError()
             });
         }
+    }
+
+    private finalizeStart(ps: Player[]) {
+        this.players.set(ps);
+        this.isLoading.set(false);
+        this.state.set('passing');
+        this.currentPlayerIndex.set(0);
+    }
+
+    private handleCallError() {
+        this.isLoading.set(false);
+        // Fallback local en caso de error de red crítico
+        const ps = this.players();
+        ps.forEach(p => { p.role = 'Error'; p.content = 'Reintenta'; });
+        this.players.set([...ps]);
     }
 
     revealForPlayer() {
@@ -209,19 +225,16 @@ export class GamesComponent {
             return [...ps];
         });
 
-        // Check for Game Over
         const maxScore = Math.max(...this.players().map(p => p.score));
         if (maxScore >= this.targetScore()) {
             this.state.set('game-over');
         } else {
-            this.state.set('setup');
-            this.resetGame(false);
+            this.nextRound();
         }
     }
 
     getWinner() {
-        const sorted = [...this.players()].sort((a, b) => b.score - a.score);
-        return sorted[0];
+        return [...this.players()].sort((a, b) => b.score - a.score)[0];
     }
 
     backToMenu() {
