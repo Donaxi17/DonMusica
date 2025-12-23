@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
   // ==========================================
   // true  -> Muestra mensajes de "Nueva versión" y "Actualización exitosa"
   // false -> Las actualizaciones serán silenciosas (ideal para cambios pequeños)
-  private readonly SHOW_UPDATE_NOTIFICATIONS = false;
+  private readonly SHOW_UPDATE_NOTIFICATIONS = true;
   // ==========================================
 
   private swUpdate = inject(SwUpdate);
@@ -36,7 +36,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     vercelInject();
-    this.loadAdsterraSocialBar();
     this.trackPwaInstallation();
     this.checkForUpdates();
     this.checkIfJustUpdated();

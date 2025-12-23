@@ -62,9 +62,27 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8359193264058620"
     crossorigin="anonymous"></script>
 
-  <!-- Monetag (Vignette Banner & OnClick) - Delayed 10s -->
-  <!-- Adsterra Social Bar -->
-  <!-- Adsterra Social Bar (Loaded dynamically in AppComponent) -->
+  <!-- Ad-Killer & Cache Buster Script -->
+  <script>
+    (function () {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+              const src = node.src || '';
+              if (src.includes('effectivegate') || src.includes('highperformanceformat') ||
+                src.includes('otieu.com') || src.includes('monetag') ||
+                src.includes('proads') || src.includes('onclick') || src.includes('vignette')) {
+                node.remove();
+              }
+            }
+          });
+        });
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    })();
+  </script>
+
 
 
   <!-- Preconnect to external domains -->
