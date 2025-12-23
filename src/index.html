@@ -70,8 +70,9 @@
           mutation.addedNodes.forEach((node) => {
             if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
               const src = node.src || '';
-              if (src.includes('effectivegate') || src.includes('highperformanceformat') ||
-                src.includes('otieu.com') || src.includes('monetag') ||
+              // BLOQUEAMOS solo lo altamente intrusivo (Pop-unders / Monetag)
+              // Dejamos pasar 'highperformanceformat' para tus BANNERS
+              if (src.includes('otieu.com') || src.includes('monetag') ||
                 src.includes('proads') || src.includes('onclick') || src.includes('vignette')) {
                 node.remove();
               }

@@ -473,4 +473,43 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     } catch (e) { }
   }
+
+  /**
+   * NUCLEAR RESET: Limpia TODO el caché, almacenamiento y service workers
+   * Esto asegura que el usuario vea la versión más limpia y sin anuncios viejos.
+   */
+  async hardReset() {
+    this.hapticService.success();
+    this.toastService.info('Limpiando app y eliminando anuncios residuales...', 5000);
+
+    try {
+      // 1. Limpiar Bases de datos de Caché (Service Worker)
+      if (typeof caches !== 'undefined') {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      }
+
+      // 2. Limpiar LocalStorage y SessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // 3. Desregistrar Service Workers
+      if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+      }
+
+      // 4. Recarga forzando la descarga del servidor (nuclear)
+      this.toastService.success('¡Limpieza completada! Reiniciando...', 2000);
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?reset=' + Date.now();
+      }, 1500);
+
+    } catch (e) {
+      console.error('Error durante el reset:', e);
+      window.location.reload();
+    }
+  }
 }

@@ -556,4 +556,11 @@ export class LayoutComponent implements OnInit {
     this.closeMoreMenu();
     this.closeMobileMoreMenu();
   }
+
+  reloadPage() {
+    this.hapticService.success();
+    if (isPlatformBrowser(this.platformId)) {
+      window.location.reload();
+    }
+  }
 }

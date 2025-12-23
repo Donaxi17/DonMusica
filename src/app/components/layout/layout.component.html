@@ -248,8 +248,6 @@
                             </svg> {{ languageService.get('nav.history') }}
                         </button>
 
-                        <div *ngIf="pwaInstallService.showInstallButton()" class="h-px bg-zinc-800 mx-4"></div>
-
                         <button *ngIf="pwaInstallService.showInstallButton()" (click)="installApp()"
                             class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-emerald-400 font-bold group animate-fade-in">
                             <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor"
@@ -257,6 +255,18 @@
                                 <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                             </svg>
                             {{ languageService.get('home.install.btn') }}
+                        </button>
+
+                        <div class="h-px bg-zinc-800 mx-4"></div>
+
+                        <button (click)="reloadPage()"
+                            class="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-zinc-400 font-bold group">
+                            <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                            </svg>
+                            {{ languageService.get('layout.refresh') || 'Actualizar App' }}
                         </button>
 
                         <div class="h-px bg-zinc-800 mx-4"></div>
@@ -728,6 +738,17 @@
                                 languageService.get('layout.language.en') }}</span>
                         </button>
                     </div>
+
+                    <!-- RELOAD BUTTON (MOBILE) -->
+                    <button (click)="reloadPage()"
+                        class="col-span-2 bg-zinc-800 border border-white/5 p-4 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all mt-4">
+                        <svg class="w-6 h-6 text-zinc-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                        </svg>
+                        <span class="text-sm font-bold text-zinc-300 uppercase tracking-wide">{{
+                            languageService.get('layout.refresh') || 'Actualizar App' }}</span>
+                    </button>
                 </div>
             </div>
 
