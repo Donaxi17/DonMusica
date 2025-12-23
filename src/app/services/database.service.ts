@@ -82,6 +82,15 @@ export class DatabaseService {
         return null;
     }
 
+    // Helper to fix dropbox URLs for images
+    private fixDropboxUrl(url: string | undefined): string {
+        if (!url) return '';
+        if (url.includes('dropbox.com')) {
+            return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+        }
+        return url;
+    }
+
     // --- ARTISTAS ---
 
     getArtists(): Observable<Artist[]> {
@@ -114,6 +123,11 @@ export class DatabaseService {
                 );
             }),
             startWith(cached ? (cached as Artist[]) : []),
+            // APLICAR FIX GLOBALMENTE (incluso al caché)
+            map(artists => artists.map(a => ({
+                ...a,
+                image: this.fixDropboxUrl(a.image)
+            }))),
             shareReplay(1)
         );
     }
@@ -289,6 +303,11 @@ export class DatabaseService {
                 );
             }),
             startWith(cached ? (cached as Song[]) : []),
+            // APLICAR FIX GLOBALMENTE (incluso al caché)
+            map(songs => songs.map(s => ({
+                ...s,
+                img: this.fixDropboxUrl(s.img)
+            }))),
             shareReplay(1)
         );
     }
@@ -313,11 +332,18 @@ export class DatabaseService {
         );
 
         return collectionData(latestQuery, { idField: 'id' }).pipe(
-            map(data => data as Song[]),
+            map(data => {
+                return (data as Song[]).map(song => ({
+                    ...song,
+                    img: this.fixDropboxUrl(song.img) // Fix Dropbox URL
+                }));
+            }),
             catchError(err => {
                 console.error('Error fetching latest songs:', err);
                 const cached = this.getFromLocal(this.SONGS_KEY);
-                return of((cached ? cached.slice(0, limitCount) : []) as Song[]);
+                // También aplicar fix al caché aquí
+                const safeCached = (cached || []).map((s: Song) => ({ ...s, img: this.fixDropboxUrl(s.img) }));
+                return of(safeCached.slice(0, limitCount) as Song[]);
             })
         );
     }

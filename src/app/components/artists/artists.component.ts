@@ -687,6 +687,15 @@ export class ArtistsComponent implements OnInit {
       lower.includes('storageimagedisplay.com');
   }
 
+  // Helper to fix dropbox URLs for images
+  private fixDropboxUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.includes('dropbox.com')) {
+      return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+    }
+    return url;
+  }
+
   loadArtists() {
     this.loading.set(true);
 
@@ -701,10 +710,13 @@ export class ArtistsComponent implements OnInit {
             song.artist.toLowerCase().includes(artist.name.toLowerCase()) ||
             artist.name.toLowerCase().includes(song.artist.toLowerCase())
           )
-        );
+        ).map(song => ({
+          ...song,
+          img: this.fixDropboxUrl(song.img) // Fix song image URL
+        }));
 
         // Check cache immediately for those that are placeholders
-        let currentImg = artist.image;
+        let currentImg = this.fixDropboxUrl(artist.image); // Fix artist image URL
         if (this.isPlaceholder(currentImg)) {
           const spotifyCache = this.spotifyService.getArtistStatsFromCache(artist.name);
           const itunesCache = this.itunesService.getArtistImageFromCache(artist.name);

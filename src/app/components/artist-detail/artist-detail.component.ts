@@ -229,6 +229,15 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
 
 
 
+  // Helper to fix dropbox URLs for images
+  private fixDropboxUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.includes('dropbox.com')) {
+      return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+    }
+    return url;
+  }
+
   loadData(id: string) {
     this.loading.set(true);
 
@@ -245,6 +254,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       switchMap(artists => {
         const found = artists.find(a => a.id === id);
         if (found) {
+          // Fix artist image URL
+          found.image = this.fixDropboxUrl(found.image);
+
           const searchName = normalize(found.name);
 
           // Fetch real-time stats (Spotify)
@@ -296,12 +308,17 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
       })
     ).subscribe(artistSongs => {
       const artistImg = this.artist()?.image;
-      const songsWithId = artistSongs.map(s => ({
-        ...s,
-        artistId: this.artistId(),
-        // Immediate fallback to artist image if song image is placeholder or missing
-        img: this.isPlaceholder(s.img) ? artistImg : s.img
-      }));
+      const songsWithId = artistSongs.map(s => {
+        // Fix song image URL first
+        const fixedSongImg = this.fixDropboxUrl(s.img);
+
+        return {
+          ...s,
+          artistId: this.artistId(),
+          // Immediate fallback to artist image if song image is placeholder or missing
+          img: this.isPlaceholder(fixedSongImg) ? artistImg : fixedSongImg
+        };
+      });
 
       this.songs.set(songsWithId);
       this.loading.set(false);

@@ -104,6 +104,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // Helper to fix dropbox URLs for images
+  private fixDropboxUrl(url: string | undefined): string | undefined {
+    if (!url) return url;
+    if (url.includes('dropbox.com')) {
+      return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+    }
+    return url;
+  }
+
   loadStats() {
     this.loadingStats.set(true);
 
@@ -145,11 +154,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       next: async songs => {
         const currentList = this.recentlyAdded();
         const initialMap = songs.map(song => {
+          // Fix Dropbox URL first
+          const fixedImg = this.fixDropboxUrl(song.img);
           const existing = currentList.find(s => s.id === song.id);
+
           if (existing && !this.isGenericImage(existing.img)) {
             return { ...song, img: existing.img };
           }
-          return { ...song };
+          return { ...song, img: fixedImg };
         });
 
         this.recentlyAdded.set(initialMap);
