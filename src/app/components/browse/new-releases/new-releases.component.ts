@@ -93,7 +93,7 @@ export class NewReleasesComponent implements OnInit {
 
     private loadReleases(region: string) {
         this.loading.set(true);
-        this.musicApi.getNewReleases(region, 29).subscribe({
+        this.musicApi.getNewReleases(region, 40).subscribe({
             next: (data) => {
                 this.allReleases = data;
                 this.releases.set(data);

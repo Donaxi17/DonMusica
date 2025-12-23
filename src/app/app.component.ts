@@ -101,18 +101,5 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // private loadAdsterraSocialBar() {
-  //   // Delay 20 seconds for everyone on entry
-  //   // setTimeout(() => {
-  //   //   try {
-  //   //     const script = document.createElement('script');
-  //   //     script.type = 'text/javascript';
-  //   //     script.src = '//pl28232772.effectivegatecpm.com/bf/3b/e2/bf3be2c66537a0c5cca838fe602a1be1.js';
-  //   //     script.defer = true;
-  //   //     document.head.appendChild(script);
-  //   //   } catch (e) {
-  //   //     console.error('Error loading Adsterra script', e);
-  //   //   }
-  //   // }, 40000); // 40 seconds
-  // }
+
 }

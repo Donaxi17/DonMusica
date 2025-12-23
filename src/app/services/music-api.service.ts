@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map, of, catchError, switchMap, forkJoin, from, mergeMap, toArray, delay, concatMap, filter, scan, tap } from 'rxjs';
+import { Observable, map, of, catchError, switchMap, forkJoin, from, mergeMap, toArray, delay, concatMap, filter, scan, tap, combineLatest, startWith } from 'rxjs';
 import { Song } from './playlist.service';
 import { environment } from '../../environments/environment';
 
@@ -41,7 +41,7 @@ export class MusicApiService {
     private readonly JAMENDO_CLIENT_ID = environment.jamendo?.clientId || 'c85b065b';
     private spotifyToken: string | null = null;
     private tokenExpiresAt: number = 0;
-    private readonly CACHE_PREFIX = 'donmusica_api_cache_';
+    private readonly CACHE_PREFIX = 'donmusica_api_cache_v2_';
     private readonly DEFAULT_TTL = 1000 * 60 * 60; // 1 hora por defecto
 
     constructor(private http: HttpClient) {
@@ -188,35 +188,132 @@ export class MusicApiService {
     }
 
     getNewReleases(country: string = 'US', limit: number = 30): Observable<Song[]> {
-        const cacheKey = `new_releases_${country}_${limit}`;
+        const cacheKey = `new_releases_v3_${country}_${limit}`;
         const cachedData = this.getFromCache<Song[]>(cacheKey);
 
         if (cachedData && cachedData.length > 0) {
             return of(cachedData);
         }
 
-        // Prioritize Spotify for better regional music (Reggaeton, Vallenato, etc.)
-        return this.getNewReleasesFromSpotify(country, limit).pipe(
+        let strategy$: Observable<Song[]>;
+
+        if (country === 'US') {
+            strategy$ = this.getNewReleasesFromSpotify('US', limit).pipe(
+                catchError(() => this.getNewReleasesFromITunes('US', limit))
+            );
+        } else {
+            // Mix: Global Hits (US Source) + Local Hits (Regional Source)
+            // User requirement: "Everything in US must be in Colombia"
+
+            // 1. Global Stream (Standard New Releases from US to ensure generic hits)
+            const global$ = this.getNewReleasesFromSpotify('US', Math.ceil(limit)).pipe(
+                startWith([] as Song[]),
+                catchError(() => of([] as Song[]))
+            );
+
+            // 2. Local Stream (Genre specific: Vallenato, Norteno, etc.)
+            const local$ = this.getRegionalReleasesFromSpotify(country, Math.ceil(limit)).pipe(
+                startWith([] as Song[]),
+                catchError(() => this.getNewReleasesFromITunes(country, Math.ceil(limit)))
+            );
+
+            strategy$ = combineLatest([global$, local$]).pipe(
+                map(([globalSongs, localSongs]) => {
+                    // Interleave: Local, Global, Local, Global...
+                    const combined: Song[] = [];
+                    const max = Math.max(globalSongs.length, localSongs.length);
+                    const seen = new Set<string | number>();
+
+                    for (let i = 0; i < max; i++) {
+                        // Prioritize Local slightly by pushing it first in the pair
+                        if (i < localSongs.length) {
+                            const s = localSongs[i];
+                            if (!seen.has(s.id)) { combined.push(s); seen.add(s.id); }
+                        }
+                        if (i < globalSongs.length) {
+                            const s = globalSongs[i];
+                            if (!seen.has(s.id)) { combined.push(s); seen.add(s.id); }
+                        }
+                    }
+                    return combined.slice(0, limit);
+                })
+            );
+        }
+
+        return strategy$.pipe(
             tap(songs => {
                 if (songs.length >= 5) {
                     this.saveToCache(cacheKey, songs);
                 }
-            }),
-            catchError(() => this.getNewReleasesFromITunes(country, limit))
+            })
+        );
+    }
+
+    private getRegionalReleasesFromSpotify(country: string, limit: number): Observable<Song[]> {
+        // STRICTLY disable Pop/Rock for LATAM to avoid English content
+        const genres = country === 'CO'
+            ? ['vallenato', 'reggaeton', 'popular-colombia', 'champeta']
+            : ['regional-mexican', 'corridos', 'banda', 'norteno'];
+
+        // Pick 1 random genre to ensure specific results and avoid query complexity issues
+        const genre = genres[Math.floor(Math.random() * genres.length)];
+        const year = new Date().getFullYear();
+        // Simpler query: genre + year. Encode it properly.
+        const query = encodeURIComponent(`genre:"${genre}" year:${year}`);
+
+        return this.getSpotifyToken().pipe(
+            switchMap(token => {
+                if (!token) return this.getNewReleasesFromITunes(country, limit);
+
+                const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+                // Use Search API for regions to get specific genres
+                return this.http.get<any>(`${this.SPOTIFY_API_URL}/search?q=${query}&type=track&market=${country}&limit=50`, { headers }).pipe(
+                    switchMap(response => {
+                        if (response.tracks?.items?.length > 0) {
+                            // Filter only tracks with preview or usable heuristic
+                            const items = response.tracks.items;
+
+                            return from(items).pipe(
+                                mergeMap((track: any) => {
+                                    // If we have a preview, use it directly (fastest)
+                                    if (track.preview_url) {
+                                        return of(this.convertSpotifyToSong(track));
+                                    }
+
+                                    // If no preview, fallback to iTunes match (slower but reliable audio)
+                                    // Use higher delay to avoid hitting rate limits too fast on the fallback
+                                    return of(null).pipe(
+                                        delay(Math.floor(Math.random() * 50) + 50),
+                                        switchMap(() => this.getITunesPreviewForTrack(track, country))
+                                    );
+                                }, 4),
+                                filter((s: Song | null): s is Song => s !== null && s.url !== ''),
+                                scan((acc: Song[], curr: Song) => {
+                                    // Avoid duplicates
+                                    if (acc.find(s => s.id === curr.id)) return acc;
+                                    return [...acc, curr];
+                                }, [] as Song[])
+                            );
+                        }
+                        return this.getNewReleasesFromITunes(country, limit);
+                    }),
+                    catchError(() => this.getNewReleasesFromITunes(country, limit))
+                );
+            })
         );
     }
 
     private getNewReleasesFromSpotify(country: string, limit: number): Observable<Song[]> {
         return this.getSpotifyToken().pipe(
             switchMap(token => {
-                if (!token) return this.getNewReleasesFromITunes(country, limit); // Fallback if no token
+                if (!token) return this.getNewReleasesFromITunes(country, limit);
 
                 const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
                 return this.http.get<any>(`${this.SPOTIFY_API_URL}/browse/new-releases?country=${country}&limit=50`, { headers }).pipe(
                     switchMap(response => {
                         if (response.albums?.items?.length > 0) {
-                            const scanLimit = Math.min(limit, 20);
+                            const scanLimit = Math.min(limit, 40);
                             const albumItems = response.albums.items.slice(0, scanLimit);
 
                             return from(albumItems).pipe(
@@ -278,7 +375,7 @@ export class MusicApiService {
                 }
 
                 // Process albums concurrently (limit 4) to speed up loading
-                return from(entries.slice(0, Math.min(limit, 20))).pipe(
+                return from(entries.slice(0, Math.min(limit, 40))).pipe(
                     mergeMap((album: any) => {
                         const artistName = album['im:artist']?.label || '';
                         const albumName = album['im:name']?.label || '';
