@@ -296,6 +296,10 @@ export class LayoutComponent implements OnInit {
     this.playerService.nextTrack();
   }
 
+  isMiniPlayerVisible(): boolean {
+    return !this.isActive('/player') && !!this.currentSong && !this.showHistory && !this.showMobileMoreMenu;
+  }
+
   openPlayer() {
     this.hapticService.light();
 
@@ -422,7 +426,8 @@ export class LayoutComponent implements OnInit {
       'lyrics': 'Letras',
       'artist': 'Artista',
       'home-trends': 'Tendencias Home',
-      'home-recent': 'Recién Agregado'
+      'home-recent': 'Recién Agregado',
+      'radio': 'Radio En Vivo'
     };
 
     if (this.playbackContext.startsWith('smart-shuffle')) return 'Smart Shuffle';

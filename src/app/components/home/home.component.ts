@@ -19,6 +19,7 @@ import { DatabaseService } from '../../services/database.service';
 import { HapticService } from '../../services/haptic.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LanguageService } from '../../services/language.service';
+import { PwaInstallService } from '../../services/pwa-install.service';
 import { SettingsService } from '../../services/settings.service';
 import { ImgFallbackDirective } from '../../directives/img-fallback.directive';
 
@@ -44,6 +45,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private spotifyService = inject(SpotifyService);
   public languageService = inject(LanguageService);
   public settingsService = inject(SettingsService);
+  public pwaInstallService = inject(PwaInstallService);
 
   totalArtists = signal<number>(0);
   totalSongs = signal<number>(0);
@@ -70,8 +72,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   deferredPrompt: any;
-  canInstall = false;    // For the Hero button
-  showInstallBanner = false; // For the bottom banner
+  // canInstall remains for the Hero button if needed, but we'll link it to the service
+  get canInstall() { return this.pwaInstallService.showInstallButton() && !this.pwaInstallService.isIOS(); }
 
   private observer: IntersectionObserver | null = null;
 
@@ -89,7 +91,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       'Escucha y descarga música urbana gratis en DonMusica. Reggaeton, trap, rap y más. Rankings actualizados, letras de canciones, videos musicales y música sin copyright para tus proyectos. Artistas como Bad Bunny, Karol G, Feid y más en donmusica.online'
     );
 
-    this.listenForInstallPrompt();
+    // PWA listen handled by global service
 
     // Initial Load
     this.loadTrends(this.selectedRegion());
@@ -289,35 +291,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     elements.forEach((element: HTMLElement) => this.observer?.observe(element));
   }
 
-  listenForInstallPrompt() {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-    if (isIOS && !isStandalone) {
-      setTimeout(() => {
-        this.showInstallBanner = true;
-      }, 5000);
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      this.deferredPrompt = e;
-      this.canInstall = true;
-      this.showInstallBanner = true;
-    });
-  }
 
   async installPwa() {
     this.hapticService.light();
-    if (!this.deferredPrompt) {
-      this.toastService.info(this.languageService.get('home.toast.install_instructions'));
-      return;
-    }
-    this.deferredPrompt.prompt();
-    const { outcome } = await this.deferredPrompt.userChoice;
-    this.deferredPrompt = null;
-    this.canInstall = false;
-    this.showInstallBanner = false;
+    this.pwaInstallService.installApp();
   }
 
   navigateToArtists(): void {

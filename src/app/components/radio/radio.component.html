@@ -241,24 +241,5 @@
         }
     </div>
 
-    <!-- Player Bar (Fixed Bottom - Only visible in mobile if active, desktop handled elsewhere) -->
-    <div *ngIf="currentStation && isPlaying"
-        class="md:hidden fixed bottom-[calc(3.8rem+env(safe-area-inset-bottom,20px))] left-2 right-2 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-xl p-2 z-40 flex items-center gap-3 shadow-2xl shadow-black/50 animate-slide-up">
 
-        <div class="w-10 h-10 rounded overflow-hidden bg-zinc-800 flex-shrink-0">
-            <img [src]="currentStation.favicon || '/assets/img/default-album.jpg'" class="w-full h-full object-cover">
-        </div>
-
-        <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-xs truncate text-white leading-tight mb-0.5">{{currentStation.name}}</h4>
-            <p class="text-[10px] text-blue-400 truncate">{{ languageService.get('radio.live_status') }}</p>
-        </div>
-
-        <button (click)="stopRadio()"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-lg">
-            <svg class="w-5 h-5 ml-px" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
-            </svg>
-        </button>
-    </div>
 </div>

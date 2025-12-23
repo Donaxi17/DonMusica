@@ -274,8 +274,21 @@ export class PlayerService {
   }
 
   private handleAutoPlay(currentSong: Song, currentPlaylist: Song[]) {
+    const context = this.playbackContextSubject.value;
+
     // Si ya estamos cargando o procesando algo similar, salimos
-    if (this.playbackContextSubject.value === 'autoplay-loading') return;
+    if (context === 'autoplay-loading') return;
+
+    // No auto-reproducir más si es una colección personal (Playlists, Favoritos, Offline, etc.)
+    // o si el usuario buscó algo específico. Queremos que el reproductor se detenga.
+    const restrictedContexts = ['playlists', 'upload-music', 'offline-music', 'history', 'free-music', 'lyrics'];
+    if (this.isFavoritesPlayingSubject.value || restrictedContexts.includes(context)) {
+      this.isPlayingSubject.next(false);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
+      return;
+    }
 
     this.dbService.getSongsByArtist(currentSong.artist)
       .pipe(take(1))

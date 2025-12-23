@@ -10,11 +10,12 @@ import { filter } from 'rxjs';
 import { SeoService } from './services/seo.service';
 
 import { CookieConsentComponent } from './components/shared/cookie-consent/cookie-consent.component';
+import { PwaBannerComponent } from './components/shared/pwa-banner/pwa-banner.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ToastContainerComponent, ProModalComponent, CookieConsentComponent],
+  imports: [RouterOutlet, ToastContainerComponent, ProModalComponent, CookieConsentComponent, PwaBannerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

@@ -256,7 +256,7 @@
                                 viewBox="0 0 24 24">
                                 <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                             </svg>
-                            Instalar App
+                            {{ languageService.get('home.install.btn') }}
                         </button>
 
                         <div class="h-px bg-zinc-800 mx-4"></div>
@@ -483,7 +483,7 @@
 
         <!-- CONTROLS -->
         <div class="flex items-center gap-1 md:gap-2 shrink-0" (click)="$event.stopPropagation()">
-            <button (click)="previousTrack()" aria-label="Canción anterior"
+            <button *ngIf="playbackContext !== 'radio'" (click)="previousTrack()" aria-label="Canción anterior"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M16 7v10l-7-5zm-7 10V7h2v10z" />
@@ -498,7 +498,7 @@
                     <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
                 </svg>
             </button>
-            <button (click)="nextTrack()" aria-label="Siguiente canción"
+            <button *ngIf="playbackContext !== 'radio'" (click)="nextTrack()" aria-label="Siguiente canción"
                 class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M7 7v10l7-5zm9 10V7h-2v10z" />
@@ -515,7 +515,8 @@
         </div>
 
         <!-- PROGRESS BAR (Fixed to Top Edge) -->
-        <div #progressBarRef class="absolute top-0 left-0 right-0 h-4 z-50 cursor-pointer touch-none group/progress"
+        <div *ngIf="playbackContext !== 'radio'" #progressBarRef
+            class="absolute top-0 left-0 right-0 h-4 z-50 cursor-pointer touch-none group/progress"
             (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
 
             <!-- Visual Bar (Pinned to top-0) -->
@@ -571,8 +572,9 @@
                             </svg>
                         </div>
                         <div class="text-left">
-                            <div class="text-white font-black uppercase tracking-wide text-sm">Instalar App</div>
-                            <div class="text-white/80 text-xs">Añadir a pantalla de inicio</div>
+                            <div class="text-white font-black uppercase tracking-wide text-sm">{{
+                                languageService.get('home.install.title') }}</div>
+                            <div class="text-white/80 text-xs">{{ languageService.get('home.install.desc') }}</div>
                         </div>
                     </div>
                 </button>
@@ -742,7 +744,7 @@
     <app-video-player></app-video-player>
 
     <!-- Back to Top Button -->
-    <button *ngIf="showBackToTop" (click)="scrollToTop()" [ngClass]="currentSong ? 'bottom-36' : 'bottom-20'"
+    <button *ngIf="showBackToTop" (click)="scrollToTop()" [ngClass]="isMiniPlayerVisible() ? 'bottom-36' : 'bottom-20'"
         aria-label="Volver arriba"
         class="fixed md:bottom-4 right-2 z-[3000] w-7 h-7 md:w-9 md:h-9 bg-emerald-500/20 backdrop-blur-xl border border-emerald-500/30 text-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:bg-emerald-500 hover:text-black hover:scale-110 active:scale-95 transition-all duration-300 animate-fade-in-up">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

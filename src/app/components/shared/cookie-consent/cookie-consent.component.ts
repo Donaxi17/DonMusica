@@ -1,12 +1,13 @@
-import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, signal, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LanguageService } from '../../../services/language.service';
+import { ConsentService } from '../../../services/consent.service';
 
 @Component({
-    selector: 'app-cookie-consent',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-cookie-consent',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div *ngIf="showBanner()" 
          class="fixed bottom-0 left-0 right-0 z-[9999] p-3 md:p-6 animate-slide-up">
       
@@ -58,7 +59,7 @@ import { LanguageService } from '../../../services/language.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .animate-slide-up {
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -69,47 +70,47 @@ import { LanguageService } from '../../../services/language.service';
   `]
 })
 export class CookieConsentComponent {
-    showBanner = signal(false);
+  showBanner = signal(false);
+  private consentService = inject(ConsentService);
 
-    constructor(
-        public languageService: LanguageService,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) {
-        this.checkConsent();
+  constructor(
+    public languageService: LanguageService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.checkConsent();
+  }
+
+  checkConsent() {
+    if (isPlatformBrowser(this.platformId)) {
+      const consent = localStorage.getItem('donmusic_cookie_consent');
+      if (!consent) {
+        // Show after a small delay for smoother UX
+        setTimeout(() => this.showBanner.set(true), 2000);
+      }
     }
+  }
 
-    checkConsent() {
-        if (isPlatformBrowser(this.platformId)) {
-            const consent = localStorage.getItem('donmusic_cookie_consent');
-            if (!consent) {
-                // Show after a small delay for smoother UX
-                setTimeout(() => this.showBanner.set(true), 2000);
-            }
-        }
+  accept() {
+    this.saveConsent('accepted');
+  }
+
+  decline() {
+    this.saveConsent('declined');
+  }
+
+  private saveConsent(status: 'accepted' | 'declined') {
+    if (isPlatformBrowser(this.platformId)) {
+      this.consentService.setConsent(status);
+
+      // Animate out
+      this.showBanner.set(false);
+
+      if (status === 'accepted') {
+        console.log('Cookies accepted - Initializing Ads personalization');
+      } else {
+        console.log('Cookies declined - Running in essential mode');
+      }
     }
-
-    accept() {
-        this.saveConsent('accepted');
-    }
-
-    decline() {
-        this.saveConsent('declined');
-    }
-
-    private saveConsent(status: 'accepted' | 'declined') {
-        if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('donmusic_cookie_consent', status);
-            localStorage.setItem('donmusic_cookie_date', new Date().toISOString());
-
-            // Animate out
-            this.showBanner.set(false);
-
-            // Here you would initialize Ads/Analytics if accepted
-            if (status === 'accepted') {
-                console.log('Cookies accepted - Initializing Ads personalization');
-            } else {
-                console.log('Cookies declined - Running in essential mode');
-            }
-        }
-    }
+  }
 }
+

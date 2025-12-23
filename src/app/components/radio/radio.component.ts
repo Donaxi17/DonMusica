@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+﻿import { Component, inject, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RadioService } from '../../services/radio.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
@@ -6,6 +6,8 @@ import { ToastService } from '../../services/toast.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { LanguageService } from '../../services/language.service';
+import { PlayerService } from '../../services/player.service';
+import { Song } from '../../services/playlist.service';
 
 @Component({
   selector: 'app-radio',
@@ -14,22 +16,31 @@ import { LanguageService } from '../../services/language.service';
   templateUrl: './radio.component.html',
   styleUrl: './radio.component.css'
 })
-export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
+export class RadioComponent implements OnInit, AfterViewInit {
   networkService = inject(NetworkService);
   stations: any[] = [];
   currentStation: any = null;
-  audio = new Audio();
   isPlaying = false;
   isLoading = false;
   genre: string = 'reggaeton'; // Default genre
 
   private toastService = inject(ToastService);
   public languageService = inject(LanguageService);
+  private playerService = inject(PlayerService);
 
   constructor(private radioService: RadioService) { }
 
   ngOnInit(): void {
     this.loadStations(this.genre);
+
+    // Sync with global player
+    this.playerService.currentSong$.subscribe(song => {
+      this.currentStation = song && song.url ? { url_resolved: song.url, stationuuid: song.id } : null;
+    });
+
+    this.playerService.isPlaying$.subscribe(playing => {
+      this.isPlaying = playing;
+    });
   }
 
   ngAfterViewInit(): void {
@@ -37,7 +48,8 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    this.stopRadio();
+    // The stopRadio method is removed, player state is managed by PlayerService
+    // If you need to explicitly pause on destroy, use this.playerService.pause();
   }
 
   loadStations(genre: string) {
@@ -66,21 +78,23 @@ export class RadioComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   playStation(station: any) {
-    if (this.currentStation === station && this.isPlaying) {
-      this.stopRadio();
+    if (this.currentStation?.url_resolved === station.url_resolved && this.isPlaying) {
+      this.playerService.pause();
       return;
     }
 
-    this.currentStation = station;
-    this.audio.src = station.url_resolved;
-    this.audio.load();
-    this.audio.play().catch(err => console.error('Error playing radio', err));
-    this.isPlaying = true;
-  }
+    const radioSong: Song = {
+      id: station.stationuuid || station.url_resolved,
+      title: station.name,
+      artist: station.country || 'Radio',
+      url: station.url_resolved,
+      img: station.favicon || '/assets/img/default-radio.jpg',
+      isFavorite: this.isFavorite(station),
+      duration: '0:00'
+    };
 
-  stopRadio() {
-    this.audio.pause();
-    this.isPlaying = false;
+    this.playerService.setPlaylist([radioSong], false, 'radio');
+    this.playerService.playSong(radioSong);
   }
 
   setGenre(genre: string) {

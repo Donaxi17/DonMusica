@@ -78,35 +78,9 @@
                 </button>
             </div>
 
-            <!-- Fixed PWA Banner (Keep inside or outside, logically fits here for view context but ensures z-index) -->
-            <div *ngIf="showInstallBanner"
-                class="fixed bottom-20 md:bottom-4 left-0 right-0 z-[100] p-2 animate-fade-in-up text-left">
-                <div
-                    class="max-w-md mx-auto bg-zinc-900/95 backdrop-blur-xl border border-emerald-500/20 rounded-xl p-3 shadow-2xl flex items-center gap-3">
-                    <div class="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center shrink-0">
-                        <img src="assets/icons/icon-72x72.png" alt="Logo" class="w-6 h-6 object-contain">
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-white font-bold text-xs">{{ languageService.get('home.install.title') }}</h4>
-                        <p class="text-zinc-400 text-[10px] leading-tight">{{ languageService.get('home.install.desc')
-                            }}</p>
-                    </div>
-                    <button (click)="installPwa()"
-                        class="bg-emerald-500 text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-400">
-                        {{ languageService.get('home.install.btn') }}
-                    </button>
-                    <button (click)="showInstallBanner = false" class="text-zinc-500 hover:text-white p-1"
-                        aria-label="Cerrar banner de instalación">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
         </div>
     </div>
+
 
     <!-- MAIN CONTENT START -->
     <div class="relative max-w-7xl mx-auto px-4">
