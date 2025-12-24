@@ -186,8 +186,9 @@ export class LayoutComponent implements OnInit {
     const isDownload = url.includes('/download');
     const isUpload = url.includes('/upload-music');
     const isFreeMusic = url.includes('sin-copyright');
+    const isBlog = url.includes('/blog');
 
-    return this.isArtistActive() || isHome || isTrends || isCharts || isNewReleases || isLyrics || isSavedLyrics || isRadio || isDownload || isFreeMusic || isUpload;
+    return this.isArtistActive() || isHome || isTrends || isCharts || isNewReleases || isLyrics || isSavedLyrics || isRadio || isDownload || isFreeMusic || isUpload || isBlog;
   }
 
   isActive(route: string): boolean {

@@ -249,6 +249,10 @@ export class LanguageService {
             'home.whatsapp.message_header': '⚡ *Nueva Petición Musical* ⚡',
             'home.whatsapp.artist': '🎙️ *Artista:*',
             'home.whatsapp.song': '🎧 *Canción/Álbum:*',
+            'home.experience.title': 'La Experiencia DonMusica',
+            'home.experience.desc': 'Mucho más que un reproductor de música. Diseñado para amantes del ritmo.',
+            'home.experience.footer': 'Únete a miles de oyentes que ya están disfrutando de la nueva era de la música urbana.',
+            'home.request.not_found': '¿No encuentras a tu artista o canción favorita? ¡Pídela aquí y la agregaremos en tiempo récord!',
 
             // SEO Section
             'home.seo.title': 'La Plataforma Definitiva para Descubrir Música',
@@ -1127,6 +1131,10 @@ export class LanguageService {
             'home.whatsapp.message_header': '⚡ *New Music Request* ⚡',
             'home.whatsapp.artist': '🎙️ *Artist:*',
             'home.whatsapp.song': '🎧 *Song/Album:*',
+            'home.experience.title': 'The DonMusica Experience',
+            'home.experience.desc': 'Much more than a music player. Designed for rhythm lovers.',
+            'home.experience.footer': 'Join thousands of listeners already enjoying the new era of urban music.',
+            'home.request.not_found': "Can't find your favorite artist or song? Request it here and we'll add it in record time!",
 
             // SEO Section
             'home.seo.title': 'The Ultimate Platform for Music Discovery',

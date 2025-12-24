@@ -1,8 +1,11 @@
-<!-- ADSTERRA RESPONSIVE CONTAINER (Desktop 728x90 | Mobile 320x50) -->
-<div class="w-full flex justify-center items-center opacity-0 animate-fade-in min-h-[50px] md:min-h-[90px]"
-    role="complementary" aria-label="Anuncio publicitario" style="animation-fill-mode: forwards;">
+@if (proService.shouldShowAds()) {
+<div class="w-full flex justify-center items-center transition-all duration-500 ease-in-out" [class.py-8]="!noPadding"
+    [style.height]="(hasAdContent && !adFailed) ? 'auto' : '0'"
+    [style.min-height]="(hasAdContent && !adFailed) ? (smallOnly ? '50px' : '90px') : '0'"
+    [style.opacity]="(hasAdContent && !adFailed) ? '1' : '0'" role="complementary">
 
     <!-- Dynamic Helper Container -->
     <div [id]="mobileContainerId"></div>
 
 </div>
+}

@@ -1091,9 +1091,15 @@
                         class="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{{
                         languageService.get('home.request.title_part2') }}</span>
                 </h2>
-                <p class="text-zinc-400 text-sm mb-6 leading-relaxed max-w-sm reveal reveal-left delay-200">
+                <p class="text-zinc-400 text-sm mb-4 leading-relaxed max-w-sm reveal reveal-left delay-200">
                     {{ languageService.get('home.request.desc') }}
                 </p>
+                <div
+                    class="p-3 mb-6 bg-emerald-500/5 border border-emerald-500/10 rounded-xl reveal reveal-left delay-[250ms]">
+                    <p class="text-emerald-400/80 text-xs font-medium leading-relaxed italic">
+                        "{{ languageService.get('home.request.not_found') }}"
+                    </p>
+                </div>
                 <div class="flex gap-4 reveal reveal-left delay-300">
                     <div class="flex items-center gap-2.5 text-zinc-300 text-xs font-semibold">
                         <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">

@@ -7,21 +7,26 @@ import { DonMusicaProService } from '../../../services/don-musica-pro.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="w-full flex justify-center items-center"
-         [class.py-8]="!noPadding" 
-         [style.height]="height"
-         role="complementary">
-      
-      <div class="w-full h-full flex justify-center overflow-hidden rounded-2xl bg-zinc-900/30 border border-white/5">
-        <iframe #adFrame
-                title="Publicidad"
-                class="w-full h-full border-none"
-                style="background: transparent;"
-                scrolling="no">
-        </iframe>
+    @if (proService.shouldShowAds()) {
+      <div class="w-full flex justify-center items-center overflow-hidden"
+           [class.py-8]="!noPadding && hasAdContent && !adFailed" 
+           [style.height]="(hasAdContent && !adFailed) ? height : '0'"
+           [style.opacity]="(hasAdContent && !adFailed) ? '1' : '0'"
+           [style.transition]="'all 0.5s ease-in-out'"
+           [style.margin]="(hasAdContent && !adFailed) ? '' : '0'"
+           [style.padding]="(hasAdContent && !adFailed) ? '' : '0'"
+           role="complementary">
+        
+        <div class="w-full h-full flex justify-center">
+          <iframe #adFrame
+                  title="Publicidad"
+                  class="w-full h-full border-none"
+                  style="background: transparent;"
+                  scrolling="no">
+          </iframe>
+        </div>
       </div>
-      
-    </div>
+    }
   `,
   styles: [`
     @keyframes fade-in {
@@ -42,15 +47,48 @@ export class NativeAdsComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() height: string = 'auto';
   @Input() region: string = '';
 
-  @ViewChild('adFrame') adFrame!: ElementRef<HTMLIFrameElement>;
+  @ViewChild('adFrame') set adFrameSetter(content: ElementRef<HTMLIFrameElement>) {
+    if (content && this.isBrowser) {
+      this.adFrame = content;
+      // Pequeño delay para asegurar que el DOM esté listo
+      setTimeout(() => this.injectAd(), 150);
+    }
+  }
+  adFrame!: ElementRef<HTMLIFrameElement>;
 
   isBrowser: boolean;
+  hasAdContent: boolean = false;
+  adFailed: boolean = false;
 
   constructor(
     @Inject(PLATFORM_ID) platformId: Object,
-    private proService: DonMusicaProService
+    public proService: DonMusicaProService
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
+
+    // Listen for messages from the iframe
+    if (this.isBrowser) {
+      window.addEventListener('message', (event) => {
+        if (event.data === 'ad_failed_native') {
+          this.adFailed = true;
+          this.hasAdContent = false;
+        }
+      });
+
+      // Detectar cuando se pierde/recupera la conexión
+      window.addEventListener('offline', () => {
+        this.adFailed = true;
+        this.hasAdContent = false;
+      });
+
+      window.addEventListener('online', () => {
+        // Reintentar cargar el anuncio si vuelve la conexión
+        if (this.adFailed && this.adFrame) {
+          this.adFailed = false;
+          setTimeout(() => this.injectAd(), 100);
+        }
+      });
+    }
   }
 
   ngOnInit() { }
@@ -64,12 +102,21 @@ export class NativeAdsComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   ngAfterViewInit() {
-    if (this.isBrowser && this.proService.shouldShowAds()) {
-      setTimeout(() => this.injectAd(), 100);
-    }
+    // La inyección se maneja ahora por el setter de ViewChild
+  }
+
+  ngOnDestroy() {
+    // Limpieza si es necesaria
   }
 
   private injectAd() {
+    // No mostrar anuncios si no hay internet
+    if (this.isBrowser && !navigator.onLine) {
+      this.adFailed = true;
+      this.hasAdContent = false;
+      return;
+    }
+
     const iframe = this.adFrame.nativeElement;
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
 
@@ -94,6 +141,7 @@ export class NativeAdsComponent implements OnInit, AfterViewInit, OnChanges {
               }
               #container-e4e25c107fdc96e794b513ea7c8e2e97 { 
                 width: 100% !important; 
+              }
               /* Force white text but be careful with backgrounds to not hide images */
               body {
                 background-color: #09090b !important;
@@ -113,7 +161,9 @@ export class NativeAdsComponent implements OnInit, AfterViewInit, OnChanges {
           </head>
           <body>
             <div id="container-e4e25c107fdc96e794b513ea7c8e2e97"></div>
-            <script async="async" data-cfasync="false" src="https://pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js"></script>
+            <script async="async" data-cfasync="false" 
+                    src="https://pl28211149.effectivegatecpm.com/e4e25c107fdc96e794b513ea7c8e2e97/invoke.js"
+                    onerror="window.parent.postMessage('ad_failed_native', '*')"></script>
           </body>
         </html>
       `;
@@ -121,6 +171,9 @@ export class NativeAdsComponent implements OnInit, AfterViewInit, OnChanges {
       doc.open();
       doc.write(adHtml);
       doc.close();
+
+      // Mostrar el espacio inmediatamente
+      this.hasAdContent = true;
     }
   }
 }
