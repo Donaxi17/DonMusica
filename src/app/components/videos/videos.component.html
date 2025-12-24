@@ -186,14 +186,14 @@
 
             <!-- 📍 ANUNCIO (MÓVIL): Cada 6 videos -->
             @if ((i + 1) % 6 === 0 && (i + 1) !== videos().length) {
-            <div class="col-span-1 md:hidden my-3">
+            <div class="col-span-1 md:hidden">
                 <app-ads-container [index]="i"></app-ads-container>
             </div>
             }
 
             <!-- 📍 ANUNCIO (PC): Cada 9 videos -->
             @if ((i + 1) % 9 === 0 && (i + 1) !== videos().length) {
-            <div class="hidden md:block md:col-span-2 lg:col-span-3 my-3">
+            <div class="hidden md:block md:col-span-2 lg:col-span-3">
                 <app-ads-container [index]="i"></app-ads-container>
             </div>
             }
@@ -201,11 +201,15 @@
             }
         </div>
 
-        <!-- 📍 ANUNCIO FINAL: Después de todos los videos -->
-        <div class="mt-12 mb-8">
-            <app-ads-container [index]="999"></app-ads-container>
+        <!-- Bottom Ad Sequence (Premium) -->
+        <div class="mt-12 mb-24 px-1">
+            <div class="mt-4 mb-4 text-center">
+                <app-ads-container [index]="99" [noPadding]="true"></app-ads-container>
+            </div>
+            <div class="max-w-sm mx-auto">
+                <app-native-ads height="350px"></app-native-ads>
+            </div>
         </div>
-        }
 
         <!-- Empty State -->
         @if (videos().length === 0 && !isLoading()) {
@@ -217,6 +221,7 @@
             <h3 class="text-white font-bold text-xl mb-2">{{ languageService.get('videos.empty.title') }}</h3>
             <p class="text-zinc-500 max-w-xs mx-auto text-sm">{{ languageService.get('videos.empty.subtitle') }}</p>
         </div>
+        }
         }
         }
     </div>

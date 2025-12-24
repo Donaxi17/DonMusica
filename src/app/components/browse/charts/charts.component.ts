@@ -11,11 +11,12 @@ import { LanguageService } from '../../../services/language.service';
 import { SettingsService } from '../../../services/settings.service';
 import { ImgFallbackDirective } from '../../../directives/img-fallback.directive';
 import { ToastService } from '../../../services/toast.service';
+import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component';
 
 @Component({
     selector: 'app-charts',
     standalone: true,
-    imports: [CommonModule, AdsContainerComponent, ImgFallbackDirective],
+    imports: [CommonModule, AdsContainerComponent, ImgFallbackDirective, NativeAdsComponent],
     templateUrl: './charts.component.html'
 })
 export class ChartsComponent implements OnInit {

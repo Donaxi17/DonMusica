@@ -10,10 +10,12 @@ import { AdsContainerComponent } from '../shared/ads-container/ads-container.com
 import { ToastService } from '../../services/toast.service';
 import { StorageService } from '../../services/storage.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 import * as mm from 'music-metadata-browser';
 import { Buffer } from 'buffer';
 import { Subscription } from 'rxjs';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
 
 // Polyfill Buffer for the browser if needed (often handled by build tools, but good to ensure)
 (window as any).Buffer = Buffer;
@@ -47,7 +49,7 @@ interface Folder {
 @Component({
   selector: 'app-upload-music',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, ScrollingModule],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, NativeAdsComponent, RouterModule, ScrollingModule],
   templateUrl: './upload-music.component.html',
   styleUrl: './upload-music.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -61,6 +63,9 @@ export class UploadMusicComponent implements OnDestroy {
   private proService = inject(DonMusicaProService);
   private seoService = inject(SeoService);
   public languageService = inject(LanguageService);
+  public settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
 
   maxStorage = 1024; // in MB
   usedStorage = 0;   // in MB

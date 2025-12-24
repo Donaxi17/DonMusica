@@ -14,15 +14,17 @@ import { ShareService } from '../../services/share.service';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { Subscription, switchMap, of } from 'rxjs';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 import { MusicApiService } from '../../services/music-api.service';
 import { HapticService } from '../../services/haptic.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-artist-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent],
+  imports: [CommonModule, RouterModule, SvgIconComponent, SkeletonComponent, AdsContainerComponent, NativeAdsComponent],
   templateUrl: './artist-detail.component.html',
   styleUrl: './artist-detail.component.css'
 })
@@ -42,6 +44,9 @@ export class ArtistDetailComponent implements OnInit, OnDestroy {
   private hapticService = inject(HapticService);
   private proService = inject(DonMusicaProService);
   public languageService = inject(LanguageService);
+  public settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
 
 
   artistId = signal<string>('');

@@ -9,8 +9,9 @@ import { MusicApiService } from '../../services/music-api.service';
 import { ToastService } from '../../services/toast.service';
 import { Song } from '../../services/playlist.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
+import { SettingsService } from '../../services/settings.service';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
-
 import { NetworkService } from '../../services/network.service';
 
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
@@ -20,13 +21,12 @@ import { HapticService } from '../../services/haptic.service';
 import { SpotifyService } from '../../services/spotify.service';
 import { LanguageService } from '../../services/language.service';
 import { PwaInstallService } from '../../services/pwa-install.service';
-import { SettingsService } from '../../services/settings.service';
 import { ImgFallbackDirective } from '../../directives/img-fallback.directive';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NoConnectionComponent, SkeletonComponent, ImgFallbackDirective],
+  imports: [CommonModule, FormsModule, AdsContainerComponent, RouterModule, NoConnectionComponent, SkeletonComponent, ImgFallbackDirective, NativeAdsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -47,6 +47,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   public settingsService = inject(SettingsService);
   public pwaInstallService = inject(PwaInstallService);
 
+  selectedRegion = this.settingsService.selectedRegion;
+
   totalArtists = signal<number>(0);
   totalSongs = signal<number>(0);
   displayArtists = signal<number>(0);
@@ -62,8 +64,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingTrends = signal(true);
 
   // Filter options for Trends - Linked to global settings
-  selectedRegion = this.settingsService.selectedRegion;
-
   translatedRegions = computed(() => {
     return this.settingsService.regions.map(r => ({
       ...r,

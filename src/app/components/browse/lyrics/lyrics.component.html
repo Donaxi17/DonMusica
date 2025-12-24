@@ -125,8 +125,11 @@
         </div>
     </div>
 
-    <div class="mt-8 w-full">
-        <app-ads-container [index]="0"></app-ads-container>
+    <div class="mt-8 mb-4">
+        <app-ads-container [index]="0" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+    </div>
+    <div class="mb-24 max-w-sm mx-auto">
+        <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>
     </div>
 </div>
 

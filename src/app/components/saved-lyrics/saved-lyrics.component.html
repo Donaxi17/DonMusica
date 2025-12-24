@@ -48,7 +48,7 @@
                     <span class="text-zinc-400">{{ languageService.get('saved_lyrics.storage') }} ({{ limitInfo().isPro
                         ? languageService.get('saved_lyrics.pro') : languageService.get('saved_lyrics.free') }})</span>
                     <span class="{{limitInfo().isPro ? 'text-pink-400 font-bold' : 'text-zinc-400'}}">
-                        {{limitInfo().isPro ? languageService.get('saved_lyrics.unlimited') : limitInfo().current + ' / ' + limitInfo().max}}
+                        {{limitInfo().isPro ? languageService.get('saved_lyrics.unlimited') : limitInfo().current + ' /' + limitInfo().max}}
                     </span>
                 </div>
 
@@ -98,6 +98,8 @@
                 </label>
             </div>
         </div>
+
+ 
 
         <!-- Single List of All Saved Lyrics -->
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-fade-in-up">
@@ -212,4 +214,9 @@
 </div>
 }
 
-<app-ads-container [index]="2"></app-ads-container>
+<div class="mt-8 mb-4">
+    <app-ads-container [index]="2" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+</div>
+<div class="mb-24 max-w-sm mx-auto">
+    <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>
+</div>

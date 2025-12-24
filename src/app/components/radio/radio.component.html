@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-zinc-950 animate-fade-in relative z-10 pt-6 md:pt-10 pb-20 px-4 md:px-6">
+<div class="min-h-screen bg-zinc-950 animate-fade-in relative z-10 pt-6 md:pt-10 px-4 md:px-6">
     <div class="max-w-7xl mx-auto px-3 md:px-6">
 
         <!-- Header Centrado (PC & Móvil) -->
@@ -235,8 +235,11 @@
         </div>
 
         <!-- Publicidad al final de la lista -->
-        <div class="mt-8" *ngIf="!isLoading">
-            <app-ads-container [index]="998"></app-ads-container>
+        <div class="mt-8 mb-4" *ngIf="!isLoading">
+            <app-ads-container [index]="998" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+        </div>
+        <div class="mb-24 max-w-sm mx-auto" *ngIf="!isLoading">
+            <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>
         </div>
         }
     </div>

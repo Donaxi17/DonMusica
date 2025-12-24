@@ -16,9 +16,10 @@ import { ShareService } from '../../services/share.service';
 import { CacheService } from '../../services/cache.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { VoiceRecognitionService } from '../../services/voice-recognition.service';
-import { HapticService } from '../../services/haptic.service';
 import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
 import { LanguageService } from '../../services/language.service';
+import { HapticService } from '../../services/haptic.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-free-music',
@@ -42,6 +43,9 @@ export class FreeMusicComponent implements OnInit {
   private voiceService = inject(VoiceRecognitionService);
   private hapticService = inject(HapticService);
   public languageService = inject(LanguageService);
+  private settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
 
   // Géneros modernos
   latinGenres = [
@@ -138,12 +142,12 @@ export class FreeMusicComponent implements OnInit {
     );
 
     this.musicApi.getJamendoByGenre(genre, 50).subscribe({
-      next: (songs) => {
+      next: (songs: Song[]) => {
         this.songs.set(songs);
         this.isLoading.set(false);
         this.cacheService.set(cacheKey, songs, 60);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error cargando música:', err);
         if (cachedSongs) {
           this.songs.set(cachedSongs);
@@ -166,11 +170,11 @@ export class FreeMusicComponent implements OnInit {
     );
 
     this.musicApi.searchJamendo(this.searchQuery(), 50).subscribe({
-      next: (songs) => {
+      next: (songs: Song[]) => {
         this.songs.set(songs);
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error en búsqueda:', err);
         this.songs.set([]);
         this.isLoading.set(false);

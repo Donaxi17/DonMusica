@@ -11,11 +11,12 @@ import { VideoPlayerService, Video } from '../../services/video-player.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { LanguageService } from '../../services/language.service';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, NoConnectionComponent],
+  imports: [CommonModule, FormsModule, SvgIconComponent, AdsContainerComponent, NoConnectionComponent, NativeAdsComponent],
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.css']
 })
@@ -27,7 +28,8 @@ export class VideosComponent {
   private seoService = inject(SeoService);
   private videoPlayerService = inject(VideoPlayerService);
 
-  searchQuery = signal<string>('');
+  public dailyGenre = 'Reggeton';
+  searchQuery = signal<string>(this.dailyGenre);
   isLoading = signal<boolean>(false);
   private searchDebounceTimer: any = null;
 
@@ -101,8 +103,12 @@ export class VideosComponent {
       this.languageService.get('seo.videos.desc')
     );
 
-    // Cargar videos trending desde YouTube API
-    this.loadTrendingVideos();
+    // Initial search with daily genre
+    if (this.dailyGenre) {
+      this.search();
+    } else {
+      this.loadTrendingVideos();
+    }
   }
 
   async loadTrendingVideos() {

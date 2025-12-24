@@ -13,10 +13,12 @@ import { SettingsService } from '../../../services/settings.service';
 import { ImgFallbackDirective } from '../../../directives/img-fallback.directive';
 import { ToastService } from '../../../services/toast.service';
 
+import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component';
+
 @Component({
     selector: 'app-new-releases',
     standalone: true,
-    imports: [CommonModule, SkeletonComponent, AdsContainerComponent, ImgFallbackDirective],
+    imports: [CommonModule, SkeletonComponent, AdsContainerComponent, ImgFallbackDirective, NativeAdsComponent],
     templateUrl: './new-releases.component.html'
 })
 export class NewReleasesComponent implements OnInit {
@@ -93,7 +95,7 @@ export class NewReleasesComponent implements OnInit {
 
     private loadReleases(region: string) {
         this.loading.set(true);
-        this.musicApi.getNewReleases(region, 40).subscribe({
+        this.musicApi.getNewReleases(region, 80).subscribe({
             next: (data) => {
                 this.allReleases = data;
                 this.releases.set(data);

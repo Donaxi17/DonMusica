@@ -15,10 +15,12 @@ import { LanguageService } from '../../services/language.service';
 import { PwaInstallService } from '../../services/pwa-install.service';
 import { VideoPlayerService } from '../../services/video-player.service';
 
+import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
+
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FooterComponent, RecentlyPlayedComponent, RedesSocialesComponent, VideoPlayerComponent],
+  imports: [CommonModule, RouterModule, FooterComponent, RecentlyPlayedComponent, RedesSocialesComponent, VideoPlayerComponent, AdsContainerComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })
@@ -166,6 +168,28 @@ export class LayoutComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  closeMobileMoreMenu() {
+    this.showMobileMoreMenu = false;
+    this.cdr.markForCheck();
+  }
+
+  shouldHideGlobalAd(): boolean {
+    // Hide global ad on pages where we have custom ordering (Thin -> Native)
+    const url = this.router.url;
+    const isHome = url === '/' || url === '/home';
+    const isTrends = url.includes('/browse/trends');
+    const isCharts = url.includes('/browse/charts');
+    const isNewReleases = url.includes('/browse/new-releases');
+    const isLyrics = url.includes('/browse/lyrics');
+    const isSavedLyrics = url.includes('/saved-lyrics');
+    const isRadio = url.includes('/radio');
+    const isDownload = url.includes('/download');
+    const isUpload = url.includes('/upload-music');
+    const isFreeMusic = url.includes('sin-copyright');
+
+    return this.isArtistActive() || isHome || isTrends || isCharts || isNewReleases || isLyrics || isSavedLyrics || isRadio || isDownload || isFreeMusic || isUpload;
+  }
+
   isActive(route: string): boolean {
     return this.router.url === route;
   }
@@ -204,11 +228,6 @@ export class LayoutComponent implements OnInit {
     this.hapticService.light();
     if (event) event.stopPropagation();
     this.showMobileMoreMenu = !this.showMobileMoreMenu;
-    this.cdr.markForCheck();
-  }
-
-  closeMobileMoreMenu() {
-    this.showMobileMoreMenu = false;
     this.cdr.markForCheck();
   }
 

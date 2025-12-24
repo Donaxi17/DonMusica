@@ -306,6 +306,12 @@
     <app-redes-sociales
         *ngIf="!showHistory && !(videoService.currentVideoUrl() && !videoService.isMinimized())"></app-redes-sociales>
 
+    <!-- GLOBAL BANNER AD (Above Footer) -->
+    <!-- GLOBAL BANNER AD (Above Footer) -->
+    <div *ngIf="!shouldHideFooter() && !shouldHideGlobalAd()">
+        <app-ads-container [index]="99" [noPadding]="true"></app-ads-container>
+    </div>
+
     <!-- FOOTER -->
     <app-footer *ngIf="!shouldHideFooter()"></app-footer>
 

@@ -98,7 +98,10 @@
                     </div>
                 </article>
 
-                <!-- ADSTERRA ADS (After 5th item / Top 5) -->
+                <!-- ADSTERRA ADS (After 10th item) -->
+                <div *ngIf="(i + 1) % 10 === 0 && i !== trendingSongs().length - 1" class="my-4">
+                    <app-ads-container [index]="i" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+                </div>
 
             </ng-container>
 
@@ -107,11 +110,15 @@
                 <div class="h-px w-24 bg-gradient-to-r from-transparent via-zinc-700 to-transparent mx-auto mb-4"></div>
                 <p class="text-zinc-500 text-xs">{{ languageService.get('trends.end_of_list') }}</p>
             </div>
+            <!-- ADSTERRA ADS BOOSTER (End of List: Thin then Large) -->
+            <div class="mt-8 mb-4">
+                <app-ads-container [index]="999" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+            </div>
+            <div class="mb-24 max-w-sm mx-auto">
+                <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>
+            </div>
         </div>
     </div>
-
-    <!-- ADSTERRA ADS BOOSTER (End of List) -->
-    <app-ads-container [index]="1"></app-ads-container>
 
     <!-- Loading More -->
     <div *ngIf="loadingMore()" class="flex justify-center py-4">

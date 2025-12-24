@@ -196,7 +196,7 @@
             </div>
             } @else {
             <!-- Grid Real -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
                 <!-- Smart Shuffle Card - Only show when not searching -->
                 <div *ngIf="!searchQuery()" (click)="toggleSmartShuffle()"
                     class="group relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-500 to-green-700 cursor-pointer shadow-xl border border-white/10 hover:shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-1">
@@ -226,7 +226,7 @@
                 </div>
 
 
-                @for (artist of filteredArtists(); track artist.id) {
+                @for (artist of filteredArtists(); track artist.id; let i = $index) {
                 <!-- Logic to decide what to show: Artist Card or "Matched Song" Mini-Card -->
                 <!-- If search query matches a song title inside this artist, show the song directly too? -->
                 <!-- For now, keep the Artist Card but maybe highlight if they have the song? -->
@@ -321,15 +321,27 @@
 
                     </div>
                 </div>
-                }
+
+                <!-- Ad every 12 items (adjusted for grid filling to avoid gaps) -->
+                <!-- We use 12 because it is the LCM of 2, 3, 4, 6 (our grid columns) -->
+                <!-- If shuffle is visible (!searchQuery), we offset by 1, so (i+2)%12 checks if we completed a row set -->
+                @if ((!searchQuery() ? (i + 2) % 12 === 0 : (i + 1) % 12 === 0) && (i < filteredArtists().length - 1)) {
+                    <div class="col-span-full flex justify-center z-10 relative">
+                    <app-ads-container [index]="i" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
             </div>
             }
+            }
         </div>
-        } <!-- End else block (network check) -->
+        }
     </div>
-    <div>
-        <app-ads-container [index]="2"></app-ads-container>
-    </div>
+    } <!-- End else block (network check) -->
+</div>
+<div class="mt-8 mb-4">
+    <app-ads-container [index]="999" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+</div>
+<div class="mb-24 max-w-sm mx-auto">
+    <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>
+</div>
 </div>
 
 <app-smart-shuffle *ngIf="showSmartShuffle()" [artists]="filteredArtists()" [genreName]="getGenreName(selectedGenre())"

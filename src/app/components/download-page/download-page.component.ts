@@ -9,6 +9,7 @@ import { LyricsService } from '../../services/lyrics.service';
 import { MusicApiService } from '../../services/music-api.service';
 import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-download-page',
@@ -24,6 +25,9 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private musicApi = inject(MusicApiService);
   private proService = inject(DonMusicaProService);
   public languageService = inject(LanguageService);
+  public settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
 
   countdown: number = 0; // Sin countdown
   songTitle: string = '';

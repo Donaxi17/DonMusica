@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DonMusicaProService } from '../../../services/don-musica-pro.service';
 
@@ -9,11 +9,12 @@ import { DonMusicaProService } from '../../../services/don-musica-pro.service';
   templateUrl: './ads-container.component.html',
   styleUrl: './ads-container.component.css'
 })
-export class AdsContainerComponent implements OnInit, AfterViewInit {
+export class AdsContainerComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() index: number = 0; // To generate unique IDs if multiple ads on page
   @Input() forceIframe: boolean = false; // Force iframe version (useful for multiple ads or modals)
   @Input() smallOnly: boolean = false; // Force 320x50 format (useful for sidebars/history)
   @Input() noPadding: boolean = false; // Disable default padding
+  @Input() region: string = ''; // Input to trigger refresh on country change
 
   isBrowser: boolean;
   mobileContainerId: string = '';
@@ -31,6 +32,16 @@ export class AdsContainerComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     // Determine IDs
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.isBrowser && changes['region'] && !changes['region'].isFirstChange()) {
+      const container = document.getElementById(this.mobileContainerId);
+      if (container) {
+        container.innerHTML = ''; // Force clear
+        setTimeout(() => this.renderResponsiveAd(), 100);
+      }
+    }
   }
 
   ngAfterViewInit() {

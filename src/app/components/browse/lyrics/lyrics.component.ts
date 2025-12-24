@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,18 +12,19 @@ import { OfflineService } from '../../../services/offline.service';
 import { ShareService } from '../../../services/share.service';
 import { HapticService } from '../../../services/haptic.service';
 import { Song } from '../../../services/playlist.service';
+import { LanguageService } from '../../../services/language.service';
+import { SettingsService } from '../../../services/settings.service';
 import { AdsContainerComponent } from '../../shared/ads-container/ads-container.component';
+import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component';
 import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
-import { OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { VoiceRecognitionService } from '../../../services/voice-recognition.service';
 import { VoiceVisualizerComponent } from '../../shared/voice-waveform/voice-waveform.component';
 import { SvgIconComponent } from '../../shared/svg-icon/svg-icon.component';
-import { LanguageService } from '../../../services/language.service';
 
 @Component({
     selector: 'app-lyrics',
     standalone: true,
-    imports: [CommonModule, FormsModule, AdsContainerComponent, SkeletonComponent, VoiceVisualizerComponent, SvgIconComponent],
+    imports: [CommonModule, FormsModule, AdsContainerComponent, NativeAdsComponent, SkeletonComponent, VoiceVisualizerComponent, SvgIconComponent],
     templateUrl: './lyrics.component.html',
     styleUrl: './lyrics.component.css'
 })
@@ -41,6 +42,9 @@ export class LyricsComponent implements OnInit, OnDestroy {
     private voiceService = inject(VoiceRecognitionService);
     private cdr = inject(ChangeDetectorRef);
     public languageService = inject(LanguageService);
+    public settingsService = inject(SettingsService);
+
+    selectedRegion = this.settingsService.selectedRegion;
 
     searchQuery = signal('');
     isSearching = signal(false);

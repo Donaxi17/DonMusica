@@ -10,6 +10,7 @@ import { RouterModule } from '@angular/router';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { DatabaseService, Artist, Song } from '../../services/database.service';
+import { SettingsService } from '../../services/settings.service';
 import { combineLatest } from 'rxjs';
 import { ItunesService } from '../../services/itunes.service';
 import { SpotifyService } from '../../services/spotify.service';
@@ -23,12 +24,13 @@ import { HapticService } from '../../services/haptic.service';
 import { SkeletonComponent } from '../shared/skeleton/skeleton.component';
 import { SmartShuffleComponent } from '../shared/smart-shuffle/smart-shuffle.component';
 import { VoiceVisualizerComponent } from '../shared/voice-waveform/voice-waveform.component';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-artists',
   standalone: true,
-  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, SmartShuffleComponent, VoiceVisualizerComponent],
+  imports: [NoConnectionComponent, CommonModule, FormsModule, SvgIconComponent, RouterModule, AdsContainerComponent, SkeletonComponent, SmartShuffleComponent, VoiceVisualizerComponent, NativeAdsComponent],
   templateUrl: './artists.component.html',
   styleUrl: './artists.component.css'
 })
@@ -47,6 +49,9 @@ export class ArtistsComponent implements OnInit {
   private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
   public languageService = inject(LanguageService);
+  public settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
 
   public onArtistClick(artist: Artist, event: Event) {
     if (this.searchQuery() && this.getMatchingSong(artist)) {

@@ -7,11 +7,13 @@ import { DonMusicaProService } from '../../services/don-musica-pro.service';
 import { AdsContainerComponent } from '../shared/ads-container/ads-container.component';
 import { ToastService } from '../../services/toast.service';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 
 @Component({
   selector: 'app-saved-lyrics',
   standalone: true,
-  imports: [CommonModule, RouterModule, AdsContainerComponent],
+  imports: [CommonModule, RouterModule, AdsContainerComponent, NativeAdsComponent],
   templateUrl: './saved-lyrics.component.html'
 })
 export class SavedLyricsComponent implements OnInit {
@@ -21,7 +23,9 @@ export class SavedLyricsComponent implements OnInit {
   private proService = inject(DonMusicaProService);
   private toastService = inject(ToastService);
   public languageService = inject(LanguageService);
+  private settingsService = inject(SettingsService);
 
+  selectedRegion = this.settingsService.selectedRegion;
   savedLyrics = signal<SavedLyric[]>([]);
   selectedLyric = signal<SavedLyric | null>(null);
 

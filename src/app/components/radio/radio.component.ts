@@ -6,13 +6,15 @@ import { ToastService } from '../../services/toast.service';
 import { NetworkService } from '../../services/network.service';
 import { NoConnectionComponent } from '../shared/no-connection/no-connection.component';
 import { LanguageService } from '../../services/language.service';
+import { SettingsService } from '../../services/settings.service';
+import { NativeAdsComponent } from '../shared/native-ads/native-ads.component';
 import { PlayerService } from '../../services/player.service';
 import { Song } from '../../services/playlist.service';
 
 @Component({
   selector: 'app-radio',
   standalone: true,
-  imports: [CommonModule, AdsContainerComponent, NoConnectionComponent],
+  imports: [CommonModule, AdsContainerComponent, NoConnectionComponent, NativeAdsComponent],
   templateUrl: './radio.component.html',
   styleUrl: './radio.component.css'
 })
@@ -26,6 +28,9 @@ export class RadioComponent implements OnInit, AfterViewInit {
 
   private toastService = inject(ToastService);
   public languageService = inject(LanguageService);
+  private settingsService = inject(SettingsService);
+
+  selectedRegion = this.settingsService.selectedRegion;
   private playerService = inject(PlayerService);
 
   constructor(private radioService: RadioService) { }

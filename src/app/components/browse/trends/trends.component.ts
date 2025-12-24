@@ -14,10 +14,12 @@ import { SettingsService } from '../../../services/settings.service';
 import { ImgFallbackDirective } from '../../../directives/img-fallback.directive';
 import { ToastService } from '../../../services/toast.service';
 
+import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component';
+
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent, ImgFallbackDirective],
+    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent, ImgFallbackDirective, NativeAdsComponent],
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {

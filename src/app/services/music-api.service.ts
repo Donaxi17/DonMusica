@@ -11,9 +11,11 @@ export interface SpotifyTrack {
     album: {
         name: string;
         images: Array<{ url: string; height: number; width: number }>;
+        release_date?: string;
     };
     duration_ms: number;
     preview_url: string | null;
+    popularity?: number;
 }
 
 export interface iTunesTrack {
@@ -27,6 +29,7 @@ export interface iTunesTrack {
     trackTimeMillis: number;
     primaryGenreName: string;
     releaseDate: string;
+    popularity?: number;
 }
 
 @Injectable({
@@ -217,15 +220,20 @@ export class MusicApiService {
                 catchError(() => this.getNewReleasesFromITunes(country, Math.ceil(limit)))
             );
 
-            strategy$ = combineLatest([global$, local$]).pipe(
-                map(([globalSongs, localSongs]) => {
-                    // Interleave: Local, Global, Local, Global...
+            // 3. Viral Stream (Trending releases from search fallback to ensure volume)
+            const viral$ = this.getTrendingSearchFallback(country, false).pipe(
+                startWith([] as Song[]),
+                catchError(() => of([] as Song[]))
+            );
+
+            strategy$ = combineLatest([global$, local$, viral$]).pipe(
+                map(([globalSongs, localSongs, viralSongs]) => {
                     const combined: Song[] = [];
-                    const max = Math.max(globalSongs.length, localSongs.length);
                     const seen = new Set<string | number>();
 
+                    // Interleave helper to maintain initial variety while collecting
+                    const max = Math.max(globalSongs.length, localSongs.length, viralSongs.length);
                     for (let i = 0; i < max; i++) {
-                        // Prioritize Local slightly by pushing it first in the pair
                         if (i < localSongs.length) {
                             const s = localSongs[i];
                             if (!seen.has(s.id)) { combined.push(s); seen.add(s.id); }
@@ -234,8 +242,24 @@ export class MusicApiService {
                             const s = globalSongs[i];
                             if (!seen.has(s.id)) { combined.push(s); seen.add(s.id); }
                         }
+                        if (i < viralSongs.length) {
+                            const s = viralSongs[i];
+                            if (!seen.has(s.id)) { combined.push(s); seen.add(s.id); }
+                        }
                     }
-                    return combined.slice(0, limit);
+
+                    // SORT: From most recent (primary) and most popular (secondary)
+                    return combined.sort((a, b) => {
+                        // 1. Sort by Release Date (Newest first)
+                        if (a.releaseDate && b.releaseDate) {
+                            return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+                        }
+                        // 2. Fallback to Popularity
+                        if (a.popularity !== undefined && b.popularity !== undefined) {
+                            return b.popularity - a.popularity;
+                        }
+                        return 0;
+                    }).slice(0, limit);
                 })
             );
         }
@@ -347,6 +371,8 @@ export class MusicApiService {
                                                     url: t.previewUrl || '',
                                                     duration: this.formatDuration(t.trackTimeMillis / 1000),
                                                     genre: t.primaryGenreName || 'Pop',
+                                                    releaseDate: album.release_date || t.releaseDate,
+                                                    popularity: t.popularity || 50,
                                                     isStreamUrlFetched: true
                                                 } as Song;
                                             }
@@ -497,6 +523,7 @@ export class MusicApiService {
             url: previewUrl,
             duration: '0:30',
             genre: e.category?.attributes?.label || 'Music',
+            releaseDate: e['im:releaseDate']?.label || '',
             isStreamUrlFetched: true
         } as Song;
     }
@@ -678,6 +705,7 @@ export class MusicApiService {
             url: track.previewUrl || '',
             duration: this.formatDuration(track.trackTimeMillis / 1000),
             genre: track.primaryGenreName || 'Pop',
+            releaseDate: track.releaseDate,
             isStreamUrlFetched: true
         };
     }
@@ -708,6 +736,8 @@ export class MusicApiService {
             url: track.preview_url || '',
             duration: this.formatDuration(track.duration_ms / 1000),
             genre: 'Pop',
+            releaseDate: track.album?.release_date,
+            popularity: track.popularity,
             isStreamUrlFetched: !!track.preview_url
         };
     }

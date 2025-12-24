@@ -16,6 +16,8 @@ export interface Song {
   thumbnail?: string;
   isFavorite?: boolean;
   createdAt?: any;
+  releaseDate?: string;
+  popularity?: number;
 }
 
 export interface Playlist {
