@@ -1249,9 +1249,68 @@
         </a>
     </div>
 
+    <!-- Footer SEO & Legal -->
+    <footer class="mt-16 border-t border-zinc-800/50 bg-zinc-900/20 pt-12 pb-8 reveal reveal-up">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <!-- Brand -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold">
+                            D</div>
+                        <span class="text-xl font-bold text-white">DonMusica</span>
+                    </div>
+                    <p class="text-zinc-500 text-sm leading-relaxed max-w-sm">
+                        La mejor plataforma para descubrir, escuchar y descargar música gratis en alta calidad.
+                        Sin interrupciones, legal y segura.
+                    </p>
+                </div>
+
+                <!-- Links 1 -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Descubrir</h4>
+                    <ul class="space-y-2 text-sm text-zinc-400">
+                        <li><a routerLink="/browse/trends"
+                                class="hover:text-emerald-400 transition-colors">Tendencias</a></li>
+                        <li><a routerLink="/browse/new-releases" class="hover:text-emerald-400 transition-colors">Nuevos
+                                Lanzamientos</a></li>
+                        <li><a routerLink="/browse/charts" class="hover:text-emerald-400 transition-colors">Rankings
+                                Globales</a></li>
+                        <li><a routerLink="/blog" class="hover:text-emerald-400 transition-colors">Blog Musical</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links 2 -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-zinc-400">
+                        <li><a routerLink="/privacy-policy" class="hover:text-emerald-400 transition-colors">Política de
+                                Privacidad</a></li>
+                        <li><a routerLink="/terms" class="hover:text-emerald-400 transition-colors">Términos de Uso</a>
+                        </li>
+                        <li><a routerLink="/privacy-policy" class="hover:text-emerald-400 transition-colors">DMCA /
+                                Copyright</a></li>
+                        <li><a routerLink="/privacy-policy"
+                                class="hover:text-emerald-400 transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                class="border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-600">
+                <p>&copy; 2025 DonMusica. Todos los derechos reservados.</p>
+                <div class="flex gap-4">
+                    <span>Hecho con ❤️ para la música</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
     <!-- Ads at the bottom (Thin top, Large bottom) -->
     <div class="mt-8 mb-4">
-        <app-ads-container [index]="1" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+        <!-- <app-ads-container [index]="1" [noPadding]="true" [region]="selectedRegion()"></app-ads-container> -->
     </div>
     <div class="mb-24 max-w-sm mx-auto">
         <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>

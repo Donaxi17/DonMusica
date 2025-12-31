@@ -108,6 +108,9 @@ export class AdsContainerComponent implements OnInit, AfterViewInit, OnChanges, 
           // PC: 728x90
           iframe.style.width = '728px';
           iframe.style.height = '90px';
+          // Adsterra disabled for review
+          adContent = `<!-- Adsterra disabled -->`;
+          /*
           adContent = `
                 <!DOCTYPE html>
                 <html>
@@ -128,32 +131,37 @@ export class AdsContainerComponent implements OnInit, AfterViewInit, OnChanges, 
                 </body>
                 </html>
             `;
+            */
         } else {
           // MOBILE: 320x50
           iframe.style.width = '320px';
           iframe.style.height = '50px';
           iframe.style.transform = 'scale(0.95)';
           iframe.style.transformOrigin = 'center';
-          adContent = `
-                <!DOCTYPE html>
-                <html>
-                <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
-                    <div id="ad-container-mobile"></div>
-                    <script type="text/javascript">
-                        atOptions = {
-                            'key' : '1f663241402f759e860c199f9a9fc0c3',
-                            'format' : 'iframe',
-                            'height' : 50,
-                            'width' : 320,
-                            'params' : {}
-                        };
-                    </script>
-                    <script type="text/javascript" 
-                            src="//www.highperformanceformat.com/1f663241402f759e860c199f9a9fc0c3/invoke.js"
-                            onerror="window.parent.postMessage('ad_failed_banner', '*')"></script>
-                </body>
-                </html>
-            `;
+          // Adsterra disabled for review
+          adContent = `<!-- Adsterra disabled -->`;
+          /*
+         adContent = `
+               <!DOCTYPE html>
+               <html>
+               <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+                   <div id="ad-container-mobile"></div>
+                   <script type="text/javascript">
+                       atOptions = {
+                           'key' : '1f663241402f759e860c199f9a9fc0c3',
+                           'format' : 'iframe',
+                           'height' : 50,
+                           'width' : 320,
+                           'params' : {}
+                       };
+                   </script>
+                   <script type="text/javascript" 
+                           src="//www.highperformanceformat.com/1f663241402f759e860c199f9a9fc0c3/invoke.js"
+                           onerror="window.parent.postMessage('ad_failed_banner', '*')"></script>
+               </body>
+               </html>
+           `;
+           */
         }
 
         container.appendChild(iframe);

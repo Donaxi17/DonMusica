@@ -68,6 +68,22 @@ section a:hover {
         gap: 1rem;
     }
 
+    /* Column layout for Tuner Component */
+    .redes-sociales.is-vertical {
+        flex-direction: column;
+        margin-top: 0;
+        margin-right: -10px;
+        /* Aligned to the very edge */
+    }
+
+    /* Move section down slightly if vertical to avoid the back button/mode area on extreme small screens if needed,
+       but usually tuner has its own header. Tuner section already uses top:0; right:20px; in mobile. */
+    section:has(.is-vertical) {
+        top: 60px;
+        /* Push below the Tuner header */
+        right: 15px;
+    }
+
     /* Mobile sizes */
     .redes-sociales svg {
         width: 18px;

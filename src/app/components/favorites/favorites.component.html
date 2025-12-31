@@ -61,20 +61,29 @@
         </div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty State Improved -->
     <div *ngIf="favorites.length === 0"
-        class="text-center py-10 bg-gradient-to-br from-red-900/10 to-pink-900/10 rounded-2xl border border-red-800/30 border-dashed px-4">
+        class="text-center py-16 bg-gradient-to-br from-red-900/10 to-pink-900/10 rounded-2xl border border-red-800/30 border-dashed px-6">
         <div
-            class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500/20">
-            <svg class="w-8 h-8 text-red-500/50" fill="currentColor" viewBox="0 0 24 24">
+            class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-500/20">
+            <svg class="w-10 h-10 text-red-500/50" fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" />
             </svg>
         </div>
-        <h3 class="text-lg md:text-2xl font-bold text-white mb-2">No tienes favoritos aún</h3>
-        <p class="text-sm text-zinc-500 max-w-sm mx-auto leading-relaxed">Agrega canciones a tus favoritos desde el
-            reproductor para verlas
-            aquí.</p>
+        <h3 class="text-xl md:text-3xl font-black text-white mb-3">Tu colección está vacía</h3>
+        <p class="text-base text-zinc-400 max-w-md mx-auto leading-relaxed mb-8">
+            Aún no has guardado canciones. Explora las tendencias mundiales y crea tu propia biblioteca musical.
+        </p>
+
+        <!-- CTA Button -->
+        <a routerLink="/browse/trends"
+            class="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-xl shadow-red-900/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Explorar Música Nueva
+        </a>
     </div>
 
     <!-- Favorites List -->

@@ -93,8 +93,8 @@ export class DownloadPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.isDownloading = true;
 
-    // 1. Open Adsterra Smartlink (Monetization)
-    window.open('https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c', '_blank');
+    // 1. Open Adsterra Smartlink (Monetization) - Disabled for review
+    // window.open('https://www.effectivegatecpm.com/sw9g0tx52?key=973a1c8fac0e809dba93c52ce9b0de4c', '_blank');
 
     // 2. Now check if storage is full for offline mode
     if (this.mode === 'offline' && this.offlineService.isStorageFull()) {

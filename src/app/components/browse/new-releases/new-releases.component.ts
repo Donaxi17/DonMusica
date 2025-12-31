@@ -18,7 +18,7 @@ import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component
 @Component({
     selector: 'app-new-releases',
     standalone: true,
-    imports: [CommonModule, SkeletonComponent, AdsContainerComponent, ImgFallbackDirective, NativeAdsComponent],
+    imports: [CommonModule, SkeletonComponent, ImgFallbackDirective, NativeAdsComponent],
     templateUrl: './new-releases.component.html'
 })
 export class NewReleasesComponent implements OnInit {

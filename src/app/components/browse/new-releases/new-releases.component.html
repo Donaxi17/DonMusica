@@ -102,14 +102,14 @@
                 <!-- Ad Banner every 12 items - Outside article to span full row -->
                 <div *ngIf="(i + 1) % 12 === 0 && i !== releases().length - 1"
                     class="col-span-full my-6 flex justify-center w-full">
-                    <app-ads-container [index]="i" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+                    <!-- <app-ads-container [index]="i" [noPadding]="true" [region]="selectedRegion()"></app-ads-container> -->
                 </div>
             </ng-container>
         </div>
 
         <!-- ADSTERRA ADS BOOSTER (End of List: Thin then Large) -->
         <div class="mt-8 mb-4">
-            <app-ads-container [index]="999" [noPadding]="true" [region]="selectedRegion()"></app-ads-container>
+            <!-- <app-ads-container [index]="999" [noPadding]="true" [region]="selectedRegion()"></app-ads-container> -->
         </div>
         <div class="mb-24 max-w-sm mx-auto">
             <app-native-ads height="350px" [region]="selectedRegion()"></app-native-ads>

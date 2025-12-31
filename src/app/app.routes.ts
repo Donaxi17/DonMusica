@@ -64,8 +64,9 @@ export const routes: Routes = [
         ]
     },
     { path: 'download', loadComponent: () => import('./components/download-page/download-page.component').then(m => m.DownloadPageComponent) },
-    { path: 'privacy', loadComponent: () => import('./components/legal/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
-    { path: 'terms', loadComponent: () => import('./components/legal/terms.component').then(m => m.TermsComponent) },
+    { path: 'privacy-policy', loadComponent: () => import('./components/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
+    { path: 'privacy', redirectTo: 'privacy-policy', pathMatch: 'full' },
+    { path: 'terms', loadComponent: () => import('./components/terms/terms.component').then(m => m.TermsComponent) },
     { path: 'admin-login', loadComponent: () => import('./components/admin-login/admin-login.component').then(m => m.AdminLoginComponent) },
     { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

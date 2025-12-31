@@ -19,7 +19,7 @@ import { NativeAdsComponent } from '../../shared/native-ads/native-ads.component
 @Component({
     selector: 'app-trends',
     standalone: true,
-    imports: [CommonModule, InfiniteScrollDirective, AdsContainerComponent, SkeletonComponent, ImgFallbackDirective, NativeAdsComponent],
+    imports: [CommonModule, InfiniteScrollDirective, SkeletonComponent, ImgFallbackDirective, NativeAdsComponent],
     templateUrl: './trends.component.html'
 })
 export class TrendsComponent implements OnInit {

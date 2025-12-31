@@ -67,10 +67,10 @@
               const src = node.src || '';
               // BLOQUEAMOS solo lo altamente intrusivo (Pop-unders / Monetag / Social Bar)
               // 'effectivegate' suele ser el Social Bar -> LO BLOQUEAMOS
-              // 'highperformanceformat' son tus BANNERS -> LO DEJAMOS PASAR
+              // 'highperformanceformat' (Adsterra) -> DESACTIVADO POR POLITICAS ADSENSE
               // Smartlinks (window.open) NO se ven afectados por esto.
               if (src.includes('otieu.com') || src.includes('monetag') ||
-                src.includes('proads') || src.includes('onclick') || src.includes('vignette')) {
+                src.includes('proads') || src.includes('onclick') || src.includes('vignette') || src.includes('highperformanceformat')) {
                 node.remove();
               }
             }
