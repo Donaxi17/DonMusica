@@ -54,7 +54,7 @@ body {
     margin: 0;
     box-sizing: border-box;
     font-family: "Ubuntu", sans-serif;
-    overscroll-behavior-y: contain;
+    min-height: 100vh;
 }
 
 /* Focus visible for accessibility - Modern glow */
